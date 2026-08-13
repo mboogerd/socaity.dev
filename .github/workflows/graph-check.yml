@@ -1,0 +1,39 @@
+name: graph-check
+
+# Required PR check: the graph must validate, and the site must be reproducible.
+on:
+  pull_request:
+    paths: ['graph/**', 'tools/**', '.github/workflows/graph-check.yml']
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the two dependencies
+        run: pip install --quiet -r tools/requirements.txt
+      - name: Validate the graph (append-only against the base branch)
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            python3 tools/validate/validate.py --root . --base "$BASE"
+          else
+            python3 tools/validate/validate.py --root .
+          fi
+      - name: Render twice and prove the build is byte-identical
+        run: tools/check.sh
+      - name: Upload the preview site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-preview
+          path: site/

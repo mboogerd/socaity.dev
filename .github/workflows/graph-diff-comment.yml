@@ -1,0 +1,68 @@
+name: graph-diff-comment
+
+# The diff-render bot: on every graph PR, post the before/after of the node-page
+# sections a reader would see. Reviewers read pages, not YAML.
+on:
+  pull_request:
+    paths: ['graph/**']
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  diff-render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet -r tools/requirements.txt
+
+      - name: Render the base tree
+        run: |
+          git worktree add /tmp/base "${{ github.event.pull_request.base.sha }}"
+          # The renderer always comes from the PR checkout (templates and graphlib
+          # are resolved relative to this script), so the diff shows graph changes
+          # rather than renderer changes. --root only supplies graph/ and tickets/.
+          python3 tools/render/render.py --root /tmp/base --out /tmp/site-before
+
+      - name: Render the PR tree
+        run: python3 tools/render/render.py --root . --out /tmp/site-after
+
+      - name: Build the comment
+        run: |
+          python3 tools/render/diff_comment.py \
+            /tmp/site-before/sections.json /tmp/site-after/sections.json \
+            --out /tmp/comment.md
+          cat /tmp/comment.md
+
+      - name: Keep the comment as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: graph-diff-comment
+          path: /tmp/comment.md
+
+      # A pull_request run from a FORK gets a read-only GITHUB_TOKEN regardless
+      # of the permissions block above, so posting would 403 on exactly the
+      # outside-contributor PRs this bot exists for. Skip it there rather than
+      # showing contributors a red check; the artifact above still carries the
+      # rendered before/after. Upgrade path when forks need the comment inline:
+      # move this step into a separate workflow_run-triggered workflow.
+      - name: Post or update the sticky comment
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          ID=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+                 --jq '[.[] | select(.body | contains("<!-- graph-diff-render -->")) | .id] | first')
+          if [ -n "$ID" ] && [ "$ID" != "null" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$ID" -F body=@/tmp/comment.md >/dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$PR/comments" -F body=@/tmp/comment.md >/dev/null
+          fi

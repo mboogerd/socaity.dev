@@ -4,3 +4,7 @@
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# Generated site + Python bytecode (tools/check.sh renders into site/)
+site/
+__pycache__/

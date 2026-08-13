@@ -1,0 +1,28 @@
+{% set root = '../' * depth %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{% endblock %} · socaity needs graph</title>
+<link rel="stylesheet" href="{{ root }}style.css">
+</head>
+<body>
+<header>
+<nav aria-label="Site"><a href="{{ root }}roadmap/">Roadmap</a> · <a href="{{ root }}all/">All nodes</a> · <a href="{{ root }}graph.json">graph.json</a></nav>
+</header>
+<main>
+{% block main %}{% endblock %}
+</main>
+<footer>
+<h2 id="legend">Status legend</h2>
+<p>Every chip is derived from the files in <code>graph/</code>. Nothing here is hand-maintained.</p>
+<dl class="legend">
+{% for label, meaning in legend %}
+<dt>{{ label }}</dt><dd>{{ meaning }}</dd>
+{% endfor %}
+</dl>
+<p class="muted">Freshness is measured against the graph clock ({{ clock }}), the newest assertion in the merged tree — not against the time of the build, so every build of the same tree is identical.</p>
+</footer>
+</body>
+</html>

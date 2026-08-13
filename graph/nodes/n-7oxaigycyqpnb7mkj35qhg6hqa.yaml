@@ -1,0 +1,91 @@
+schema: 1
+id: n-7oxaigycyqpnb7mkj35qhg6hqa
+slug: static-generator-over-yaml-node-files
+type: solution
+title: Render a static site from the YAML node files
+status: open
+body: |
+  One small Python generator reads graph/nodes/*.yaml and writes a static site:
+  one page per node, a roadmap page, an /all index and a graph.json export. The
+  site is a pure function of the merged tree, so a fork renders the same pages
+  and CI can prove the build is reproducible.
+provenance:
+  asserted_by:
+    actor_id: decomposer
+    actor_kind: agent
+    on_behalf_of: founder
+    model: example-model-v0
+    prompt_hash: sha256:2e5f506172607182930a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60
+    run_id: run-0001
+  asserted_at: '2026-08-02T11:00:00Z'
+  evidence:
+    - sha256:3f60617283940a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6071829a
+edges:
+  - id: e-vqhqtqhyx5phusyghwddevprnu
+    from: n-7oxaigycyqpnb7mkj35qhg6hqa
+    to: n-jajustitpylddo5dahk2zk3opm
+    to_slug: outsiders-cannot-see-what-is-needed
+    type: refines
+    status: asserted
+    rationale: A published, forkable site is one way to make the open work visible.
+    provenance:
+      asserted_by:
+        actor_id: founder
+        actor_kind: human
+      asserted_at: '2026-08-02T11:00:00Z'
+      evidence: []
+    estimates:
+      - id: est-kdz34vz6xj6bexv66osbbwsnna
+        kind: branch_probability
+        value: 0.7
+        provenance:
+          asserted_by:
+            actor_id: decomposer
+            actor_kind: agent
+            on_behalf_of: founder
+            model: example-model-v0
+            prompt_hash: sha256:4a71829304152637485960a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5
+            run_id: run-0002
+          asserted_at: '2026-08-02T11:05:00Z'
+          evidence: []
+        expires_at: '2026-11-02T00:00:00Z'
+  - id: e-z337ye5dqgajg372ey2ureeio4
+    from: n-7oxaigycyqpnb7mkj35qhg6hqa
+    to: n-np4zpgoq56i343bfuiuuh52mvi
+    to_slug: graph-edits-are-unverifiable-by-hand
+    type: requires
+    status: asserted
+    rationale: The generator can only trust the files if a validator gates them.
+    provenance:
+      asserted_by:
+        actor_id: founder
+        actor_kind: human
+      asserted_at: '2026-08-02T11:10:00Z'
+      evidence: []
+estimates:
+  - id: est-xltsz7dl4kztetsjkxlq44ihqe
+    kind: effort
+    value:
+      low: 2
+      high: 5
+    unit: founder-days
+    provenance:
+      asserted_by:
+        actor_id: founder
+        actor_kind: human
+      asserted_at: '2026-08-02T11:15:00Z'
+      evidence: []
+    expires_at: '2026-12-01T00:00:00Z'
+  - id: est-5iin6dp5wonla2bp4io4uhtnqu
+    kind: effort
+    value:
+      low: 3
+      high: 4
+    unit: founder-days
+    provenance:
+      asserted_by:
+        actor_id: founder
+        actor_kind: human
+      asserted_at: '2026-08-06T08:00:00Z'
+      evidence: []
+    expires_at: '2026-12-01T00:00:00Z'

@@ -1,0 +1,11 @@
+schema: 1
+id: t-mkfutwlnzxuxuqyn2t2zo4cyte
+node: n-np4zpgoq56i343bfuiuuh52mvi
+tier: 2
+status: open
+provenance:
+  asserted_by:
+    actor_id: founder
+    actor_kind: human
+  asserted_at: '2026-08-05T09:00:00Z'
+  evidence: []

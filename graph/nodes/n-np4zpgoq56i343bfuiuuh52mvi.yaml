@@ -1,0 +1,34 @@
+schema: 1
+id: n-np4zpgoq56i343bfuiuuh52mvi
+slug: graph-edits-are-unverifiable-by-hand
+type: problem
+title: Graph edits cannot be checked by hand
+status: open
+body: |
+  Every node file carries identity, provenance and append-only estimate
+  records. A reviewer reading a diff cannot confirm that an ID is well formed,
+  that a reference resolves, or that an estimate record was added rather than
+  quietly rewritten. Without a machine check the discipline is a convention,
+  and conventions decay under time pressure.
+provenance:
+  asserted_by:
+    actor_id: founder
+    actor_kind: human
+  asserted_at: '2026-08-01T09:10:00Z'
+  evidence:
+    - sha256:1d4e4f5e6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f70
+edges:
+  - id: e-rnomjx365r6tfj4bj3fev4chvy
+    from: n-np4zpgoq56i343bfuiuuh52mvi
+    to: n-jajustitpylddo5dahk2zk3opm
+    to_slug: outsiders-cannot-see-what-is-needed
+    type: refines
+    status: asserted
+    rationale: An unverifiable graph is one of the reasons the roadmap stays private.
+    provenance:
+      asserted_by:
+        actor_id: founder
+        actor_kind: human
+      asserted_at: '2026-08-01T09:10:00Z'
+      evidence: []
+estimates: []

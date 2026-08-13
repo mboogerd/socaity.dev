@@ -1,0 +1,12 @@
+schema: 1
+id: t-yrchia4niwpebzdrjl7pu67y3i
+node: n-7oxaigycyqpnb7mkj35qhg6hqa
+tier: 3
+status: claimed
+claimed_by: founder
+provenance:
+  asserted_by:
+    actor_id: founder
+    actor_kind: human
+  asserted_at: '2026-08-05T09:05:00Z'
+  evidence: []

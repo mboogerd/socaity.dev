@@ -1,0 +1,31 @@
+schema: 1
+id: n-6ktkvf5nwk7rlqt255u36ezbay
+slug: nobody-checks-the-yaml
+type: problem
+title: Nobody checks the YAML files
+status: merged
+merged_into: n-np4zpgoq56i343bfuiuuh52mvi
+body: |
+  Duplicate of the verifiability problem, filed before it had a file. Kept as a
+  tombstone so the old URL still resolves.
+provenance:
+  asserted_by:
+    actor_id: contributor-b
+    actor_kind: human
+  asserted_at: '2026-08-04T07:30:00Z'
+  evidence: []
+edges:
+  - id: e-inyapf7c7hkk2ogm6e2v34zdgq
+    from: n-6ktkvf5nwk7rlqt255u36ezbay
+    to: n-np4zpgoq56i343bfuiuuh52mvi
+    to_slug: graph-edits-are-unverifiable-by-hand
+    type: equivalent_to
+    status: settled
+    rationale: Same problem stated twice; the older node survives.
+    provenance:
+      asserted_by:
+        actor_id: founder
+        actor_kind: human
+      asserted_at: '2026-08-04T08:00:00Z'
+      evidence: []
+estimates: []

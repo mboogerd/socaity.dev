@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}All nodes{% endblock %}
+{% block main %}
+{% set root = '../' * depth %}
+<h1>All nodes</h1>
+<p class="muted">Every node in the merged tree, including withdrawn and merged ones. Sorted by permanent ID.</p>
+<table>
+<thead><tr><th scope="col">ID</th><th scope="col">Title</th><th scope="col">Type</th><th scope="col">Status</th><th scope="col">Ticket</th></tr></thead>
+<tbody>
+{% for node in nodes %}
+<tr>
+<td><code><a href="{{ root }}n/{{ node.id }}/">{{ node.id }}</a></code></td>
+<td>{{ node.title }}</td>
+<td>{{ node.type }}</td>
+<td>{% if node.chip %}<span class="chip chip-{{ node.chip[1] }}">{{ node.chip[0] }}</span>{% endif %}{% if node.merged_into %} <a href="{{ root }}n/{{ node.merged_into.id }}/">{{ node.merged_into.title }}</a>{% endif %}</td>
+<td>{% if node.ticket %}{{ node.ticket.id }} · {{ node.ticket.status }}{% else %}—{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ node.title }}{% endblock %}
+{% block main %}
+{% set root = '../' * depth %}
+<article>
+{% if node.crumbs %}
+<nav aria-label="Breadcrumb"><ol class="crumbs">
+{% for crumb in node.crumbs %}
+<li><a href="{{ root }}n/{{ crumb.id }}/">{{ crumb.title }}</a></li>
+{% endfor %}
+</ol></nav>
+{% endif %}
+
+<h1{% if node.status == 'resolved' %} class="done"{% endif %}>{{ node.title }}</h1>
+<p class="chips">
+{% if node.chip %}<span class="chip chip-{{ node.chip[1] }}">{{ node.chip[0] }}</span>{% endif %}
+{% if node.merged_into %}<a href="{{ root }}n/{{ node.merged_into.id }}/">{{ node.merged_into.title }}</a>{% endif %}
+<span class="muted">{{ node.type }}</span>
+{% if node.contested_count %}
+<span class="chip chip-contested">{{ node.contested_count }} contested edge(s)</span>
+{% for url in node.contested_links %}<a href="{{ url }}">dispute</a> {% endfor %}
+{% endif %}
+{% if node.ticket %}<span class="chip chip-ticket">ticket {{ node.ticket.status }}{% if node.ticket.claimed_by %} · {{ node.ticket.claimed_by }}{% endif %}</span>{% endif %}
+</p>
+<p class="provenance">{{ node.provenance }} · <a href="{{ root }}graph.json">derivation</a></p>
+{% if node.external_ref %}<p><a href="{{ node.external_ref }}">{{ node.external_ref }}</a></p>{% endif %}
+
+<section aria-label="Statement"><p>{{ node.body }}</p></section>
+
+{% if node.requires %}
+<section aria-labelledby="requires"><h2 id="requires">Requires</h2>
+<ul class="checklist">
+{% for row in node.requires %}
+<li{% if row.done %} class="done"{% endif %}>
+  <a href="{{ root }}n/{{ row.id }}/">{{ row.title }}</a>
+  {% if row.chip %}<span class="chip chip-{{ row.chip[1] }}">{{ row.chip[0] }}</span>{% endif %}
+  {% if row.edge_chip %}<span class="chip chip-{{ row.edge_chip[1] }}">{{ row.edge_chip[0] }}</span>{% if row.dispute_url %} <a href="{{ row.dispute_url }}">see dispute</a>{% endif %}{% endif %}
+  {% if row.estimate %}<span class="estimate">{{ row.estimate.text }}<span class="muted"> · estimated {{ row.estimate.asserted_at }}{% if row.estimate.stale %} · stale{% endif %}</span></span>{% endif %}
+</li>
+{% endfor %}
+</ul>
+</section>
+{% endif %}
+
+{% if node.approaches %}
+<section aria-labelledby="approaches"><h2 id="approaches">{{ node.approaches|length }} competing approach(es)</h2>
+{% for card in node.approaches %}
+<article class="card">
+  <h3><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a></h3>
+  <p class="chips">
+  {% if card.chip %}<span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span>{% endif %}
+  {% if card.edge_chip %}<span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span>{% if card.dispute_url %} <a href="{{ card.dispute_url }}">see dispute</a>{% endif %}{% endif %}
+  {% if card.weight_label %}<span class="chip chip-weight">{{ card.weight_label }}</span>{% endif %}
+  </p>
+  {% if card.weight_label %}<p class="provenance">{{ card.weight_provenance }} · estimated {{ card.weight_stamp }}</p>{% endif %}
+  <p>{{ card.body }}</p>
+  {% if card.rationale %}<p class="muted">Why this edge: {{ card.rationale }}</p>{% endif %}
+</article>
+{% endfor %}
+</section>
+{% endif %}
+
+{% if node.refined_by %}
+<section aria-labelledby="refined"><h2 id="refined">Narrower problems</h2>
+<ul>
+{% for card in node.refined_by %}
+<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a>{% if card.chip %} <span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span>{% endif %}{% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span>{% if card.dispute_url %} <a href="{{ card.dispute_url }}">see dispute</a>{% endif %}{% endif %}</li>
+{% endfor %}
+</ul>
+</section>
+{% endif %}
+
+{% if node.estimates %}
+<section aria-labelledby="estimates"><h2 id="estimates">Estimates</h2>
+{% for est in node.estimates %}
+<div class="estimate-block">
+  <p><strong>{{ est.kind }}</strong>: {{ est.text }}
+  <span class="muted">estimated {{ est.asserted_at }}, {{ est.revisions }} revision(s){% if est.stale %} · stale, kept for the record{% endif %}</span></p>
+  <p class="provenance">{{ est.provenance }}</p>
+  <details><summary>See all {{ est.revisions }} revision(s)</summary>
+  <ul>
+  {% for old in est.history %}
+  <li>{{ old.text }} <span class="muted">· {{ old.asserted_at }} · {{ old.provenance }}</span></li>
+  {% endfor %}
+  </ul>
+  </details>
+</div>
+{% endfor %}
+</section>
+{% endif %}
+
+{% if node.see_also %}
+<section aria-labelledby="seealso"><h2 id="seealso">See also</h2>
+<ul>
+{% for card in node.see_also %}
+<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a> <span class="muted">equivalent</span>{% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span>{% if card.dispute_url %} <a href="{{ card.dispute_url }}">see dispute</a>{% endif %}{% endif %}</li>
+{% endfor %}
+</ul>
+</section>
+{% endif %}
+
+<section aria-labelledby="contest"><h2 id="contest">Disagree with this?</h2>
+<p><a href="{{ node.issue_url }}">Contest this</a> · <a href="https://github.com/socaity/socaity.dev/edit/main/graph/nodes/{{ node.id }}.yaml">Propose a change</a> · <a href="#legend">what the chips mean</a></p>
+<p class="muted">Permanent address: <code>{{ node.id }}</code> (the name <code>{{ node.slug }}</code> may change).</p>
+</section>
+</article>
+{% endblock %}

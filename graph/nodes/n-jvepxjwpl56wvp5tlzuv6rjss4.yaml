@@ -1,0 +1,51 @@
+schema: 1
+id: n-jvepxjwpl56wvp5tlzuv6rjss4
+slug: hand-maintained-roadmap-page
+type: solution
+title: Keep a hand-maintained roadmap page
+status: open
+body: |
+  Write the roadmap as one markdown page and update it by hand whenever
+  something changes. Cheap to start, and it needs no tooling at all.
+provenance:
+  asserted_by:
+    actor_id: founder
+    actor_kind: human
+  asserted_at: '2026-08-03T14:00:00Z'
+  evidence: []
+edges:
+  - id: e-islxoeslcrtkr3lgpug5jqdcbe
+    from: n-jvepxjwpl56wvp5tlzuv6rjss4
+    to: n-jajustitpylddo5dahk2zk3opm
+    to_slug: outsiders-cannot-see-what-is-needed
+    type: refines
+    status: disputed
+    rationale: A hand-maintained page is a hand-maintained status by definition.
+    dispute_ref:
+      kind: pr
+      repo: socaity/socaity.dev
+      number: 12
+      url: https://github.com/socaity/socaity.dev/pull/12
+    provenance:
+      asserted_by:
+        actor_id: contributor-a
+        actor_kind: human
+      asserted_at: '2026-08-05T10:00:00Z'
+      evidence:
+        - sha256:5b8293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60
+    estimates:
+      - id: est-wxihj4gyrlkcwibx72e27wvm3e
+        kind: branch_probability
+        value: 0.2
+        provenance:
+          asserted_by:
+            actor_id: decomposer
+            actor_kind: agent
+            on_behalf_of: founder
+            model: example-model-v0
+            prompt_hash: sha256:6c93a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6071
+            run_id: run-0002
+          asserted_at: '2026-08-03T14:05:00Z'
+          evidence: []
+        expires_at: '2026-11-02T00:00:00Z'
+estimates: []

@@ -1,0 +1,19 @@
+schema: 1
+id: n-jajustitpylddo5dahk2zk3opm
+slug: outsiders-cannot-see-what-is-needed
+type: problem
+title: Outsiders cannot see what the project needs next
+status: open
+body: |
+  Someone who arrives from the manifesto has no way to find out what work is
+  open, what it depends on, and where they could disagree. The roadmap lives in
+  founder notes and council transcripts, so the only way in is to ask.
+provenance:
+  asserted_by:
+    actor_id: founder
+    actor_kind: human
+  asserted_at: '2026-08-01T09:00:00Z'
+  evidence:
+    - sha256:0c3f3e4d5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f
+edges: []
+estimates: []
