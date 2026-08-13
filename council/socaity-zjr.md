@@ -45,3 +45,38 @@ No objection to register yet — no proposal existed when this was written. A pr
 ### Facilitator
 Standing proposal: the mechanism-designer's 6-point conditionality policy ("Ledger Validation Policy"), which on its face satisfies legal-counsel's three paramount constraints (published at M0; criteria-based — point 4's published algorithm plus legal's enumerated grounds; pre-distribution validation with finality — points 2, 3, 5). Apparent deltas to settle in Round 2: (a) legal's process requirements (notice, response opportunity, decision-maker, appeal path) are not yet in the proposal text; (b) GDPR art. 22 human-review step for automated discounting; (c) vocabulary standard ("validation", never "clawback"); (d) adjudicator conflict-of-interest (legal prefers verification market/stichting as decision-maker — MD's point 2 already assigns audit to the verification market; confirm this extends to challenge adjudication).
 Open objections: none standing (both roles stated conditional paramount positions; none currently violated).
+
+## Round 2
+
+### [mechanism-designer]
+AMENDED PROPOSAL — I integrate all four deltas; none conflicts with my charter, and each changes the attack surface:
+
+(a) Notice/response/decision-maker/appeal — integrated into point 3, with one incentive constraint added: **every process step carries a stake or a clock.** A free appeal path is a free option — at scale, appeals become a denial-of-service on the distribution itself. So: notice automatic and free; response window fixed (30 days, once); appeal requires a stake scaled like the challenge stake (burned if the appeal merely restates, returned plus credit if it overturns); appeal decisions final — one round, not a ladder. Challenger stakes to open, respondent stakes to appeal; neither side gets free delay.
+
+(b) GDPR art. 22 human review — accepted, with a Goodhart warning: **the human-review step is itself an attackable resource** (adversary strategy = volume: thousands of small Sybil entries each demanding review). Mitigations, publishable at M0: (i) human review attaches to the *identity cluster*, not the individual entry; (ii) human-review capacity is funded from the same capped audit slice. Flag for identity-specialist: is cluster-level review compatible with art. 22's "individual" framing?
+
+(c) Vocabulary — accepted; it is *mechanically accurate*: under provisional-by-default nothing is ever taken back, so "clawback" would misdescribe the mechanism. Ships as the "Ledger Validation Policy".
+
+(d) Adjudicator — confirmed: challenge adjudication, not just audit, goes to the verification market (post-split, appellate finality with the stichting). Gap both Round 1 texts papered over: the verification market does not exist until M3. Answer: **challenges filed pre-M3 queue** — recorded on the ledger (timestamped, stake escrowed), adjudicated once the market exists; harmless because nothing pays out before M5. Explicitly ruled out: any interim adjudication by the platform/founder during M0–M2 — the conflict-of-interest at its worst possible moment.
+
+Boundary restated: process machinery must never soften point 6's invariant. If adjudication cost exceeds the audit slice, raise stakes or batch by cluster — never pay provisional entries to clear the queue. A distribution that executes with unadjudicated challenges outstanding against its entries would draw my paramount objection.
+
+With these amendments, no paramount objection remains from this seat.
+
+### [legal-counsel]
+Structure satisfies constraints 1 and 3 as drafted; constraint 2 half-satisfied; point 5 as worded creates one new characterization problem. CONSENT, conditional on two integrations:
+
+**(a) Process requirements — REQUIRED (paramount, constraint 2).** Point 4 covers criteria; constraint 2 also demands *process*. Amendment text:
+> **7. Challenge process.** Grounds enumerated: fraud, Sybil/correlated-identity fabrication, collusion, fabricated dependency edges, misrepresented capacity. Any identity may challenge with a reputation stake. The affected identity receives notice and ≥30 days to respond with evidence. Challenges are decided by the verification market (post-split: under stichting oversight), never solely by the platform operator; one appeal lies to a differently-composed panel. All decisions are published entries citing evidence.
+
+**Point 5 fix — REQUIRED.** "Confirmed forever" as drafted reads as an unconditional vested right *to money*, colliding with the "distributions discretionary until declared" mitigant. Revision: **confirmation renders an entry's eligibility and relative weight final and beyond later rule changes; monetary amounts arise only upon declaration of a distribution. Confirmed entries remain non-transferable. Settled distributions will not be recovered by the platform.** (Not "no claims exist" — a blanket clause cannot bind tax authorities or fraud confiscation; art. 6:248(2) BW can override absolute finality.)
+
+Answer to MD's open question: provisional-by-default **helps materially** on every limb of the participation-right analysis; e-money unaffected provided confirmed status never confers transferability or third-party acceptance — state explicitly.
+
+Contract-language items for the window: (1) define the start trigger; **a pending challenge extends finality only for the challenged entry, never freezing the cohort's distribution** — otherwise one strategic challenge blocks everyone's payout, which is itself an attack; what is announced pre-window is a *provisional pool*, binding declaration only after the window closes. (2) Finality drafted as "the platform will not initiate recovery," not "no claims exist." (3) Challenge stake stays reputation-only (monetary stake opens deposit/gambling questions); define "frivolous" (≠ unsuccessful) or good-faith challengers are chilled.
+
+Remaining items — art. 22 timing (material before first distribution, not M0-blocking), vocabulary, adjudicator governance detail — preferences or scheduled-material. The integrated policy text ships inside the socaity-1ux pre-M0 counsel review together with the epoch-share commitment wording; the two cannot publish separately.
+
+### Facilitator
+Standing proposal (as amended through Round 2): the "Ledger Validation Policy" = MD's points 1–6 + legal's point 7 (challenge process) + legal's point-5 revision (confirmation fixes eligibility and relative weight, never a money amount; amounts only on declaration; platform never initiates recovery of settled distributions) + MD's Round-2 additions (stake-or-clock on every process step; one-round appeals; cluster-level art. 22 review funded from the audit slice; pre-M3 challenges queue with stakes escrowed; no platform/founder interim adjudication; ships inside the socaity-1ux counsel review).
+Open objections: none standing, BUT one apparent tension requires explicit confirmation before closure — MD's boundary "a distribution that executes with unadjudicated challenges outstanding against its entries draws a paramount objection" vs legal's window mechanic "a pending challenge extends finality only for the challenged entry, never freezing the cohort". The reconciling reading: the distribution may execute for unchallenged entries while payouts on challenged entries are withheld until adjudication. Round 3 asks both roles to confirm this reading (or object).
