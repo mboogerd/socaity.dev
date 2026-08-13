@@ -56,3 +56,28 @@ CONSENT with amendments: factor bound + composition rule; week_ref staleness pre
 ### Facilitator
 Note: PE's "within 14 days of week_ref end" and MD's "S = 2 weeks staleness window" are the same predicate with the same constant — merged as: freshness/staleness predicate with S published in V (default 2 weeks), evaluated against checkpoint-bounded chain position. All other amendments mutually accepted; no conflicts.
 Round 3 = pro-forma closure.
+
+## Round 3
+
+### [platform-engineer]
+CONSENT — the merged predicate is exactly what I adopted; MD's amendments are validator-side constraints that strengthen the schema without touching the envelope or boundary invariants.
+
+### [mechanism-designer]
+CONSENT — the observation layer is now a sufficient statistic with no valuation leakage; every incentive concern closed.
+
+## Resolution
+
+ADOPTED by consent, Round 3, no paramount objections standing.
+
+**Ledger event schema v1** — envelope {v, type, prev, actor, ts, payload, sig_alg, sig}; RFC 8785 canonical form; event_id = SHA-256 incl. sig; single chain, position derived; no floats, no free text, evidence hash-only, closed per-version type catalog; additive-only, per-version validation predicates published inside rule.version_published.
+
+**Catalog (zero valuation types — valuations always recomputed):**
+- Governance: genesis; rule.version_published; rule.meta_published; V.draft_published; rule.attested {rule_version_hash, epoch, statement_hash}; epoch.opened/closed; distribution.declared/table_published; audit.completed; audit.review_opened/closed; checkpoint.published; ticket.closed(reason); challenge.filed/responded/decided/appealed + appeal.decided; entry.status_changed; entry.withdrawn; stake.escrowed/returned/burned.
+- Observations: key.successor_designated/rotated/rebound; work.logged; ticket.opened {tier, no budget — duplicate open on unclosed ticket rejected}; ticket.accepted (actor = accepting maintainer ≠ payload.contributor, validator-enforced); contribution.trivial_accepted; epoch-0 founder itemization as individual per-contribution observations.
+- Genesis prologue mechanically enforced: genesis → rule events → epoch-0 observations → epoch 0 open+close → V attestation → epoch.opened(1) → first external entry.
+
+**Key validator predicates:** mandatory-field completeness on accrual-bearing observations (incl. artifact content hash); closed unit/category enums from V (miscategorization challengeable); freshness/staleness window on week_ref (S in V, default 2 weeks, evaluated against checkpoint-bounded chain position — the cap-side analogue of the epoch clamp); discount factors bounded [0,1] with composition rule in V; evidence-resolvability required at confirmation; self-acceptance rejected.
+
+**Checkpoints:** every 256 events / 24h + mandatory after epoch/distribution/audit events; signed git tags on ≥2 independent public hosts; checkpoint key has zero validity authority; epoch.closed checkpoint commits to the reproducible validation snapshot (red-build detector, never source of truth). Append time is always derived (chain position + checkpoint bounds), never a field.
+
+Downstream: socaity-xt4 (agent-run observation schema) becomes an additive extension of this catalog (new observation types for metered agent runs at M3 — the envelope and boundary discipline are fixed here); socaity-mxu implements against this schema.
