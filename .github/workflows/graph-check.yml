@@ -1,6 +1,13 @@
 name: graph-check
 
 # Required PR check: the graph must validate, and the site must be reproducible.
+# On merge to main the same proven tree is published to GitHub Pages (z61 item
+# 1: "built on merge via one Actions workflow -> Pages").
+#
+# NOTE (one-time, manual, cannot be done from a workflow): GitHub Pages must be
+# switched on for this repository under Settings > Pages > Source: "GitHub
+# Actions". Until someone clicks it, the deploy job below fails - the workflow
+# alone does not enable Pages.
 on:
   pull_request:
     paths: ['graph/**', 'tools/**', '.github/workflows/graph-check.yml']
@@ -37,3 +44,75 @@ jobs:
         with:
           name: site-preview
           path: site/
+
+      # z61 item 1: "built on merge via one Actions workflow -> Pages; PR builds
+      # upload preview artifacts". The preview artifact above is the PR half.
+      # This is the merge half: the SAME site/ tree that tools/check.sh just
+      # proved byte-reproducible is packaged as the Pages artifact. Nothing is
+      # re-rendered for the deploy, so what goes live is exactly what CI checked.
+      #
+      # Fork guard: a fork that pushes to its own main gets `repository.fork ==
+      # true` in the push payload and never packages or deploys. pull_request
+      # never reaches this step at all.
+      - name: Package the site as the Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !github.event.repository.fork
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/
+
+  # The deploy is a separate job so it carries the elevated Pages permissions
+  # (pages: write, id-token: write) WITHOUT granting them to the job that runs
+  # repository code on every pull request, including forks.
+  deploy:
+    # `needs` makes this unreachable unless validate + render + the
+    # reproducibility proof all passed; the `if` makes it unreachable on
+    # anything but a push to main in this repository.
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !github.event.repository.fork
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write      # create the deployment
+      id-token: write   # OIDC proof that the artifact came from this workflow
+      # Exactly the two permissions actions/deploy-pages documents, and no
+      # more. `actions: read` is NOT one of them: deploy-pages v4.0.0 briefly
+      # needed it to fetch the artifact by id, and v4.0.1 removed the
+      # requirement again by going through the Actions artifacts client
+      # (actions/deploy-pages release notes, v4.0.1). v5 does not need it.
+      # contents is deliberately absent: this job checks out nothing.
+
+    # Two merges landing seconds apart must not race each other into Pages.
+    # cancel-in-progress: false - a half-applied deploy is worse than a queued
+    # one, and the loser here is a superseded build, not lost work.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      # Reads the repository's Pages configuration. It also fails loudly and
+      # early if Pages has never been switched on (see the NOTE at the top of
+      # this file), instead of
+      # letting deploy-pages fail with a rawer error.
+      #
+      # Its base_path/base_url outputs are deliberately NOT fed into the
+      # renderer: z61 requires the site to be a pure function of the merged tree
+      # (`git clone && render` must equal CI byte for byte), and injecting a
+      # CI-supplied base URL would break exactly the property tools/check.sh
+      # exists to prove. It costs nothing: the renderer emits document-relative
+      # hrefs ("../style.css", not "/style.css"), so the same tree serves
+      # correctly from a project-pages subpath and from a custom domain alike.
+      #
+      # `enablement` is left at its default (false) on purpose. Turning Pages on
+      # is a ONE-TIME manual repo setting -- Settings > Pages > Source: "GitHub
+      # Actions" -- and doing it by hand keeps a workflow from silently
+      # publishing a repository that nobody decided to publish.
+      - name: Read the Pages configuration
+        uses: actions/configure-pages@v6
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

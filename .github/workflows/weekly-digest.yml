@@ -25,7 +25,12 @@ name: weekly-digest
 # proved byte-reproducible, through the same `pages` concurrency group
 # graph-check uses so the two can never race. If graph-check ever grows a
 # `workflow_dispatch:` trigger, replace the two jobs below with one dispatch
-# call -- that is the smaller shape, and it is only unavailable today.
+# call -- that is the smaller shape, and it is only unavailable today
+# (tracked as socaity-lnv).
+#
+# Same one-time manual prerequisite as graph-check.yml: GitHub Pages must be
+# enabled under Settings > Pages > Source: "GitHub Actions", or the deploy job
+# below fails. No workflow can set that.
 
 on:
   schedule:
@@ -129,8 +134,12 @@ jobs:
         if: steps.commit.outputs.published == 'true'
         run: tools/check.sh
 
+      # The branch guard matters for workflow_dispatch: this job commits and
+      # pushes to whatever ref it was dispatched on, so without it a manual run
+      # from a feature branch would publish that branch's site to production
+      # Pages. Scheduled runs are always on the default branch.
       - name: Package the site as the Pages artifact
-        if: steps.commit.outputs.published == 'true' && !github.event.repository.fork
+        if: steps.commit.outputs.published == 'true' && github.ref == 'refs/heads/main' && !github.event.repository.fork
         uses: actions/upload-pages-artifact@v5
         with:
           path: site/
@@ -140,13 +149,15 @@ jobs:
   # none of the repository's own scripts.
   deploy:
     needs: digest
-    if: needs.digest.outputs.published == 'true' && !github.event.repository.fork
+    if: needs.digest.outputs.published == 'true' && github.ref == 'refs/heads/main' && !github.event.repository.fork
     runs-on: ubuntu-latest
 
     permissions:
       pages: write
       id-token: write
-      actions: read
+      # Exactly the two permissions actions/deploy-pages documents. `actions:
+      # read` was needed only by deploy-pages v4.0.0 and was removed again in
+      # v4.0.1; v5 does not need it.
       # contents is deliberately absent: this job checks out nothing.
 
     # The same group graph-check.yml uses, so a merge deploying the site and the
