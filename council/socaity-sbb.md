@@ -59,3 +59,31 @@ AMENDED (all five deltas). **(ii)+(v)** I amend gladly — my scalar was wrong f
 Convergence nearly complete: inline storage (all three), slug-as-sugar with ID pinned at merge + to_slug annotation (all three — PE's pin-the-ID and AE's comment-sync and PD's to_slug are the same mechanism; drafters pick one syntax), no confidence field (all three), verb naming refines/requires/equivalent_to (all three), optional rationale (all three), unified estimate record (agreed except one residual).
 Residual for Round 3: **stored shape of branch_probability** — AE Round 2: interval with strict lo<hi for ALL kinds (calibration coverage argument); PD Round 2: scalar for branch_probability (second-order interval = maximalism), interval with lo==hi permitted for effort/value (vs AE's strict lo<hi). Two small deltas, same field. Note: probability calibration is scoreable from scalars (Brier/log score) without intervals — AE's coverage argument applies most strongly to effort/value.
 Open objections: none paramount-vs-paramount; residual is reconcilable.
+
+## Round 3
+
+### [agent-engineer]
+CONSENT to PD's per-kind rule. My coverage argument doesn't survive the facilitator's note: a scalar probability is fully calibratable via Brier/log score — a second-order interval adds a field with no scoring rule, exactly the evaluation theater I refuse elsewhere. lo==hi for effort/value is fine under coverage scoring: a degenerate interval is a maximal-confidence claim punished hardest when wrong — self-correcting, no validator strictness needed. Final estimate record: effort/value as interval {low, high} with low ≤ high; branch_probability as scalar in [0,1]; provenance and expires_at unchanged.
+
+### [platform-engineer]
+CONSENT. Both conditions satisfied. On the residual: scalar preferred — simpler record, and additive-only schema evolution means scalar→interval widening later needs no migration; the reverse is messier. Either resolution: consent stands.
+
+### [product-designer]
+CONSENT — either way on the residual (interval-probabilities would be tolerable, not paramount: still hand-authorable and provenance-carrying; the renderer can collapse to one displayed weight). Binding conditions all secured: interval shape for effort/value, inline storage with to_slug, rationale retained, comprehension test as the gate.
+
+## Resolution
+
+ADOPTED by consent, Round 3, no paramount objections standing.
+
+**Needs-graph schema v1** (M0 hand-authored, M1 agent read/write):
+
+- **Storage:** one YAML file per node in `graph/nodes/<id>.yaml`, public repo; `schema: 1` in every file, additive-only evolution, ingester rejects unknown versions. Git history is the M0 event log; M1 = one flag-day import into the boring DB + event log, files remain the canonical lossless export (forkability). No beads dependency, no ComputeNet on the critical path. (Resolves socaity-774.)
+- **Node identity:** random permanent IDs (`n-` + base32(128 bits)); never content-derived, never reused, never deleted. Merge = tombstone `{id, redirects_to, merged_at, merged_by}`; readers follow bounded redirect chains; edits to redirected IDs apply to the target. `slug`: mutable display/authoring sugar, CI-enforced unique, pinned to ID at merge (durable references are IDs only; `to_slug`/comment annotation for diff readability, CI keeps in sync); tombstones keep slugs so old URLs resolve.
+- **Node types:** exactly `problem` and `solution`; fields: id, slug, type, title (≤~70 chars), body, status (open|merged|withdrawn|resolved), merged_into?, external_ref?, provenance. AND/OR lives in edges; UI renders "N competing approaches" / "requires" — never teaches AND/OR vocabulary.
+- **Edges:** first-class self-contained records stored inline in the source node's file (one file per edge's source; CI rejects duplicate edge IDs; reverse index built by readers): `{id: e-…, from, to (ID), type: refines|requires|equivalent_to, status: asserted|disputed|settled (only asserted required pre-M4), rationale?, provenance}`. All edge types point child→parent. Never deleted, only status-transitioned; append-only enforced by CI diff check on records, not layout.
+- **Provenance block, mandatory on every node/edge/estimate — humans stamp too:** `asserted_by {actor_id, actor_kind: human|agent}`, agent writes add `on_behalf_of` (accountable human), `model`, `prompt_hash`, `run_id`; `asserted_at`; `evidence` (hashes). Rejected by CI at M0 and API at M1 if incomplete. (Satisfies socaity-2n3.)
+- **Estimates:** append-only assertion records living with their target (node file; branch_probability inside the edge record it weights): `{id, kind: effort|value|branch_probability, value: interval {low ≤ high} for effort/value | scalar [0,1] for branch_probability, unit, provenance, expires_at}`. No confidence field — interval width at a documented 80%-coverage convention encodes it. Current = latest non-withdrawn; superseded records are the calibration corpus; expired renders stale, never vanishes. Weights/estimates never displayed without provenance + freshness chip.
+- **Progressive complexity:** mechanism fields optional and absent-by-default; renderer ignores unknown fields; no mechanism field ever required.
+- **Gate before hardening:** five-outsider comprehension test on a printed node file (what is it, what does it require, who claimed what).
+
+Downstream: socaity-774 resolved (same decision); socaity-bho resolved (identity model, edge lifecycle, merge-as-redirect, provenance all fixed here); socaity-2n3 satisfied (provenance block); socaity-c1y partially resolved (IDs + match-then-propose confirmed; empirical thresholds remain open, feed socaity-q8b); socaity-8wg unblocked (prototype against this schema).
