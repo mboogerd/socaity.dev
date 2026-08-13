@@ -1,0 +1,225 @@
+# socaity.dev — banned wordlist for public surfaces
+#
+# Canonical machine-readable half of doc/standards/vocabulary-and-visual.md.
+# Consumed by the CI banned-wordlist gate (socaity-ddi), per 1ux clause 10.
+#
+# FORMAT
+#   One pattern per line. Blank lines and lines starting with "#" are ignored.
+#   Patterns are POSIX extended regular expressions, matched CASE-INSENSITIVELY.
+#   A pattern that begins with "~" is REVIEW-REQUIRED, not banned: the gate
+#   reports it and the build passes only if the matching line carries an inline
+#   waiver comment  <!-- vocab-ok: <reason> -->  (HTML/Markdown) or
+#   # vocab-ok: <reason>  (code/config). Strip the leading "~" before matching.
+#   Every other pattern is FAIL-level: any match fails the build, no waiver.
+#
+# SCOPE
+#   All owned public surfaces: site pages, manifesto, FAQ, README, blog posts,
+#   OG card text, RSS, social mirror-out copy, grant application public text,
+#   and alt text. NOT applied to: doc/ internals, council/*.md, .claude/skills/,
+#   or code comments — internal precision is allowed to use words public copy
+#   must not. Keep that boundary explicit in the gate's path filter.
+#
+# EDITING RULE
+#   Patterns are narrow on purpose: a false positive teaches authors to disable
+#   the gate. Never widen a pattern to a bare common English word. Add the
+#   phrase, not the word.
+
+# ---------------------------------------------------------------------------
+# 1. Token / chain vocabulary — the primary pattern-match we are refusing
+# ---------------------------------------------------------------------------
+\btokenomics\b
+\btokenised\b
+\btokenized\b
+\bour token\b
+~\bthe token\b
+~\ba token\b
+\bbuy (a|the|our) tokens?\b
+\btoken (sale|launch|generation event)\b
+~\btokens\b
+\bairdrops?\b
+\bcoins?\b
+# review-required: 1ux mandates the first-screen string "...a database, not a blockchain."
+# A bare FAIL here would ban our own required copy. Waiver = the negation only.
+~\bblockchains?\b
+\bon[- ]?chain\b
+\boff[- ]?chain\b
+\bsmart contracts?\b
+\bweb ?3\b
+\bDAOs?\b
+\bgas fees?\b
+\btestnet\b
+\bmainnet\b
+\bTGE\b
+\bICO\b
+\bIDO\b
+\bpresale\b
+\bwhitelist spots?\b
+\bminting\b
+\bmints?\b
+~\bpre-?mined\b
+\bhalvings?\b
+\bnode operators?\b
+\bvalidator rewards?\b
+\bwhales?\b
+\bdegen\b
+\bWAGMI\b
+\bHODL\b
+\bto the moon\b
+\bmoonshot bags\b
+
+# ---------------------------------------------------------------------------
+# 2. Wallet / balance grammar — "the ledger is a database, not an account"
+# ---------------------------------------------------------------------------
+\bwallets?\b
+\byour balance\b
+\bcredit balance\b
+\btoken balance\b
+\bbalances? (of|held|held by|remaining)\b
+\bholdings\b
+\byour holding\b
+\b(token|coin|credit|share|vu|bag)[- ]?holders?\b
+~\bholders?\b
+\btreasury\b
+\bportfolios?\b
+\bmy (stake|position|holdings)\b
+\bstake (pool|rewards?|weight)\b
+\bstaking\b
+~\bstaked\b
+\bstaked (credits?|tokens?|vu|capital)\b
+\bunstake\b
+\bvesting schedule\b
+\btop ?up your\b
+\bcash out\b
+\bcashing out\b
+\bwithdraw your\b
+~\bredeem\b
+~\bredemption\b
+~\bconvert(ible)? to (euros?|fiat|cash|money)\b
+
+# ---------------------------------------------------------------------------
+# 3. Mining / farming — contribution is worked and attested, not extracted
+# ---------------------------------------------------------------------------
+~\bmining\b
+\b(crypto|bitcoin|token|coin|credit)[ -]?mining\b
+\bmining (rig|pool|rewards?)\b
+\bminers?\b
+\bmine (credits?|rewards?|value)\b
+\bhash ?rate\b
+\bproof of stake\b
+\byield farming\b
+\bfarming (rewards?|credits?|points?)\b
+\b(token|credit|vu) emissions\b
+\bemissions? (schedule|curve|rate)\b
+\bblock rewards?\b
+\brewards? drops?\b
+\bdrop (your|the) rewards?\b
+\bAPY\b
+\bAPRs\b
+\bAPR (of|up to|is|:)\b
+\b(high|annual)[- ]yield\b
+\byields? (of|on) [0-9]\b
+\bpassive income\b
+\bearn while you sleep\b
+\bslashing\b
+\bslashed\b
+\bclawbacks?\b
+
+# ---------------------------------------------------------------------------
+# 4. Investment / entitlement triggers — 1ux clause 10, legal-counsel binding
+# ---------------------------------------------------------------------------
+~\binvestments?\b
+~\binvestors?\b
+\binvest in\b
+~\bequity-?like\b
+\bequity stake\b
+\bshareholders?\b
+~\bsecurit(y|ies) offering\b
+~\bdividends?\b
+~\bprofit shares?\b
+\bprofit-?sharing\b
+\breturns? on\b
+\bROI\b
+\brisk-?free\b
+~\bguaranteed\b
+\byou will be paid\b
+~\byou will receive\b
+\byou('|’)?ll get paid\b
+\bowed to you\b
+\byou are entitled\b
+\bentitled to (a|your)\b
+\byour share of (future )?revenue\b
+\bfuture (revenue|profit) share\b
+~\bmake money\b
+\bearn money\b
+~\bupside\b
+\bget in early\b
+\bearly bird\b
+\bground floor\b
+\bearly believers\b
+\bfounding members? (tier|badge|perk)\b
+\blimited spots?\b
+\bspots? (left|remaining)\b
+\bwaitlist position\b
+\bdon('|’)?t miss (out|this)\b
+\bact now\b
+\blast chance\b
+
+# ---------------------------------------------------------------------------
+# 5. Wage / employment vocabulary — 19p: "valuation of contribution", never pay
+# ---------------------------------------------------------------------------
+~\bsalar(y|ies)\b
+\byour (salary|wage)\b
+~\bwages?\b
+\byour pay\b
+\bget paid for\b
+\bcompensation for (your )?(work|contribution)\b
+\bhourly rate you earn\b
+~\bpayouts?\b
+\bpayout (table|schedule) (below|above)\b
+~\bcompensation\b
+\bvrijwilligersregeling\b
+
+# ---------------------------------------------------------------------------
+# 6. Point-date forecasts — vision requirement: intervals, never dates
+# ---------------------------------------------------------------------------
+\bshipping in (Q[1-4]|January|February|March|April|May|June|July|August|September|October|November|December)\b
+\blaunch(es|ing)? (on|in) (Q[1-4]|[A-Z][a-z]+ [0-9]{4})\b
+\bcoming soon\b
+\bETA:? [0-9]
+\bcountdown\b
+\bdays? (left|to go|until launch)\b
+\broadmap (date|deadline)\b
+
+# ---------------------------------------------------------------------------
+# 7. Self-congratulation about honesty — say the fact, never the adjective
+#    (xuz: "the page never says the word 'transparent'")
+# ---------------------------------------------------------------------------
+\bradically transparent\b
+\bwe believe in (radical )?transparency\b
+\bfully transparent\b
+\btrustless\b
+\bwe are (100% )?transparent\b
+~\btransparenc(y|ies)\b
+~\btransparent\b
+
+# ---------------------------------------------------------------------------
+# 8. "credit" as a public noun of account — see the decision in
+#    vocabulary-and-visual.md §4. Bare "credit(s)" is review-required on public
+#    surfaces; the wallet-grammar compounds are banned outright.
+# ---------------------------------------------------------------------------
+\byour credits?\b
+\bcredits? balance\b
+\bearn credits?\b
+\bspend credits?\b
+\bbuy credits?\b
+\bcredit (multiplier|multipliers)\b
+~\bcredits?\b
+
+# ---------------------------------------------------------------------------
+# 9. Objection words we must be able to QUOTE but never assert
+#    (xuz requires the /ledger page to name "pre-mine" in the objector's words)
+# ---------------------------------------------------------------------------
+~\bpre-?mine\b
+~\bscheme\b
+~\bponzi\b
+~\bcrypto\b
