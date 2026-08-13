@@ -1,0 +1,52 @@
+name: dispute-drift
+
+# The drift alarm of council/socaity-z61.md: file state is authoritative, and
+# this check never sets it — it fails when an open graph:dispute has no trace
+# in graph/nodes past the first-response SLO, or when the tree still renders a
+# dispute the PR or issue has closed. "The render can never quietly hide a
+# live dispute."
+on:
+  schedule:
+    # Every six hours: well inside the published <24h first-response SLO.
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'graph/**'
+      - 'tools/gates/**'
+      - '.github/workflows/dispute-drift.yml'
+
+# Read-only, and no repository secret is used: the automatic GITHUB_TOKEN is
+# enough to list issues on a public repo, so this runs unchanged on a fork PR.
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  cross-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # On a PR, only D4 — the tree's own self-consistency, which is what the
+      # PR can actually fix. D1 fails on any dispute past the response SLO,
+      # which is the maintainers' debt: charging it to an unrelated
+      # contributor's PR teaches people to ignore a red drift alarm.
+      - name: The tree is self-consistent (D4)
+        if: github.event_name == 'pull_request'
+        run: python3 tools/gates/dispute_drift.py --root . --offline
+
+      # On the schedule, the full alarm. --require-api makes a missing token or
+      # an unreadable dispute list a D0 failure, so deleting the env block below
+      # breaks the build rather than silently reducing the alarm to its local
+      # half and reporting green.
+      - name: Cross-check open disputes against the merged tree (D0-D4)
+        if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python3 tools/gates/dispute_drift.py --root . --slo-hours 24 --require-api

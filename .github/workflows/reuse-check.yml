@@ -1,0 +1,27 @@
+name: reuse-check
+
+# Required PR check: council/socaity-a0s clause 6 — "republished output
+# redistributable under the declared licenses with zero manual steps, verified
+# per run". A license choice inexpressible as a green CI check is a promise,
+# not a guarantee. REUSE compliance is committed in the NLnet application.
+#
+# Stdlib only and no install step: the licensing of a checkout must be
+# verifiable before anything else runs.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  reuse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Every file carries a license and a copyright holder
+        run: python3 tools/gates/reuse_gate.py --root .

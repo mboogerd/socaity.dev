@@ -1,0 +1,82 @@
+# REUSE 3.3 annotations for socaity.dev.
+#
+# The license set is council/socaity-a0s.md §"The license set", statable
+# verbatim in the NLnet application (socaity-4we):
+#
+#   AGPL-3.0-or-later  platform core — the network-copyleft forkability
+#                      guarantee, DCO inbound, no CLA ever.
+#   Apache-2.0         the permissive shell: the distribution-rule module,
+#                      export schemas, the renderer, and the verification /
+#                      fork tooling.  a0s: "if the fork toolchain is AGPL,
+#                      'exit is cheap' carries an asterisk; refuse the
+#                      asterisk", and an auditor embedding the rule module
+#                      must never trip a network clause.
+#   CC0-1.0            platform-originated graph and ledger records — waives
+#                      the EU sui generis database right, so no future
+#                      rights-holder can revoke forkability.
+#   CC-BY-4.0          docs, the manifesto, council records, standards.
+#
+# Rider carried by every data license here (a0s, legal-counsel): this license
+# covers copyright and database rights only.  To the extent records constitute
+# personal data, it grants no permission that data protection law requires;
+# reusers process such data as independent controllers on their own lawful
+# basis.
+#
+# Adding a license that is not in that set fails tools/gates/reuse_gate.py:
+# the license set is a council decision, not a file-by-file choice.
+
+version = 1
+SPDX-PackageName = "socaity.dev"
+SPDX-PackageSupplier = "socaity.dev contributors"
+SPDX-PackageDownloadLocation = "https://github.com/socaity/socaity.dev"
+
+# --- platform core -----------------------------------------------------------
+[[annotations]]
+path = [
+  "ledger/**",
+  ".github/**",
+  ".gitignore",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 socaity.dev contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# --- permissive shell: rule module, renderer, validator, gates, fork tooling --
+[[annotations]]
+path = [
+  "rule/**",
+  "tools/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 socaity.dev contributors"
+SPDX-License-Identifier = "Apache-2.0"
+
+# --- platform-originated records ---------------------------------------------
+[[annotations]]
+path = [
+  "graph/**",
+  ".beads/**",
+  ".claude/**",
+  ".codex/**",
+  ".agents/**",
+  "REUSE.toml",
+  "LICENSES/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 socaity.dev contributors"
+SPDX-License-Identifier = "CC0-1.0"
+
+# --- documents ---------------------------------------------------------------
+[[annotations]]
+path = [
+  "doc/**",
+  "council/**",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "README.md",
+  "CONTRIBUTING.md",
+  "blog/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 socaity.dev contributors"
+SPDX-License-Identifier = "CC-BY-4.0"

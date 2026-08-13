@@ -1,0 +1,46 @@
+name: vocab-check
+
+# Required PR check: the vocabulary standard is a CI property, not an intention.
+# doc/standards/vocabulary-and-visual.md §1.6, council/socaity-1ux clause 10.
+#
+# The gate reads the RENDERED site, not the tracked sources alone: site/ is
+# gitignored, so a check over tracked files would never see published copy.
+on:
+  pull_request:
+    paths:
+      - 'doc/standards/**'
+      - 'doc/**.md'
+      - 'doc/manifesto.md'
+      - 'doc/faq.md'
+      - 'blog/**'
+      - 'graph/**'
+      - 'tools/**'
+      - 'README.md'
+      - '.github/workflows/vocab-check.yml'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  wordlist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # Stdlib only, and first: if the gate itself can be walked past, its
+      # green tick on the pages below means nothing.
+      - name: The gates resist the bypasses they were built against
+        run: python3 tools/gates/test_gates.py
+
+      - name: Install the two dependencies
+        run: pip install --quiet -r tools/requirements.txt
+      - name: Render the site — the gate reads what the public reads
+        run: python3 tools/render/render.py --root . --out site
+      - name: Banned wordlist, waivers and the required first-screen string
+        # --audit prints what the standard's §0 scope boundary suppresses, so a
+        # future widening of the exemption is visible in the log rather than silent.
+        run: python3 tools/gates/vocab_gate.py --root . --site site --require-site --audit
