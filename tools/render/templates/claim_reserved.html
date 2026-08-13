@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Attribution reserved{% endblock %}
+{% block main %}
+{% set root = '../' * depth %}
+<style>
+/* Scoped to the claim generator's pages; the shared stylesheet has no rules
+   for code blocks or for the entry exhibit below. */
+.claim pre { background: #f4f3f1; border: 1px solid var(--rule); padding: 0.7rem 0.8rem;
+             overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.8rem 0; }
+.claim .entry { border: 1px solid var(--rule); padding: 1rem 1.1rem; margin: 1rem 0; }
+.claim .entry h3 { font-family: system-ui, sans-serif; font-size: 0.95rem; }
+.claim .entry dl { margin: 0.6rem 0 0; }
+.claim .entry dt { font-family: system-ui, sans-serif; font-size: 0.8rem;
+                   color: var(--muted); margin-top: 0.5rem; }
+.claim .entry dd { margin: 0; }
+.claim .exhibit { font-family: system-ui, sans-serif; font-size: 0.8rem;
+                  color: var(--muted); border-bottom: 1px solid var(--rule);
+                  padding-bottom: 0.3rem; }
+.claim code.key { word-break: break-all; }
+</style>
+<div class="claim">
+
+<h1>Attribution reserved</h1>
+
+<p><strong>No token. Nothing to trade. This is a database.</strong> An entry on
+the record can be in one of two attribution states. This page is what each one
+means, so that a permalink to either answers the question "whose is this?"
+without anyone having to explain it.</p>
+
+<h2>Reserved</h2>
+
+<p>When a contribution is accepted, the entry is written immediately — in the
+week the work happened, valued by the published rule, with the merge commit as
+its evidence. If the contributor does not hold a key yet, the entry names
+nobody. It is not anonymous and it is not unassigned: it carries a binding
+fixed at that moment to the account that authored the merged pull request, and
+only a signature that matches that binding can attach a name to it.</p>
+
+<div class="entry">
+<p class="exhibit">Worked example. Not a record entry: the values below are
+illustrative and no ledger exists at this address.</p>
+<h3>Entry — accepted contribution</h3>
+<dl>
+<dt>Attribution</dt>
+<dd><strong>Reserved</strong> — provably bound to the author of the merged pull
+request this entry cites; awaiting their signature.</dd>
+<dt>Valuation</dt>
+<dd>computed by the published rule at acceptance, from the tier floor · shown
+with its derivation</dd>
+<dt>Evidence</dt>
+<dd>the merge commit, by hash</dd>
+<dt>Binding</dt>
+<dd><code class="key">sha256(github:&lt;the author's account&gt;)</code> — the
+hash only; the account name itself is not on the record</dd>
+<dt>Position</dt>
+<dd>fixed: this entry's place in the chain does not move when it is claimed</dd>
+</dl>
+<p><a href="{{ root }}claim/">If this is your work: how to claim it</a>
+— three commands, and no deadline.</p>
+</div>
+
+<p>Three things are deliberately true of this state:</p>
+<ul>
+<li><strong>It is designed, not a gap.</strong> "Attribution reserved" is a
+state the record has; it is never rendered as "anonymous", "unknown" or an
+empty cell.</li>
+<li><strong>It is already correct.</strong> The valuation, the week and the
+evidence are all recorded at acceptance. Claiming later changes none of them —
+which is the whole reason the entry is written before the key exists.</li>
+<li><strong>It waits.</strong> There is no timer anywhere on this page,
+because there is no timer anywhere in the mechanism.</li>
+</ul>
+
+<h2>Claimed</h2>
+
+<p>A claim is a new entry appended after the reserved one. Nothing is
+rewritten: the original entry still says what it always said, and the record
+now also contains a signed statement, made by the key, that this entry is
+theirs.</p>
+
+<div class="entry">
+<p class="exhibit">Worked example. Not a record entry: the values below are
+illustrative and no ledger exists at this address.</p>
+<h3>Entry — accepted contribution</h3>
+<dl>
+<dt>Attribution</dt>
+<dd><code class="key">z6Mk…</code> — claimed, with the signed attestation that
+matched the binding</dd>
+<dt>Valuation</dt>
+<dd>unchanged from acceptance</dd>
+<dt>Evidence</dt>
+<dd>the merge commit, by hash</dd>
+<dt>Position</dt>
+<dd>unchanged</dd>
+</dl>
+</div>
+
+<p>Reading it back is mechanical: replay the record from the beginning, and an
+entry's attribution is whatever the first valid claim against its binding says
+it is, or reserved if there is none. Two people cannot both claim it — the
+second claim is refused by the same rule that let the first one through — and
+the order is settled by position in the chain, not by anyone's judgement.</p>
+
+<h2>Why the record works this way</h2>
+
+<p>The alternative would be to wait: write no entry until the contributor holds
+a key. That sounds tidier and is worse. It would date the work to whenever the
+contributor got around to running <code>ssh-keygen</code>, so two identical
+contributions could be valued differently for no reason a reader could ever
+audit — and it would make a merged, accepted contribution sit unrecorded while
+somebody reads a page about key pairs. Writing the entry at acceptance and
+attaching the name afterwards keeps the facts in the week they happened and
+makes the invitation literally true: it is already yours, and it is waiting.</p>
+
+<p class="provenance">The rule that admits a claim, refuses a second one, and
+refuses a maintainer claiming an entry they accepted themselves, is
+<a href="{{ repo_blob }}ledger/validator.py">in the validator</a> as a named
+predicate, not in review guidance.</p>
+
+</div>
+{% endblock %}

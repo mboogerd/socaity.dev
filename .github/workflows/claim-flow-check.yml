@@ -1,0 +1,42 @@
+name: claim-flow-check
+
+# Required PR check: the /claim page's copy-paste blocks must actually run.
+#
+# council/socaity-ipg.md clause 7, test (a) — minus the humans. The script
+# reads the three blocks out of tools/render/generators/claim.py, which is what
+# the page renders, so this cannot pass against a stale copy of the commands.
+# A copy-paste block that does not run is the failure mode of the whole
+# surface, and it is the one part of the pre-launch tests a machine can hold.
+#
+# The other three tests (comprehension, and the 30-second permalink reads) need
+# people: doc/research/m0-claim-flow-test/PROTOCOL.md.
+on:
+  pull_request:
+    paths:
+      - 'tools/claim/**'
+      - 'tools/render/generators/claim.py'
+      - 'tools/render/templates/claim*.html'
+      - 'ledger/**'
+      - 'doc/templates/merge-comment.md'
+      - '.github/workflows/claim-flow-check.yml'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  walk-the-flow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # No pip install: the flow is ssh-keygen plus the standard library plus
+      # this repository's own Ed25519. If claiming an entry ever needs a
+      # dependency, that is a finding, not a setup step.
+      - name: ssh-keygen is present, as the page assumes
+        run: ssh -V
+      - name: Walk the three published blocks end to end
+        run: tools/claim/test_claim_flow.sh

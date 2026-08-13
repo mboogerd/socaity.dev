@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Claim your entry{% endblock %}
+{% block main %}
+{% set root = '../' * depth %}
+<style>
+/* Scoped to this generator's pages: the shared stylesheet has no code-block
+   rules, and an unwrapped command line overflows the column at 390px. */
+.claim pre { background: #f4f3f1; border: 1px solid var(--rule); padding: 0.7rem 0.8rem;
+             overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.8rem 0; }
+.claim ol.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+.claim ol.steps > li { border-top: 1px solid var(--rule); padding: 1.4rem 0 0.6rem;
+                       margin-top: 1.4rem; }
+.claim ol.steps > li > h2 { margin-top: 0; }
+.claim details { border-left: 3px solid var(--rule); padding-left: 1rem; margin: 1.2rem 0; }
+.claim details > summary { cursor: pointer; font-family: system-ui, sans-serif;
+                           font-size: 0.95rem; }
+.claim details > *:not(summary) { margin-top: 0.7rem; }
+.claim .lede { font-size: 1.05rem; }
+</style>
+<div class="claim">
+
+<h1>Claim your entry</h1>
+
+<p class="lede"><strong>No token. Nothing to trade. This is a database.</strong>
+Your change was merged. An entry for it was written to the record the same day,
+against the week the work actually happened — you did not have to be here for
+that, and none of it was waiting on you.</p>
+
+<p>What the entry does not have yet is a name. It reads
+<strong>attribution reserved</strong>, and it is bound to whoever holds the
+account that authored the merged pull request. That is you. The three commands
+below attach it to a key only you hold —
+<a href="{{ root }}claim/reserved/">this is what the entry looks like now, and
+after</a>.</p>
+
+<p class="provenance">The three commands run in well under a second; the rest
+is reading, pasting, and typing your passphrase — twice when you choose it in
+step 1, once more when you sign in step 2. Under three minutes
+is the target, and as of the graph clock {{ stamp }} it has been walked end to
+end by the people who wrote it and not yet timed with contributors —
+<a href="{{ repo_blob }}doc/research/m0-claim-flow-test/PROTOCOL.md">the test
+that will time it</a> is written and has not been run. Your entry never
+expires: after about {{ horizon.months }} months, claiming it takes one extra
+verification step and nothing else, and there is nothing here to be early for.
+<a href="#horizon">How that figure is computed.</a></p>
+
+<ol class="steps">
+{% for step in steps %}
+<li>
+<h2>{{ step.n }}. {{ step.title }}</h2>
+{% if step.edit %}<p>{{ step.edit|safe }}</p>{% endif %}
+<pre><code>{% for line in step.commands %}{{ line }}
+{% endfor %}</code></pre>
+<p>{{ step.why|safe }}</p>
+</li>
+{% endfor %}
+</ol>
+
+<h2>That was the whole thing</h2>
+<p>What happens next, in order: someone verifies both directions of your
+signature — with the commands below, which anyone can run; the entry stops
+saying <em>attribution reserved</em> and names your key; you get a reply with a
+permalink to the row.</p>
+<p>None of that changes the valuation. It was computed by the published rule
+when the work was accepted, from the merge itself, and it is the same number
+whether you claim today or next year. Claiming attaches your name. It does not
+price anything, and there is nothing here to buy, sell or transfer.</p>
+
+<h2>Check it yourself</h2>
+<p>An attestation nobody can check is a promise. This one is checkable by you,
+by a maintainer, and by a stranger who trusts neither of us. With ssh-keygen
+alone:</p>
+<pre><code>{% for line in verify_ssh %}{{ line }}
+{% endfor %}</code></pre>
+<p>It prints <code>Good "{{ namespace }}" signature for github:{{ login }}</code>,
+or it fails. This repository also carries a small script that runs the same
+check and additionally prints the two values the record stores — your key in
+its ledger form, and the binding hash:</p>
+<pre><code>{% for line in verify_repo %}{{ line }}
+{% endfor %}</code></pre>
+
+<h2 id="more">Before you close the terminal</h2>
+
+<details>
+<summary>The passphrase, and what losing the key would mean</summary>
+<p>Use a passphrase, and put the passphrase somewhere you will still have it in
+a year. The private key file is the only thing that can act as you on the
+record.</p>
+<p>If you lose it: the entries already attached to it stay attached to it. They
+are not deleted and they do not move on their own. Getting your standing onto a
+new key runs through the published adjudication process as a new, signed, public
+entry — forward-only, visible to everyone, never a quiet edit of the past. That
+is deliberately more friction than a password reset, because the alternative is
+an administrator who can silently re-attribute anyone's work.</p>
+<p>The cheap insurance is a backup of the two files in
+<code>~/.socaity/</code> wherever you keep things you cannot regenerate.</p>
+</details>
+
+<details>
+<summary>Your key is permanent. Your display name is not.</summary>
+<p>The record holds your public key, the structured facts of the contribution,
+and hashes of the evidence. It holds no handle, no email address, no display
+name, and no free text — those live in an ordinary, editable, deletable table
+beside it. Change your display name whenever you like; ask for it to be removed
+and it is removed. The entry itself, and the key it names, are permanent by
+design: that permanence is the only reason the record is worth anything.</p>
+</details>
+
+<details>
+<summary>I already have an SSH key — can I use that one?</summary>
+<p>You can, if it is an Ed25519 key: point <code>-f</code> at it in step 2 and
+skip step 1. Think about whether you want to, though. The key you use here
+becomes a permanent public name attached to everything you contribute, and it
+is the same key you push code with. A separate key costs one command and keeps
+the two roles apart.</p>
+</details>
+
+<details>
+<summary>Publishing somewhere other than the pull request</summary>
+<p>The pull request comment is suggested because it is one fewer place to visit
+and the account is already proven there. A public gist under the same account
+works identically — paste the same text, then link the gist in a comment. A
+gist is also the place to publish a later revocation, because you can edit it:
+if you ever need to withdraw the link between an account and a key, publishing a
+signed revocation in that gist is how you say so.</p>
+<p>Either way the artifact is plain text. Nothing here reads the GitHub API;
+the check runs against what you pasted.</p>
+</details>
+
+<details>
+<summary>No GitHub account, or you would rather not use one</summary>
+<p>Then this page is not your path, and you do not need it. The courier path
+takes contributions by email as a signed patch: you sign the content with the
+same <code>ssh-keygen -Y sign</code> command, send the patch, the signature and
+your public key to the published inbox, and a maintainer opens the pull request
+verbatim with your key recorded as the author. Your key precedes the
+contribution, so there is nothing to claim afterwards.</p>
+<p>The path is written down in
+<a href="{{ repo_blob }}council/socaity-z61.md">council/socaity-z61.md</a>,
+which is the record of the decision to have it.</p>
+</details>
+
+<details>
+<summary>Windows, and other shells</summary>
+<p>The commands are POSIX shell. On Windows they run unchanged in Git Bash or
+WSL, both of which ship the same ssh-keygen. In PowerShell, the pipeline in
+step 2 differs; the simplest fix is to write the one line
+<code>link:github:&lt;your-login&gt;:&lt;contents of claim-key.pub, first two
+fields&gt;</code> into a file by hand and sign that file.</p>
+</details>
+
+<details id="horizon">
+<summary>What the record stores, and the {{ horizon.months }}-month figure</summary>
+<p>Three values reach the record when your claim is recorded, and you can
+recompute all three:</p>
+<ul>
+<li><strong>Your key</strong>, written in the record's canonical form — a
+<code>z6Mk…</code> string. It is a pure function of the same 32 bytes your
+<code>claim-key.pub</code> carries: not a second key, not something to
+generate, just another spelling.</li>
+<li><strong>The binding</strong> — the SHA-256 of the string
+<code>github:{{ login }}</code>, with the account name in lower case (GitHub
+treats it as case-insensitive, and both sides of this hash have to fold it the
+same way or they will not match). It was fixed when the entry was written,
+before anyone knew whether you would claim it, which is what stops a stranger
+from claiming your entry: their signature would name a different account and
+hash to a different value. The handle itself never reaches the record, only
+this hash:
+<pre><code>{% for line in recompute %}{{ line }}
+{% endfor %}</code></pre></li>
+<li><strong>The hash of your attestation</strong>, so the text you published
+cannot be quietly swapped for different text later.</li>
+</ul>
+<p>The {{ horizon.months }} months: a claim attaches automatically for
+{{ horizon.days }} days after the entry — {{ horizon.epochs }} × the published
+{{ horizon.L_days }}-day accounting period — and after that the same claim is
+still available, but goes through the published adjudication process instead.
+Nothing expires; the automatic path hardens, because an entry that stays
+automatically claimable forever is a prize sitting on someone else's account
+security. Both numbers come from
+<a href="{{ repo_blob }}rule/params.py">the published parameter set</a> and the
+validator's parameters, and this page computes the figure from them rather than
+stating it.{% if horizon.provisional %} Both are marked provisional there and
+can still change while they are.{% endif %}</p>
+</details>
+
+<p class="provenance">Maintainers: the merge comment that carries this
+invitation is
+<a href="{{ root }}claim/merge-comment/">a checked-in template</a>, not
+something to improvise per pull request.</p>
+
+</div>
+{% endblock %}

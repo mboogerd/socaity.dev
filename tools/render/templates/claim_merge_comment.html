@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}The merge comment{% endblock %}
+{% block main %}
+{% set root = '../' * depth %}
+<style>
+.claim pre { background: #f4f3f1; border: 1px solid var(--rule); padding: 0.8rem 0.9rem;
+             overflow-x: auto; font-size: 0.85rem; line-height: 1.55; margin: 0.8rem 0;
+             white-space: pre-wrap; }
+</style>
+<div class="claim">
+
+<h1>The merge comment</h1>
+
+<p><strong>No token. Nothing to trade. This is a database.</strong> When a
+contribution is accepted, the maintainer posts one comment. It carries the
+invitation to <a href="{{ root }}claim/">claim the entry</a>, and it is checked
+into the repository rather than written fresh each time — the copy is the part
+of this path most likely to go wrong, so it is reviewed once, in public, like
+any other artifact.</p>
+
+<p>The file below is shown exactly as it is stored. It is published here so
+that a contributor who receives that comment can read the instructions the
+maintainer was working from, including the ones about what may never be added
+to it.</p>
+
+<pre>{{ merge_comment }}</pre>
+
+<p class="provenance">Rendered verbatim from
+<a href="{{ repo_blob }}{{ merge_comment_source }}"><code>{{ merge_comment_source }}</code></a>
+in the repository. Changing the words is a change to that file, in its own pull
+request, under the same wordlist gate as every other published surface.</p>
+
+</div>
+{% endblock %}
