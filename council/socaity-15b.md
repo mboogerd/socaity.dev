@@ -34,3 +34,27 @@ PROPOSAL (owner). **(a) Shadow index outside, nodes on trigger, provenance says 
 ### Facilitator
 Standing proposal: DA's materialization triggers + observation/claim boundary + gate-and-facets, structured under AE's two-axis frame (receptivity gates incl. hard consent tiers; specifiability ranks and doubles as the t46 context-pack feasibility vector; calibration loop), under PE's storage discipline (two stores, one-way seam, ingested_from pin, render-by-reference, append-only refresh). All paramount sets compatible; DA's gate signals slot into AE's specifiability axis; DA's paramount 3 = AE's paramount 1.
 Round 2 = pro-forma: each role confirms the merged package (DA: two-axis frame + render-by-reference subsume your gate/facets without loss; AE: DA's executed-build gate + facet list as the specifiability instantiation; PE: nothing new).
+
+## Round 2
+
+### [data-analyst]
+CONSENT — the two-axis frame subsumes my proposal without loss; receptivity carries my consent paramount structurally; the snapshot-annotation boundary is where I wanted actionability to live anyway.
+
+### [agent-engineer]
+CONSENT — the executed-build gate + non-summed facets is the correct specifiability instantiation (falsifiable, maps 1:1 onto t46 fields); PE's storage discipline keeps the consent tiers load-bearing since no computed number ever lands where sorting could turn it into a targeting affordance.
+
+### [platform-engineer]
+CONSENT — every boundary respected; nothing new.
+
+## Resolution
+
+ADOPTED by consent, Round 2 (covers socaity-15b AND socaity-3jq, consolidated).
+
+**The M2→M1 seam:**
+1. **Two stores, one-way:** the index is a versioned, checkpoint-hashed, recomputable-from-scratch dataset (never reads platform state); the platform graph materializes index entries only on trigger — user citation (external_ref), 3o2 maintainer consent, or curator spotlight (the M2 launch set: tens, not thousands). Never wholesale import.
+2. **Materialization mechanics:** normal solution node + external_ref + additive ingested_from {index_key, snapshot_hash, pipeline_run_id}; provenance = pipeline-as-agent on_behalf_of the acting human (never a synthetic crawler-actor); rendered as "imported fact", never an asserted-claim chip. Claims are contested; observations are re-crawled (disputes against observations target the methodology, not a dispute edge). Refresh: new snapshots → append-only re-pin records; old pins render stale via expires_at; drift visible, never silent. **Computed numbers (F, gap, actionability) are snapshot columns rendered by reference — never platform node fields or estimates.**
+3. **Agent-actionable = two axes, never one scalar:** **Receptivity gates** (hard consent tiers from 3o2: consented = targetable / not-yet-asked = facts visible, rendered "candidate for outreach", never a target / declined = no targeting affordance at all; plus responsiveness, external-merge activity, AI-PR-ban detection). **Specifiability ranks** (executed-build gate — pipeline actually ran the build in a clean container; tests run; license OSI-clear; tracker writable; fail → named failing check; unknown stays unknown) plus non-summed labeled facets (bucketed response time, CONTRIBUTING, CI recency, issue-hygiene share) each with method + crawl date + documented gaming vector. Specifiability = the t46 context-pack feasibility vector (each pack field maps to a checkable signal; fully actionable = one generation step from agent-ready). Actionability never enters F or m(v).
+4. **Identity seam:** index key in external_ref is the join key; deterministic matches auto-bind with one-click confirm; fuzzy propose-only (c1y); equivalence machinery node-to-node only; ingestion warns on collisions.
+5. **Calibration loop from day one:** log annotation state + outcome for every later-targeted node; precision at predicting merged-and-welcome PRs is the eval; non-predictive signals demoted.
+6. **Hard rails:** no auto-spawned work items; index demand never leaks into platform d(s); consent structurally impossible to outweigh — no sorting or list that puts a non-consenting project one click from targeting.
+M2 launch scope: dataset + static render + pinning + auto-bind + batch refresh. M3 adds materialize-on-consent.
