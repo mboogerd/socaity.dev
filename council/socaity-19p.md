@@ -60,3 +60,33 @@ AMENDMENTS settling (i), (ii), (iv). **(i) Confirmed:** V carries a category enu
 ### Facilitator
 Standing proposal fully integrated — every Round-2 amendment incorporates another role's stated condition; no conflicts detected: flat rate with category labels; ticket mechanics with founder-untouchable value path and budget-kissing audit; floor as uniform published formula (ticket-free below 0.5h, non-splittable artifacts); attestation scoped to correspondence-only arithmetic with contingency disclaimer, attester = named non-beneficiary with no accrual intent in attested epochs, warm-circle recruitment, statement published on the ledger page; grant-funder referent at ≤ median; vocabulary and tax constraints per legal Round 1.
 Round 3 = pro-forma closure (amendments landed in parallel): confirm final consent.
+
+## Round 3
+
+### [mechanism-designer]
+CONSENT — the package deletes every founder-tunable pricing parameter; CB's attestor path satisfies my stake verbatim; legal's correspondence-only wording keeps the attestation from becoming a value or solvency representation.
+
+### [community-builder]
+CONSENT — all three conditions satisfied; MD's attester condition and non-splittable-artifact rule strengthen the warm-circle path and the ceremonial first entry.
+
+### [legal-counsel]
+CONSENT — both conditions reflected; parallel additions raise no new characterization or wage-representation exposure. (Analysis, not legal advice.)
+
+## Resolution
+
+ADOPTED by consent, Round 3, no paramount objections standing.
+
+**Conversion schedule V, v1 (the M0 valuation rule):**
+1. **Flat rate: 1 attested hour = 1 vu, every contribution class.** Category enum (code/docs/design/outreach/ops) on entries for legibility and audit routing only — one rate row; adding a multiplier column requires the meta-rule (unopened epochs, 14-day comment, attestation re-check). No impact-based pricing pre-market.
+2. **Timed work:** public worklog (timestamped + corroborating trace), hard cap 40 vu/person/week, provisional under zjr.
+3. **Artifact work:** prospective tickets only — ticket opened before work, tier declared at opening (T1 ≤2 / T2 ≤8 / T3 ≤40 vu; bounds are epoch-fixed V content), challengeable under zjr. Accrual = max(0.5, min(attested_hours, budget)) — computed, never judged. Founder gates inclusion (binary merge/accept), never value.
+4. **Minimum-entry floor 0.5 vu**, ticket-free for trivial accepted contributions ("the ledger records participation before magnitude"); once per contributor per accepted artifact; artifacts non-splittable for floor purposes (splitting = misrepresented capacity under zjr); explicit uniform formula in V's versioned code, never discretion.
+5. **Founder rate:** V applied to founder hours, same table; benchmarked to a **grant-funder published referent (NLnet/NGI cost bases preferred; STF/Horizon acceptable), ≤ referent, at median** — source/version/date pinned in V's code; role-mapping published and challengeable.
+6. **Founder-conflict devices (cap REJECTED by two roles independently — breaks uniformity, forces false records or theater, creates Sybil laundering):**
+   - **Attestation gate:** EpochOpened(n) requires a signed public statement from ≥1 named non-beneficiary (no ledger position, no accrual intent in any attested epoch) certifying correspondence only: rates match the cited referent within tolerance; no multiplier column; tier table identical to the ≥14-day public draft. Attestation text carries the contingency disclaimer; never composes "1 vu = €X owed". First attestor recruited from the warm circle (2–4 weeks); OSS-sustainability figures as second attestor at M1–M2; never the NLnet reviewer. Statement published on the ledger page.
+   - **Concentration tripwire:** standing dashboard of per-contributor epoch share; exceeding X% auto-escalates the zjr audit to full-worklog review. Tier assignments join this audit surface: budget-kissing patterns (attested ≈ budget across entries) flag for review.
+   - **Size-scaled challenge windows**; founder entries challenge-eligible at a lower friction bar (anyone flags, founder answers publicly).
+7. **Vocabulary/legal rails:** V says "valuation of contribution," never pay/wage/compensation; no vrijwilligersregeling framing anywhere; no euro-denominated claims at accrual; entries stay contingent, non-transferable, defeasible until distribution (no present-day tax event — adviseur consult on genietingsmoment before first distribution; stichting-first noted re gebruikelijk loon).
+8. **Attestation evidentiary standard:** a neutral third party re-derives every vu figure from artifact + V alone; founder self-attestation ends the moment a second attester exists.
+
+Resolves socaity-bgl in substance: the founder rate rule is fixed (grant-funder referent, ≤ median, pinned in V); the remaining act — inserting the specific referent figure when the first NLnet budget is written — is grant-writer execution.
