@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }}{% endblock %}
+{% block main %}
+<article class="doc">
+{{ page.html|safe }}
+</article>
+<p class="provenance">This page is rendered from <a href="{{ page.source_url }}"><code>{{ page.source }}</code></a> in the repository. The Markdown file is the only copy; the page you are reading is a build product of it.</p>
+{% endblock %}

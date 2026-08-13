@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ surface.label }}{% endblock %}
+{% block main %}
+{% set root = '../' * depth %}
+<h1>{{ surface.label }} — not yet published</h1>
+<p>This surface is part of M0 and is not built yet. It is listed in the
+navigation, and this page exists, so that the gap is visible rather than a
+broken link. Nothing is being withheld: there is nothing here to show.</p>
+<p>What it will be: {{ surface.summary }}</p>
+<p>Where the work is tracked: <a href="{{ root }}roadmap/">the roadmap</a>, which is
+generated from the same repository files as this page.</p>
+{% endblock %}
