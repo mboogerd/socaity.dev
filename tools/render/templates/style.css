@@ -1,3 +1,147 @@
+/* socaity.dev design tokens and cascade layers — council/socaity-0hb.md
+   Resolution A (type) and B (colour), adopted by consent.
+
+   The layer order is declared once, here, before anything else. Later tickets
+   place their rules into these layers; a rule's file position stops mattering
+   and its layer decides. Order, weakest to strongest:
+
+     tokens    custom properties only, no declarations that paint
+     base      element defaults (html, body, headings, links, tables)
+     layout    the document grid: text column, rail, measure, breakpoints
+     objects   named components (chip, prov, figure, card, register, legend)
+     surfaces  per-page overrides (ledger, claim, manifesto, blog card)
+
+   This ticket introduces the names and paints nothing. The legacy block at the
+   bottom of this file is left OUTSIDE the layers on purpose: unlayered rules
+   beat every layer, so the site renders byte-for-byte as it did before, and
+   the per-template <style> blocks (also unlayered) keep the precedence they
+   have today. W1b moves both into `base`/`objects` in one step. */
+@layer tokens, base, layout, objects, surfaces;
+
+@layer tokens {
+  :root {
+    /* ---------------------------------------------------------------------
+       A. TYPE
+
+       The stack is tuned against its LAST resolvable entry, not its first.
+       Charter ships on macOS and in TeX distributions but is absent from a
+       default install of every mainstream Linux desktop; Sitka Text is
+       Windows-only and Iowan Old Style macOS-only. What actually rescues a
+       Linux reader — and a fork rendering in a slim container, which is the
+       harsher case — is Noto Serif / Liberation Serif at the tail, so those
+       are the faces the scale, the measure and the floor are sized against.
+       Liberation Serif is metrically Times-compatible: x-height ≈ 0.45em
+       against Charter's ≈ 0.48em and a narrower average advance. Both
+       decisions below follow from the tail, not from Charter:
+         · the 13.9px floor (--t-micro at root 17px = 13.94px) is where
+           Liberation Serif's x-height reaches ~6.3px, not where Charter's
+           does — Charter would have tolerated a smaller number;
+         · --measure 38rem ≈ 72ch is counted in the tail's narrower advance,
+           so the column is at or under 72 characters in every face in the
+           stack rather than only in the first one.
+       Every font-family declaration in this file ends in a generic family
+       (serif / sans-serif / monospace), so the tail is greppable and no
+       stack can dead-end on a face that may not exist. */
+
+    --font-text: Charter, "Bitstream Charter", "Sitka Text", "Iowan Old Style",
+                 Georgia, "Noto Serif", "Liberation Serif", serif;
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+               Arial, "Liberation Sans", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+                 "DejaVu Sans Mono", "Liberation Mono", monospace;
+
+    /* Root 17px, ratio 1.2, eight steps. px values are the computed size at
+       root 17px and are here so the 13.9px floor can be checked by eye.
+       DEPENDENCY: nothing in this file sets the root size — this ticket paints
+       nothing, so the document root is still the UA's 16px and --t-micro
+       currently computes to 13.12px, under the floor. The floor only holds
+       once W1b lands `html { font-size: 17px }` in the `base` layer. Until
+       then no rule consumes --t-micro, so nothing ships under the floor. */
+    --t-micro:   0.82rem; /* 13.94px — floor; nothing ships below this, legend
+                             and OG card included. provenance, chips,
+                             freshness, permalinks, derivations */
+    --t-body:    1rem;    /* 17.00px */
+    --t-lede:    1.2rem;  /* 20.40px — register line, ledes, denominators */
+    --t-h3:      1.44rem; /* 24.48px */
+    --t-h2:      1.73rem; /* 29.41px */
+    --t-h1:      2.07rem; /* 35.19px */
+    --t-h0:      2.49rem; /* 42.33px — the eighth rung. The resolution names
+                             seven and specifies eight steps at ratio 1.2;
+                             2.49 is the rung between --t-h1 and --t-display
+                             that keeps the ladder geometric. Unused at M0. */
+    --t-display: 2.99rem; /* 50.83px — exactly two uses on the whole site: the
+                             manifesto thesis and the concentration figure */
+
+    /* Line height falls with size: prose needs the leading, a display line
+       set at 50px does not. */
+    --lh-body:    1.65;
+    --lh-lede:    1.5;
+    --lh-heading: 1.2;
+    --lh-display: 1.08;
+
+    /* ≈72 characters in Liberation Serif — see the tail note above. */
+    --measure: 38rem;
+
+    /* 4px rhythm. Deliberately px, not rem: this is a pixel grid that hairline
+       rules and 1px borders have to land on, and it must not drift when the
+       root size changes. --s6 (24px) and --s7 (48px) are the block padding
+       below 768 and at/above 1024 respectively. */
+    --s1:  4px;
+    --s2:  8px;
+    --s3: 12px;
+    --s4: 16px;
+    --s5: 20px;
+    --s6: 24px;
+    --s7: 48px;
+    --s8: 64px;
+    --s9: 96px;
+
+    /* ---------------------------------------------------------------------
+       B. COLOUR — light
+
+       Warm ink on warm paper, one accent, tokens only. No hue anywhere in the
+       status system: chips render --ink (live: open, contested), --ink-2
+       (resolved: confirmed, settled), --ink-3 (inert: withdrawn, reserved),
+       and contested is the DARKEST chip, never --ink-3. --flag-contested and
+       --flag-settled are reserved exclusively for genuine defects (stale
+       estimates, CI drift) and are not part of the status vocabulary.
+
+       Every ratio below was MEASURED from these hex values with the WCAG 2.x
+       relative-luminance formula, not copied. Values are printed to two
+       decimals; each matches the ratio the resolution stated, so no value
+       needed correcting. The ground is --paper #FBFAF7 unless named. */
+
+    --paper:      #FBFAF7; /* ground */
+    --paper-sunk: #F1EFE9; /*  1.10:1 vs --paper — a surface, never text */
+    --ink:        #171512; /* 17.46:1 on --paper · 15.85:1 on --paper-sunk */
+    --ink-2:      #4A463F; /*  8.99:1 on --paper ·  8.16:1 on --paper-sunk */
+    --ink-3:      #6E6A61; /*  5.16:1 on --paper ·  4.69:1 on --paper-sunk —
+                                text floor; still ≥4.5:1 on the sunk surface */
+    --rule:       #D8D4CA; /*  1.42:1 — decorative hairlines ONLY. Anything
+                                below 3:1 may not carry meaning; a border that
+                                means something takes --rule-strong. */
+    --rule-strong:#8C8579; /*  3.50:1 on --paper ·  3.18:1 on --paper-sunk —
+                                both clear the 3:1 non-text floor */
+    --accent:     #10457A; /*  9.34:1 on --paper ·  8.36:1 on --accent-wash */
+    --accent-wash:#E9EEF5; /*  1.12:1 vs --paper; --ink on it is 15.63:1,
+                                --ink-2 8.05:1, --ink-3 4.62:1 — the tightest
+                                AA pairing in the palette, 0.12 of headroom.
+                                --rule-strong on it is 3.13:1, 0.13 over the
+                                3:1 non-text floor. Neither may be re-toned
+                                without re-measuring against this surface.
+                                One emphasis surface per page, maximum. */
+    --flag-contested: #8A4B00; /*  6.52:1 — defects only, NOT the chip state */
+    --flag-settled:   #1E5A2E; /*  7.87:1 — defects only, NOT the chip state */
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Everything below this line is the pre-existing stylesheet, unchanged and
+   unlayered. It still wins the cascade, which is why this commit renders
+   identically; W1b consolidates it (and the per-template <style> blocks) into
+   the layers above. Note that its :root re-declares --ink and --rule with the
+   old values — that shadowing is the mechanism keeping this a no-op.
+   --------------------------------------------------------------------------- */
 /* One column, document aesthetic. No color-only status: every chip has a text
    label and a distinct border style, so it survives greyscale and color blindness. */
 :root { --ink: #1a1a1a; --muted: #575757; --rule: #cfcfcf; --bg: #fdfdfc; }
@@ -5,6 +149,24 @@ body { max-width: 44rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; background: 
        color: var(--ink); font: 1rem/1.6 Georgia, "Times New Roman", serif; }
 header nav, footer { font-family: system-ui, sans-serif; font-size: 0.9rem; }
 header { border-bottom: 1px solid var(--rule); padding-bottom: 0.5rem; margin-bottom: 2rem; }
+/* Wider viewports get the standard's breathing room (V1); the measure itself
+   stays put, because a 44rem column is already 70-ish characters. */
+@media (min-width: 60rem) { body { padding: 3rem 1rem 5rem; } h2 { margin-top: 3rem; } }
+.skip { position: absolute; left: -9999px; }
+.skip:focus { position: static; display: inline-block; margin-bottom: 1rem; }
+.sitenav { list-style: none; padding: 0; margin: 0; }
+.sitenav li { display: inline; }
+.sitenav li::after { content: " · "; color: var(--muted); }
+.sitenav li:last-child::after { content: ""; }
+/* Not color-only: the entry carries the words "(not yet published)" beside it. */
+.unpublished { color: var(--muted); text-decoration-style: dotted; }
+.doc > * + * { margin-top: 1rem; }
+.doc h2 { margin-top: 3.2rem; }
+.doc h3 { margin: 2.4rem 0 0.3rem; }
+.doc blockquote { border-left: 3px solid var(--rule); margin: 1.6rem 0; padding: 0.2rem 0 0.2rem 1.2rem; }
+.doc hr { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0; }
+.doc li { margin-bottom: 0.5rem; }
+.doc table { margin: 1.6rem 0; }
 footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding-top: 1rem; color: var(--muted); }
 h1 { font-size: 1.6rem; line-height: 1.3; }
 h2 { font-size: 1.15rem; margin-top: 2rem; }
