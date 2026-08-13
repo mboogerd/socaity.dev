@@ -61,3 +61,30 @@ CONSENT, with one wording precision treated as clarification. Refusals check: (1
 Standing proposal (amended through Round 2): legal's 10 clauses + MD's six mechanisms, with — non-bypass scoped to contributor distributions; no-third-party-rights clause; "prospectively" defined as not-yet-opened epochs; rule-as-code authoritative over prose; export = ledger + rule-code, at all times; formula structure final at M0, parameter amendments version-tagged via a meta-rule itself published at M0; LS's revised canonical paragraph (consistent with legal's required substitution — fixity attaches to confirmed weight); clause 10 as pipeline-gate + briefing card + correction protocol.
 Round 3 = closure: (1) legal answers LS's correction-practice question and confirms the revised canonical paragraph; (2) MD and LS confirm consent over the fully merged package.
 Open objections: none standing.
+
+## Round 3
+
+### [legal-counsel]
+(1) Correction practice — yes, material mitigation: characterization is substance-over-course-of-conduct; a stray quote is weakest against a published operative text, consistent lexicon, and a documented correction habit. Not zero risk: a *pattern* of misspeak-then-correct on the same trap becomes evidence itself — the correction log doubles as an internal tripwire (same trap twice → rebrief). Clause 10 as pipeline-binding + briefing card + correction duty is the correct drafting. (2) Revised canonical paragraph passes: no present-tense entitlement; amount non-existent until declaration; fixity attaches to confirmed weight and published rule only. Drafting note (not a condition): operative register says "can't be rewritten except through the published validation and challenge process"; plain register may keep the punchier word. FINAL: CONSENT, paramount list unchanged — licensed NL counsel reviews the full document (commitment + Validation Policy annex + identity terms, one instrument) before anything publishes.
+
+### [mechanism-designer]
+CONSENT. Checked the non-bypass carve-out against selective reallocation: safe, because clause 8 + uniformity covenant already govern the compensation channel. Precedence note for counsel (clarification, not condition): where the carve-out and clause 8 could conflict — a payment to anyone holding ledger entries — clause 8 controls; contracted compensation to ledger participants must be declared and arm's-length, so the carve-out can never be the quiet channel. All six mechanisms survive the merge as amended. No paramount objection.
+
+### [launch-strategist]
+CONSENT. Canonical paragraph stands as the single verbatim phrasing (ceiling for all future copy); clause 10 as three layers; merged lexicon binding all owned surfaces. Subject-to items now satisfied by legal's Round-3 answers.
+
+## Resolution
+
+ADOPTED by consent, Round 3, no paramount objections standing.
+
+**The M0 Standing Commitment instrument** — one document, licensed-NL-counsel-reviewed before publication, comprising the Standing Commitment (10 clauses), the Ledger Validation Policy annex (socaity-zjr), and the identity terms (socaity-7mk):
+
+- **Framing:** "we make no promise that money will ever be distributed; we bind ourselves publicly to the allocation rule if it ever is." Retroactive-grant register throughout; ledger entries are records of fact, not instruments; no debt/deposit/e-money/token/security/claim; non-transferable, non-purchasable.
+- **The binding half:** allocation rule + correlated-identity discounting published at M0 **as versioned executable code, authoritative over prose**; formula structure final for every epoch opened under it; parameter amendments version-tagged, applying only to **not-yet-opened epochs**, via a meta-rule itself published at M0. Confirmed weights never reduced except through validation/challenge.
+- **The discretionary half:** whether/when/size of distributions at sole discretion until declared; upon declaration, payable per the rule; challenged entries escrowed at declared weight.
+- **Non-bypass, scoped:** any discretionary distribution to contributors flows exclusively through the published rule; ordinary operating expenditure, contracted compensation, and grant-mandated spending are not distributions — with the precedence note that clause 8 (founder/insider compensation declared, arm's-length, same rules) controls wherever the carve-out could touch ledger participants.
+- **No-third-party-rights clause:** no derdenbeding (art. 6:253 BW), no cause of action; transparency and forkability (ledger + rule-code exportable at all times) are the sole enforcement.
+- **Track record:** every inflow from M0 (grants explicitly) is ledgered and distributed or explicitly ledger-reserved under the rule — stated as the rule operating, not goodwill.
+- **Two-register publication:** operative text + plain-language canonical paragraph (adopted verbatim, LS Round-2 version with legal's operative-register variant), the ceiling for all future copy. Clause 10 vocabulary standard (merged banned/required lists; "equity-like upside" never in public copy; "fixed/locked" only ever modifies rule, epoch parameters, or confirmed weight) enforced as: CI banned-wordlist gate on owned surfaces + founder briefing card (five trap answers) + public correction protocol with a correction log as tripwire.
+
+Follow-ups: engage licensed NL counsel on the full instrument (new task); socaity-h2c (mitigant lock) is satisfied by this resolution: earned-not-bought, non-transferable, discretionary-until-declared are now structural.
