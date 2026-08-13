@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "socaity",
+  "project_id": "f971124f-a4d9-436d-b298-02acc62ac00c"
+}
