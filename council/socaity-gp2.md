@@ -31,3 +31,21 @@ CONSENT to any resolution incorporating the application-first sequencing and the
 
 ### Facilitator
 Full convergence in Round 1 — both roles independently reached: apply/sign NLnet as natural person now; stichting as the bridge entity (BV refused by both, for tax-structure and funder-optics reasons respectively); BV only as the M5 service subsidiary; incorporate at award/entity-requiring-trigger; novation as the fallback. Trigger phrasings are compatible (award notification precedes MoU signature). Round 2 = pro-forma cross-confirmation.
+
+## Round 2
+
+### [legal-counsel]
+CONSENT — GW's facts strengthen rather than modify; reconciled trigger preserves both paramounts.
+
+### [grant-writer]
+CONSENT — the uitkeringsverbod gate and never-sign-STF-as-person rule don't touch the application calendar; sequencing paramount holds.
+
+## Resolution
+
+ADOPTED by consent, Round 2 (covers socaity-gp2 AND socaity-vwy, consolidated).
+
+**Entity staging and grant signature:**
+1. **Submit socaity-4we (NLnet) now, founder as natural person** — the application never waits on incorporation; NLnet contracts individuals; legal identity settles at MoU stage months later. Proceeds ledgered under the published rule from euro one.
+2. **Bridge entity = a Dutch stichting** (BV refused as bridge: sole-founder BV triggers DGA gebruikelijk-loon — a deemed present-day tax event violating the 19p posture and a de-facto special founder channel violating 1ux uniformity; a BV also reads as "startup keeping options open" to public-benefit funders). Stichting properties relied on: no shares → no deemed-salary regime; preferred counterparty for STF/foundations; ANBI-compatible statutes (no ANBI application yet); one-person bestuur at incorporation with statutory commitment to ≥3 board members before ANBI or first above-de-minimis distribution; forward-compatible with the M5 Blender-pattern split (stichting on top; the BV arrives later as the service subsidiary — the reverse order is the expensive path).
+3. **Incorporation trigger:** NLnet award notification OR the start of any entity-requiring application (STF/STA contractual conversation, foundation application), whichever first; backstop: before any second grant contract. If the notary is slower than NLnet's MoU: sign personally, novate later (NLnet-routine).
+4. **Hard gates:** never sign an entity-requiring contract as a natural person; **no distribution from the stichting to the founder before licensed NL counsel clears the uitkeringsverbod (art. 2:285(3) BW) compensation structure and the statutes** — ledger-rule payments papered as compensation for work performed, never profit distribution (Blender precedent). This gate joins the socaity-7kv counsel-engagement scope.
