@@ -35,8 +35,8 @@ All findings, research questions, and decisions live in beads. Labels:
   - `research`: an open question needing investigation.
   - `decision`: a choice between alternatives that must be settled.
   - `task`: concrete work, ready once its dependencies close.
-- `consensus` — cooperative issue resolved by council; resolution recorded
-  in comments before closing.
+- `consent` — cooperative issue resolved by council under the consent
+  rule; resolution recorded in comments before closing.
 - `escalated` — council could not converge; a trade-off report for the
   founder exists in the comments. Only the founder closes these.
 
@@ -59,14 +59,19 @@ same questions, and merging duplicates is part of the job.
    can resolve alone (`role:` only) and things needing other expertise
    (`needs:` labels). It resolves what it can immediately.
 2. **Council** — `/council <issue-id>` convenes every role named on a
-   cooperative issue. Each role speaks from its charter (and knowledge layer
-   when depth is needed); perspectives are recorded as `bd comment` entries
-   under a `[role-name]` prefix, so the deliberation is public and auditable
-   — the glass house applies to the platform's own construction.
-3. **Convergence** — up to three rounds. Consensus → record the resolution
-   as a final comment, label `consensus`, close. No consensus → label
-   `escalated` and write a comment with the options, each option's
-   supporters, and the trade-offs; the founder decides.
+   cooperative issue. Each role runs as its own subagent with fresh
+   context; the deliberation lives in one chat file per issue
+   (`council/<issue-id>.md`, committed to git — the glass house applies
+   to the platform's own construction). Rounds are turn-based: every
+   role reads the current conversation and appends at most one message;
+   then the next round begins on the new version.
+3. **Convergence — consent, not consensus** (deep democracy): a proposal
+   is adopted when no role holds a remaining *paramount* objection —
+   preferences yield, objections must be integrated or withdrawn, never
+   outvoted. Adopted → resolution recorded as a final comment, label
+   `consent`, close. A paramount objection that survives deliberation →
+   label `escalated` and a comment with the options, each option's
+   backers and objectors, and the trade-offs; the founder decides.
 4. **Recursion** — resolutions typically spawn new, more concrete issues.
    Repeat until the open set is only `task` issues: that is the signal that
    development of the initial product can start.
