@@ -24,6 +24,9 @@ genesis_prologue            the fixed prologue order is enforced mechanically
 epoch_sequence              epochs open/close in order, one at a time
 epoch_attestation           epoch.opened(e>=1) requires a matching rule.attested
 attestation_uniqueness      one rule.attested per (rule_version, epoch)
+placeholder_free_params     rule.version_published / epoch.opened(e>=1) refuse a
+                            placeholder parameter set (socaity-x8o §7,
+                            socaity-mxu); inert unless a params_resolver is given
 checkpoint                  signed by the genesis checkpoint key; head/count/prev exact
 week_ref_staleness          week_ref within window S of the checkpoint-bounded position
 self_acceptance             ticket.accepted actor lineage != payload.contributor lineage
@@ -113,7 +116,13 @@ class Ledger:
     all pass, folds the event into state and returns its event_id.
     """
 
-    def __init__(self, V=None):
+    def __init__(self, V=None, params_resolver=None):
+        # socaity-mxu (additive): `params_resolver` maps a params_hash to the
+        # parameter set it commits to, when the replayer holds the published
+        # artifact.  It is the hook the `placeholder_free_params` predicate
+        # needs, because the chain itself carries hashes only.  Left None, the
+        # predicate is inert and nothing about v1 behaviour changes.
+        self.params_resolver = params_resolver
         self.V = dict(DEFAULT_V if V is None else V)
         self.V.setdefault("enums", catalog.ZERO_ENUMS)
         self.head = GENESIS_PREV
@@ -136,6 +145,11 @@ class Ledger:
         self.open_tickets = {}          # ticket_id -> ticket.opened event_id
         self.open_specs = {}            # spec_hash -> ticket_id
         self.escrows = {}               # acceptance event_id -> escrow record
+        # --- socaity-mxu (additive): what the distribution rule reads back ---
+        self.rule_params = {}           # rule_version -> params_hash
+        self.epoch_rule_version = {}    # epoch -> rule_version_hash it opened under
+        self.epoch_checkpoint = {}      # epoch -> checkpoint_hash it closed at
+        self.entry_epoch = {}           # accrual observation id -> epoch (clamped)
 
     # -- lineage resolution (socaity-a8o) ---------------------------------
     def lineage_of(self, key):
@@ -375,6 +389,11 @@ class Ledger:
             if p["epoch"] >= 1 and (p["rule_version_hash"], p["epoch"]) not in self.attestations:
                 raise ValidationError("epoch_attestation",
                                       "no rule.attested for (rule_version, epoch %s)" % p["epoch"])
+            if p["epoch"] >= 1:
+                self._placeholder_free_params(p["rule_version_hash"])
+
+        elif etype == "rule.version_published":
+            self._placeholder_free_params(p["rule_version"], p["params_hash"])
 
         elif etype == "epoch.closed":
             if self.epoch_open is None or p["epoch"] != self.epoch_open:
@@ -498,6 +517,39 @@ class Ledger:
         elif etype in ("challenge.filed", "audit.review_opened"):
             ref("target_event_id")
 
+    def _placeholder_free_params(self, rule_version, params_hash=None):
+        """socaity-x8o §7 / socaity-mxu: a placeholder V may never be published
+        and may never open an epoch.
+
+        The chain carries hashes only, so this predicate can only fire for a
+        replayer that actually holds the artifact behind the hash -- that is
+        what `params_resolver` supplies.  Without one it is inert: an
+        append-time check that cannot see the parameters cannot judge them,
+        and pretending otherwise would be theatre.  The publication path
+        (`rule.publish.publish`) applies the same gate on the way in, so the
+        two together cover both the writer and every verifier who fetched the
+        artifact.
+        """
+        if self.params_resolver is None:
+            return
+        if params_hash is None:
+            params_hash = self.rule_params.get(rule_version)
+            if params_hash is None:
+                raise ValidationError(
+                    "placeholder_free_params",
+                    "rule_version %s was never published on this chain"
+                    % rule_version[:12])
+        params = self.params_resolver(params_hash)
+        if params is None:
+            return                        # artifact not held; nothing to judge
+        if params.get("status") != "final" or params.get("placeholders"):
+            raise ValidationError(
+                "placeholder_free_params",
+                "parameter set %s is a placeholder set (status=%r, "
+                "placeholders=%s): socaity-wna must fix the values first"
+                % (params_hash[:12], params.get("status"),
+                   params.get("placeholders")))
+
     def _fresh_key(self, key, lin):
         """No cross-lineage key reuse (socaity-a8o); merges only via adjudication."""
         if key in self.lineage and self.lineage_of(key) != lin:
@@ -551,14 +603,33 @@ class Ledger:
         elif etype == "rule.meta_published" and self.stage == 2:
             self.stage = 3
 
+        if etype == "rule.version_published":
+            self.rule_params[p["rule_version"]] = p["params_hash"]
+
+        if etype in catalog.ACCRUAL_TYPES:
+            # socaity-x8o §1, the epoch-assignment clamp.  Placement is the
+            # epoch open at this chain position -- never a declared timestamp,
+            # so an entry appended after epoch.closed(e) cannot land in e.
+            # Before the first open: epoch 0.  In a gap: the epoch that opens
+            # next.  Recorded here so replay and the rule agree by
+            # construction rather than by two implementations of one rule.
+            if self.epoch_open is not None:
+                self.entry_epoch[eid] = self.epoch_open
+            elif self.last_epoch_closed is None:
+                self.entry_epoch[eid] = 0
+            else:
+                self.entry_epoch[eid] = self.last_epoch_closed + 1
+
         if etype == "epoch.opened":
             self.epoch_open = p["epoch"]
+            self.epoch_rule_version[p["epoch"]] = p["rule_version_hash"]
             if self.stage == 3 and p["epoch"] == 0:
                 self.stage = 4
             elif self.stage == 6:
                 self.stage = 7
         elif etype == "epoch.closed":
             self.last_epoch_closed = p["epoch"]
+            self.epoch_checkpoint[p["epoch"]] = p["checkpoint_hash"]
             self.epoch_open = None
             if self.stage == 4:
                 self.stage = 5

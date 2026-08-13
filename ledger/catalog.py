@@ -36,7 +36,11 @@ ZERO_ENUMS = {
                 "evidence_unresolvable", "duplicate"],
     "challenge_outcome": ["upheld", "dismissed"],
     "review_outcome": ["clean", "finding"],
-    "status": ["confirmed", "discounted", "withdrawn"],
+    # socaity-zjr's lifecycle starts at `provisional`; it is listed here
+    # (socaity-mxu, additive) so a confirmation event can name the state it
+    # came from.  The rule treats an accrual observation with no
+    # entry.status_changed as provisional, i.e. outside every denominator.
+    "status": ["provisional", "confirmed", "discounted", "withdrawn"],
 }
 
 # type -> (class, required fields, optional fields)

@@ -1,0 +1,112 @@
+name: forkability
+
+# socaity-x8o §6: "forkability CI from public artifacts only, in a clean
+# container, green before the first distribution and running on golden vectors
+# before real data."
+#
+# The job proves the claim a stranger has to be able to check for themselves:
+# take nothing but the published artifacts, replay them on a machine that has
+# never seen this repository's working tree, and get the same bytes.
+#
+# Deliberately: no pip install, no network beyond the clone, no cache, and the
+# replay runs from a FRESH `git clone` in a scratch directory -- never from the
+# checked-out tree, which could carry uncommitted state that a forker will not
+# have.
+
+on:
+  pull_request:
+    paths: ['rule/**', 'ledger/**', '.github/workflows/forkability.yml']
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  forkability:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # "any CPython >= 3.10" is the published compatibility claim
+        # (socaity-x8o, platform-engineer §1); it is tested, not asserted.
+        python-version: ['3.10', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Prove there is nothing to install
+        run: |
+          python3 -c "import sys; print(sys.version)"
+          test ! -f rule/requirements.txt
+          test ! -f rule/setup.py
+          test ! -f rule/pyproject.toml
+
+      - name: Clone the public artifacts into a clean directory
+        run: |
+          git clone --quiet "$GITHUB_WORKSPACE" /tmp/fork
+          cd /tmp/fork && git log -1 --format='forked at %H'
+
+      - name: No floats on the mechanism path
+        working-directory: /tmp/fork
+        run: python3 -m rule.lint_no_float rule/
+
+      - name: Replay the golden vectors from the clone
+        working-directory: /tmp/fork
+        run: python3 -m rule.forkability
+
+      - name: Replay again under different hash seeds (no order dependence)
+        working-directory: /tmp/fork
+        run: |
+          for seed in 0 1 7 4242; do
+            PYTHONHASHSEED=$seed python3 -m rule.forkability > "/tmp/out.$seed"
+          done
+          for seed in 1 7 4242; do
+            diff -u /tmp/out.0 "/tmp/out.$seed"
+          done
+          echo "identical output under 4 hash seeds"
+
+      - name: Byte-identity across two independent clones
+        run: |
+          git clone --quiet "$GITHUB_WORKSPACE" /tmp/fork2
+          cd /tmp/fork2 && python3 -m rule.forkability > /tmp/out.fork2
+          diff -u /tmp/out.0 /tmp/out.fork2
+          echo "two clones, one answer"
+
+      - name: The rule test suite
+        working-directory: /tmp/fork
+        run: python3 -m unittest discover rule -v
+
+      - name: The ledger test suite (the rule reads its schema)
+        working-directory: /tmp/fork
+        run: python3 -m unittest discover ledger
+
+      - name: Refuse to ship placeholder parameters unnoticed
+        working-directory: /tmp/fork
+        run: |
+          python3 - <<'PY'
+          import json
+          from rule.params import PLACEHOLDER_PARAMS, placeholder_free
+          from rule.publish import PublicationRefused, publish
+
+          artifact = json.load(open("rule/RULE_VERSION.json"))
+          params = artifact["rule_version_artifact"]["params"]
+          if placeholder_free(params):
+              # A placeholder-free committed artifact means socaity-wna landed.
+              # From that point the publication path must WORK, so check the
+              # opposite direction instead.
+              publish(params)
+              print("RULE_VERSION.json carries final parameters and publishes")
+          else:
+              try:
+                  publish(params)
+              except PublicationRefused as exc:
+                  print("placeholder gate holds:", exc)
+              else:
+                  raise SystemExit("placeholder parameters were publishable")
+          PY
