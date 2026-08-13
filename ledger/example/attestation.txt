@@ -1,0 +1,36 @@
+ATTESTATION ACCOMPANYING THE OPENING OF AN EPOCH
+socaity.dev — example artifact (ledger/example/seed.py)
+
+This statement is the artifact behind the statement_hash carried by the
+rule.attested event that precedes epoch.opened(1) in the example chain. It is
+an example instance of the attestation gate adopted in socaity-19p: an epoch
+may not open until the person signing the record has said, in public and in
+their own name, the four things below.
+
+I attest, as the person who signs the events in this record:
+
+1. The conversion schedule V that this epoch opens under was published before
+   any observation it prices was recorded. Its exact bytes are committed, and
+   the hash of the parameter set is on the record ahead of every entry it
+   values.
+
+2. The same table applies to my hours and to everyone else's. It prices one
+   contributor-hour as one valuation unit, in every category, for every
+   contributor, including me. There is no founder column, no multiplier, and
+   no discretionary adjustment available to me at entry time. My own rate is
+   therefore at or below the referent this schedule is pinned to, because it
+   is the only rate the schedule has.
+
+3. I have no interest that a change to V would advance and no one else's does
+   not. I am not a beneficiary of the rate I set beyond being one of the
+   people it prices, and I gain nothing from this schedule that a later
+   contributor recording the same hours does not gain identically.
+
+4. When I find an error in my own entries — and I will — I will correct it
+   through the public challenge machinery on the record, not by quietly
+   amending anything. Nothing on this record is edited; corrections are new
+   events with their own signatures.
+
+An epoch weight is not money and confers no right to any. Whether anything is
+ever distributed against this record is discretionary and remains so; this
+statement binds how the record is kept, not what anyone receives.

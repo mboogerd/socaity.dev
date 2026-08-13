@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}Ledger{% endblock %}
+{# socaity-xuz rail 7: the card is the disclosure, authored by us — the worst
+   fact, stated first, in the same figures the page computes. It carries the
+   example-chain label too, because a shared card is the one surface that
+   travels without the page around it (V12). Nothing here is hand-written. #}
+{% block head %}
+<meta name="description" content="{{ view.og.description }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ view.og.title }}">
+<meta property="og:description" content="{{ view.og.description }}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ view.og.title }}">
+<meta name="twitter:description" content="{{ view.og.description }}">
+{% endblock %}
+{% block main %}
+{% set root = '../' * depth %}
+<style>
+/* Scoped to this surface. The shared stylesheet is not edited by a generator;
+   these rules add only what the ledger's own objects need (V1 spacing, chips
+   the table reuses, and the two exhibits). Nothing here is color-only. */
+.ledger-block { border: 1px solid var(--rule); padding: 1.2rem 1.2rem 1.4rem; margin: 2rem 0; }
+.ledger-fixture { font-family: system-ui, sans-serif; font-size: 0.95rem; border: 1px solid var(--rule); padding: 0.8rem 1rem; }
+.ledger-register { font-family: system-ui, sans-serif; font-size: 1.05rem; border-left: 3px solid var(--ink); padding-left: 0.9rem; }
+.ledger-headline { font-size: 1.05rem; }
+.ledger-figure { font-size: 1.9rem; line-height: 1.2; margin: 0.2rem 0; font-family: system-ui, sans-serif; }
+.ledger-because { font-size: 1.15rem; font-family: system-ui, sans-serif; margin: 0 0 0.6rem; }
+.ledger-scroll { overflow-x: auto; }
+.ledger-scroll > table { min-width: 33rem; }
+.ledger-entry td { vertical-align: top; }
+.ledger-derivation { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted); }
+.ledger-empty { border: 2px dashed var(--ink); padding: 1rem 1.2rem; margin: 1rem 0; }
+.ledger-timeline { list-style: none; padding-left: 0; border-left: 2px solid var(--rule); margin-left: 0.4rem; }
+.ledger-timeline li { padding: 0.35rem 0 0.35rem 1rem; }
+.ledger-calc label { display: inline-block; font-family: system-ui, sans-serif; font-size: 0.9rem; margin-right: 1rem; }
+.ledger-calc select { font: inherit; font-size: 0.95rem; padding: 0.2rem; }
+.ledger-out { font-family: system-ui, sans-serif; }
+.ledger-out strong { font-size: 1.25rem; }
+pre.ledger-cmd { overflow-x: auto; background: #f3f3f1; padding: 0.5rem 0.6rem; font-size: 0.8rem; }
+pre.ledger-statement { white-space: pre-wrap; font: 0.9rem/1.6 Georgia, "Times New Roman", serif; }
+</style>
+
+<h1>Ledger</h1>
+<p class="ledger-register">A public record of contributions. No token. Nothing to trade. This is a database.</p>
+
+<p class="ledger-fixture"><strong>This is an example chain, not the real record.</strong> The real record cannot be opened until the rule's parameter values are final, so every figure below is computed by the published rule over <a href="{{ view.chain.url }}"><code>{{ view.chain.path }}</code></a> — real arithmetic, example entries, and no number typed in by hand.</p>
+
+<section aria-labelledby="headline">
+<h2 id="headline">Who contributed what</h2>
+{% for epoch in view.closed_epochs %}
+<p class="ledger-headline">Founder share of epoch {{ epoch.index }}, which is <a href="#epoch-{{ epoch.index }}">closed and audited</a>: <strong>{{ epoch.founder_share }}</strong>. There is <a href="#concentration">{{ epoch.contributors }} contributor</a>. That contributor is the founder, and this record is <a href="#epoch-{{ epoch.index }}">his own hours, itemised</a> — {{ epoch.rows|length }} separate entries, never one lump.</p>
+{% endfor %}
+{% if view.open_epoch %}
+<p class="ledger-headline">Epoch {{ view.open_epoch.index }} is open, so it has no final share. <a href="#epoch-{{ view.open_epoch.index }}">If epoch {{ view.open_epoch.index }} closed on this record</a>, the founder share would be <strong>{{ view.open_epoch.founder_share }}</strong> — an upper bound, and it can only fall, because the numerator is fixed at entry and the denominator only grows.</p>
+{% endif %}
+<p>Every entry below is an individual observation with its own evidence digest, valued at <a href="#rule">the same flat rate that applies to anyone</a>: one contributor-hour is one valuation unit, in every category, for every contributor. The rate the founder's hours are priced at is that rate, because <a href="#attestation">it is the only rate the schedule has</a>. Nothing here is a currency, a balance or a stake: an epoch share is a fraction of a closed epoch, and amounts exist only if money is ever declared against the record, which it has not been.</p><!-- vocab-ok: the next block names the quoted objection ("pre-mine") in the objector's own words and answers it, per socaity-xuz -->
+
+<details id="premine">
+<!-- vocab-ok: the objection is named in the objector's own words and answered directly below, per socaity-xuz --><summary>Is this a pre-mine?</summary>
+<ol>
+<li><strong>There is nothing to trade.</strong> No unit here is transferable, and no transfer operation exists in <a href="{{ view.rule.url }}">the rule code</a> to be called. You cannot buy in, so there is nothing to buy in ahead of.</li>
+<li><strong>Nothing was allocated.</strong> Every entry is hours worked, logged against a rate table published before the entry was recorded, with an evidence digest attached. A grant is handed out; this is a timesheet.<!-- vocab-ok: contrast used to answer the quoted objection --></li>
+<li><strong>The founder's entries are the easiest ones on the record to attack</strong>, not the hardest: the same challenge affordance sits on every row, the rate is attested in public <a href="#attestation">before an epoch opens</a>, and a correction to the founder's own entries has to run through the same public challenge machinery — there is no quiet amendment path, because nothing on the record is edited.</li>
+<li><strong>Epochs are separate pools.</strong> {% if view.closed_epochs %}Epoch {{ view.closed_epochs[0].index }}'s {{ view.closed_epochs[0].founder_share }}{% else %}A closed epoch's founder share{% endif %} cannot touch any epoch you contribute to: an epoch's denominator is the sum of that epoch's own entries and nothing else. <a href="#your-epoch">Run the rule over epoch {{ view.exhibit.epoch }} and the founder share it returns is {{ view.exhibit.founder_share }}</a>.</li>
+<li><strong>What this page cannot prove yet:</strong> that the mechanism works with more than one participant. That is an open problem, and it is the point of <a href="#genesis">the last line on this page</a>.</li>
+</ol>
+</details>
+
+<details id="fixture">
+<summary>What is an example on this page, and what is real</summary>
+<p><strong>Real:</strong> the arithmetic. Every figure is produced at build time by <a href="{{ view.rule.url }}">rule/distribute.py</a>, <a href="{{ view.rule.valuation_url }}">rule/valuation.py</a> and <a href="{{ view.rule.params_url }}">rule/params.py</a>. Real too: the chain is replayed and every signature on it re-verified by <a href="{{ view.validator_url }}">the validator</a> each time this page is built, and the rule version, parameter-set and attestation digests it names are the digests of the files in this repository.</p>
+<p><strong>Example:</strong> the entries. <a href="{{ view.chain.url }}"><code>{{ view.chain.path }}</code></a> holds {{ view.chain.count }} events, head <code>{{ view.chain.head }}</code>, signed by an example key whose secret is printed in <a href="{{ view.chain.seed_url }}"><code>{{ view.chain.seed }}</code></a>. Its hours are example hours; its evidence digests are digests of the label strings in that script, not of merged work; its audit event is an example audit.</p>
+<p><strong>Why it exists:</strong> the rule refuses to open epoch 1 under a parameter set that still carries placeholders, and those values are not fixed yet. A page that hand-wrote its numbers in the meantime would be the one thing this page is for refusing. There is no external contributor on this chain because there is no external contributor. When the real chain opens, this page renders that one instead and nothing else about the page changes.</p>
+</details>
+</section>
+
+{% for epoch in view.epochs %}
+<section aria-labelledby="epoch-{{ epoch.index }}" id="epoch-{{ epoch.index }}">
+<h2>Epoch {{ epoch.index }} — {% if epoch.final %}closed and audited{% elif epoch.open %}open{% else %}closed, audit not completed{% endif %}</h2>
+<p class="muted">Denominator D<sub>{{ epoch.index }}</sub> = {{ epoch.denominator }} vu, the sum of every included entry in this epoch — computed by <a href="{{ view.rule.url }}"><code>rule/distribute.py</code></a>. Epoch weight P<sub>{{ epoch.index }}</sub> = {{ epoch.pie }}. Contributors: {{ epoch.contributors }}.</p>
+<div class="ledger-scroll"><table>
+<thead><tr><th scope="col">Entry</th><th scope="col">Contributor</th><th scope="col">What</th><th scope="col">Hours × rate</th><th scope="col">vu</th><th scope="col">{% if epoch.final %}Share of epoch {{ epoch.index }}{% else %}Status{% endif %}</th></tr></thead>
+<tbody>
+{% for row in epoch.rows %}
+<tr class="ledger-entry" id="{{ row.anchor }}">
+<td><a href="#{{ row.anchor }}" title="{{ row.id }}"><code>{{ row.short }}</code></a></td>
+<td><code>{{ row.contributor_short }}</code>{% if row.is_founder %} <span class="muted">founder</span>{% endif %}</td>
+<td>{{ row.words }} · {{ row.category }}<br><span class="ledger-derivation">week {{ row.week_ref }} · mode {{ row.mode }} · evidence <code>{{ row.evidence[0][:12] }}</code></span></td>
+<td>{{ row.hours }} h × {{ row.rate }} vu/h</td>
+<td>{{ row.vu }}</td>
+<td>{% if epoch.final %}{{ row.share }}{% else %}<span class="chip chip-open">{{ row.status }}</span>{% endif %}</td>
+</tr>
+<tr><td colspan="6">
+<span class="chip chip-{{ 'done' if row.status == 'confirmed' else 'open' }}">{{ row.status }}</span>
+<span class="chip chip-weight">{% if row.window_open %}challenge window open until epoch {{ epoch.index }} closes and its audit completes{% else %}challenge window closed at the epoch {{ epoch.index }} audit{% endif %} · {{ row.challenges }} challenges</span>
+{% if not epoch.final %}<span class="ledger-derivation">If epoch {{ epoch.index }} closed on this record: {{ row.share_if_closed }} of it — an upper bound, it can only fall.</span>{% endif %}
+<details><summary>Recompute this entry</summary>
+<pre class="ledger-cmd">python3 {{ view.chain.self }} entry {{ row.short }}</pre>
+<p class="ledger-derivation">{{ row.hours }} h × {{ row.rate }} vu per hour (from <a href="{{ view.rule.params_url }}">the published rate table</a>) = {{ row.vu }} vu; {{ row.vu }} ÷ {{ epoch.denominator }} vu (D<sub>{{ epoch.index }}</sub>, from <a href="{{ view.rule.url }}">the rule</a>) = {% if epoch.final %}{{ row.share }}{% else %}{{ row.share_if_closed }} if the epoch closed here{% endif %}. Full entry id <code>{{ row.id }}</code>; evidence digest <code>{{ row.evidence[0] }}</code>, which resolves to a label string in <a href="{{ view.chain.seed_url }}">the example chain's seed script</a> and not to merged work.</p>
+</details>
+<span class="ledger-derivation"><a href="{{ row.challenge_url }}">Challenge this entry</a> · <a href="#{{ row.anchor }}">permalink</a></span>
+</td></tr>
+{% endfor %}
+</tbody>
+</table></div>
+{% if epoch.open %}
+<p class="muted">This epoch is open. Its share figures are not final and are never shown beside a closed epoch's: the entries above carry their status, and the "if it closed here" figure sits on its own line under each row.</p>
+{% endif %}
+</section>
+{% endfor %}
+
+<section class="ledger-block" id="concentration" aria-labelledby="concentration-h">
+<h2 id="concentration-h">Concentration</h2>
+<p class="muted">Figures below are the published rule run over <a href="{{ view.chain.url }}">the example chain</a>, not the real record, which has not opened.</p>
+<p class="ledger-because">Contributors on this record: <strong>{{ view.contributors }}</strong>.</p>
+{% for epoch in view.closed_epochs %}
+<p class="ledger-figure">Epoch {{ epoch.index }}: {{ epoch.founder_share }} founder</p>
+<p class="muted">because the denominator D<sub>{{ epoch.index }}</sub> = {{ epoch.denominator }} vu is made of {{ epoch.rows|length }} entries and all of them are his. <a href="#epoch-{{ epoch.index }}">Every one of them is listed above</a> with its hours, its rate and its evidence digest.</p>
+{% endfor %}
+
+<h3>Tripwire</h3>
+{% if view.tripwire.escalated %}
+<p><strong>State: escalated.</strong> The tripwire adopted in socaity-19p escalates entries once the founder share of an epoch rises above a published threshold. No threshold value is published in <a href="{{ view.rule.params_url }}">the parameter set</a> yet — and the founder share is {{ view.tripwire.share }} of the epoch, which is above any threshold a value could be set to. So the state is escalated by construction, and it stays escalated until the number falls, which requires somebody else's entry.</p>
+{% else %}
+<p><strong>State: not determinable.</strong> The tripwire adopted in socaity-19p escalates entries once the founder share of an epoch rises above a published threshold. No threshold value is published in <a href="{{ view.rule.params_url }}">the parameter set</a> yet, and the founder share{% if view.tripwire.share %} — {{ view.tripwire.share }} —{% endif %} is no longer the whole epoch, so this page cannot say which side of an unpublished threshold it falls on. It says so rather than guessing.</p>
+{% endif %}
+
+<h3 id="your-epoch">Your epoch</h3>
+<p class="ledger-figure">Epoch {{ view.exhibit.epoch }}: {{ view.exhibit.founder_share }} founder</p>
+<p class="muted">Computed by the published rule over <a href="{{ view.chain.url }}">the example chain</a>; the real record has not opened.</p>
+<p>Epoch {{ view.exhibit.epoch }} has not opened. Founder hours recorded in it: {{ view.exhibit.founder_vu }} vu. Epochs are separate pools — an epoch's denominator sums that epoch's entries and no others — so a hypothetical entry run through <a href="{{ view.rule.url }}">the published rule</a> in epoch {{ view.exhibit.epoch }} returns a founder share of {{ view.exhibit.founder_share }}. {% if view.closed_epochs %}Epoch {{ view.closed_epochs[0].index }}'s concentration{% else %}An earlier epoch's concentration{% endif %} is arithmetically incapable of reaching it. The founder's share of the epoch you contribute to starts at {{ view.exhibit.founder_share }} and rises only if he logs work in that epoch too, on the same rate table, with the same evidence bar.</p>
+<p class="ledger-derivation">Computed the same way as the calculator below: one hypothetical entry, the published rule, nothing recorded. Recompute: <code>python3 {{ view.chain.self }} your-epoch</code></p>
+</section>
+
+<section class="ledger-block" id="rule" aria-labelledby="rule-h">
+<h2 id="rule-h">The rule that converts a contribution into a share</h2>
+<p>One screen, whole. The conversion schedule V is a table keyed by category and native unit; a contributor does not declare a rate and cannot propose one.</p>
+<div class="ledger-scroll"><table>
+<thead><tr><th scope="col">Category</th><th scope="col">Native unit</th><th scope="col">Rate</th></tr></thead>
+<tbody>
+{% for rate in view.rate_card %}
+<tr><td>{{ rate.category }}</td><td>{{ rate.unit }}</td><td>{{ rate.rate }} vu per hour</td></tr>
+{% endfor %}
+</tbody>
+</table></div>
+<p>Then, for an epoch that has closed and been audited: the weight of an entry is its quantity times its rate; the denominator D<sub>e</sub> is the sum of the weights of every included entry of that epoch, counted the same way whichever mode was elected; the epoch share of an entry is its weight over D<sub>e</sub>, as an exact fraction. That is the whole conversion. It is <a href="{{ view.rule.url }}">{{ 'rule/distribute.py' }}</a>, <a href="{{ view.rule.valuation_url }}">rule/valuation.py</a> and <a href="{{ view.rule.params_url }}">rule/params.py</a>, published as code, pinned by hash on the record at <a href="#genesis">the event marked "the rule is published"</a>: rule version <code>{{ view.rule.version }}</code>, parameter set <code>{{ view.rule.params_hash }}</code>, both resolvable in <a href="{{ view.rule.artifact_url }}">rule/RULE_VERSION.json</a>.</p>
+<p>An epoch weight is not money and confers no right to any. There is no transfer operation in the code, in either mode, and there is no per-unit price. Whether an amount is ever declared against this record is discretionary and remains so.</p>
+<p class="muted">The parameter values above are the development placeholder set. That is why the real record has not opened: the rule refuses to open epoch 1 under a parameter set that still carries placeholders.</p>
+<h3>Recompute the whole page</h3>
+<pre class="ledger-cmd">git clone https://github.com/socaity/socaity.dev
+cd socaity.dev
+python3 {{ view.chain.self }}</pre>
+<p class="ledger-derivation">That command prints every figure on this page. It is <a href="{{ view.chain.self_url }}">the same file</a> that renders the page, calling the same functions: there is one implementation, not a page and a copy of the page's arithmetic.</p>
+
+<h3 id="attestation">The attestation statement</h3>
+<p>The record carries a signed attestation before an epoch may open. It is reproduced whole; its digest <code>{{ view.attestation_hash[:12] }}</code> is the <code>statement_hash</code> on the <a href="#genesis">"the attestation statement is signed"</a> event.</p>
+<pre class="ledger-statement">{{ view.attestation }}</pre>
+<p class="ledger-derivation">Source: <a href="{{ view.attestation_url }}">{{ 'ledger/example/attestation.txt' }}</a>.</p>
+</section>
+
+<section class="ledger-block" id="calculator" aria-labelledby="calc-h">
+<h2 id="calc-h">What would a contribution of mine be worth?</h2>
+<p>Two inputs, because the rule takes two: a category and a number of hours. There is no rate field — the rate is published, not declared. There is no mode field — accepted contributions are recorded in the epoch-share mode as a published constant. There is no epoch field — an entry's epoch is its position on the record, not a choice.</p>
+<div class="ledger-calc">
+<label for="calc-category">Category
+<select id="calc-category">
+{% for category in view.calc.categories %}
+<option value="{{ category }}"{% if category == view.calc.default.category %} selected{% endif %}>{{ category }}</option>
+{% endfor %}
+</select></label>
+<label for="calc-hours">Hours
+<select id="calc-hours">
+{% for hour in view.calc.hours %}
+<option value="{{ hour.micro }}"{% if hour.micro == view.calc.default.hours_micro %} selected{% endif %}>{{ hour.text }}</option>
+{% endfor %}
+</select></label>
+</div>
+<p class="ledger-out" id="calc-out" data-default-key="{{ view.calc.default.key }}">
+<strong id="calc-vu">{{ view.calc.default.vu }} vu</strong><br>
+<span id="calc-share">If epoch {{ view.calc.epoch }} closed on this record: {{ view.calc.default.share }} of it</span><br>
+<span class="ledger-derivation" id="calc-derivation">{{ view.calc.default.hours }} h × {{ view.calc.default.rate }} vu per hour; denominator D<sub>{{ view.calc.epoch }}</sub> would be {{ view.calc.default.denominator }} vu</span>
+</p>
+<p>The vu figure is final at entry: it is fixed by the hours and the published rate, and nothing later changes it. The percentage is an upper bound, quoted only as "if epoch {{ view.calc.epoch }} closed on this record" — the numerator is fixed and the denominator only grows, so the only direction it can move is down. That is the honest version of the answer, and it is the reason the next line of this record is worth writing: <a href="{{ root }}claim/">entry two does not exist yet</a>.</p>
+<p class="ledger-derivation">How this works, exactly: the page is static, so there is no rule engine running in your browser and this page does not contain a second implementation of the rule. All {{ view.calc.cells }} combinations below were computed when the page was built, by calling <a href="{{ view.rule.url }}">rule/distribute.py</a> and <a href="{{ view.rule.valuation_url }}">rule/valuation.py</a> — once per combination, over the chain, with one hypothetical entry appended and the epoch flipped to closed. The script on the page does a table lookup and no arithmetic. Recompute any cell yourself: <code>python3 {{ view.chain.self }} hypothetical {{ view.calc.default.category }} {{ view.calc.default.hours }}</code></p>
+<details>
+<summary>Every precomputed combination ({{ view.calc.cells }})</summary>
+<div class="ledger-scroll"><table>
+<thead><tr><th scope="col">Category</th><th scope="col">Hours</th><th scope="col">Rate</th><th scope="col">vu</th><th scope="col">D<sub>{{ view.calc.epoch }}</sub> would be</th><th scope="col">If epoch {{ view.calc.epoch }} closed on this record</th></tr></thead>
+<tbody>
+{% for cell in view.calc.rows %}
+<tr><td>{{ cell.category }}</td><td>{{ cell.hours }}</td><td>{{ cell.rate }} vu/h</td><td>{{ cell.vu }}</td><td>{{ cell.denominator }} vu</td><td>{{ cell.share }}</td></tr>
+{% endfor %}
+</tbody>
+</table></div>
+</details>
+<script id="calc-grid" type="application/json">{{ view.calc.grid_json|safe }}</script>
+<script>
+(function () {
+  var grid = JSON.parse(document.getElementById("calc-grid").textContent);
+  var category = document.getElementById("calc-category");
+  var hours = document.getElementById("calc-hours");
+  var epoch = "{{ view.calc.epoch }}";
+  function show() {
+    var cell = grid[category.value + "|" + hours.value];
+    if (!cell) { return; }
+    document.getElementById("calc-vu").textContent = cell.vu + " vu";
+    document.getElementById("calc-share").textContent =
+      "If epoch " + epoch + " closed on this record: " + cell.share + " of it";
+    document.getElementById("calc-derivation").textContent =
+      hours.options[hours.selectedIndex].text + " h × " + cell.rate +
+      " vu per hour; denominator D" + epoch + " would be " + cell.denominator + " vu";
+  }
+  category.addEventListener("change", show);
+  hours.addEventListener("change", show);
+  show();
+})();
+</script>
+</section>
+
+<section id="genesis" aria-labelledby="genesis-h">
+<h2 id="genesis-h">How the record was opened</h2>
+<p>The validator refuses an external entry before this sequence is complete, in this order. That is not a courtesy; it is the reason the founder went first — the rule and the rate table had to be published, and the founder's own position itemised and closed, before anybody else's entry could be admitted at all.</p>
+<ol class="ledger-timeline">
+{% for step in view.timeline %}
+<li>{{ step.words }}{% if step.detail %} <span class="muted">— {{ step.detail }}</span>{% endif %} <code class="ledger-derivation">{{ step.short }}</code></li>
+{% endfor %}
+</ol>
+<div class="ledger-empty">
+<p><strong>This entry is unwritten.</strong></p>
+<p>The first external entry does not exist yet, and the concentration figure above stays where it is until someone else does priced, evidenced work. Same rate table, same evidence bar, same challenge exposure as every founder row above.</p>
+<p><a href="{{ root }}claim/">Claim the first external entry →</a></p>
+</div>
+</section>
+{% endblock %}
