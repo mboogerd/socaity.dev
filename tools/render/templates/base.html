@@ -4,14 +4,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}{% endblock %} · socaity needs graph</title>
+<title>{% block title %}{% endblock %} · socaity</title>
 <link rel="stylesheet" href="{{ root }}style.css">
+{% block head %}{% endblock %}
 </head>
 <body>
+<a class="skip" href="#content">Skip to content</a>
 <header>
-<nav aria-label="Site"><a href="{{ root }}roadmap/">Roadmap</a> · <a href="{{ root }}all/">All nodes</a> · <a href="{{ root }}graph.json">graph.json</a></nav>
+<nav aria-label="Site"><ul class="sitenav">
+{% for item in nav %}
+<li>{% if item.published %}<a href="{{ (root ~ item.href) or './' }}">{{ item.label }}</a>{% else %}<a href="{{ (root ~ item.href) or './' }}" class="unpublished">{{ item.label }}</a> <span class="muted">(not yet published)</span>{% endif %}</li>
+{% endfor %}
+<li><a href="{{ root }}graph.json">graph.json</a></li>
+</ul></nav>
 </header>
-<main>
+<main id="content">
 {% block main %}{% endblock %}
 </main>
 <footer>

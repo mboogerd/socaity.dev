@@ -1,0 +1,168 @@
+name: weekly-digest
+
+# council/socaity-ue3: the weekly ledger digest is a machine-labeled post type
+# on the blog, and each digest opens exactly one GitHub Discussions thread
+# linking home. This workflow is the whole cadence: generate, gate, commit,
+# announce. Nobody edits the post between those steps.
+#
+# The wordlist gate runs BEFORE the commit on purpose. The digest quotes commit
+# subjects, which are written outside the vocabulary standard's scope; if one of
+# them carries a banned phrase, the right outcome is a failed job and a human
+# decision, not a published surface that broke the standard. A review-required
+# phrase stops the job too: tools/blog/digest.py does not write its own waiver,
+# so the job stays red until a person adds a line to
+# doc/standards/quoted-subject-waivers.txt in a commit.
+#
+# WHY THIS WORKFLOW DEPLOYS PAGES ITSELF. graph-check.yml publishes the site on
+# `push` to main, and that is exactly what this job cannot rely on: "events
+# triggered by the GITHUB_TOKEN will not create a new workflow run" -- the push
+# below is made with GITHUB_TOKEN, so graph-check never runs for it and the
+# digest would sit committed and unpublished until some human pushed something
+# else. https://docs.github.com/en/actions/how-tos/write-workflows/
+# choose-when-workflows-run/trigger-a-workflow
+#
+# So the cadence publishes itself, from the same site/ tree tools/check.sh just
+# proved byte-reproducible, through the same `pages` concurrency group
+# graph-check uses so the two can never race. If graph-check ever grows a
+# `workflow_dispatch:` trigger, replace the two jobs below with one dispatch
+# call -- that is the smaller shape, and it is only unavailable today.
+
+on:
+  schedule:
+    # Monday 06:00 UTC, summarising the ISO week that just closed.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      week:
+        description: 'ISO week to summarise, e.g. 2026-W33 (default: last week)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  discussions: write
+
+concurrency:
+  group: weekly-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.commit.outputs.published }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The digest is computed from history: a shallow clone would produce
+          # a shorter week, silently.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Pick the week
+        id: week
+        run: |
+          WEEK="${{ inputs.week }}"
+          if [ -z "$WEEK" ]; then WEEK="$(date -u -d 'last week' +%G-W%V)"; fi
+          echo "week=$WEEK" >> "$GITHUB_OUTPUT"
+          echo "summarising $WEEK"
+
+      - name: Write the digest post
+        run: python3 tools/blog/digest.py --root . --week '${{ steps.week.outputs.week }}'
+
+      - name: Render the site with the new post in it
+        run: |
+          pip install --quiet -r tools/requirements.txt
+          python3 tools/render/render.py --root . --out site
+
+      - name: The vocabulary standard applies to machine-written posts too
+        run: python3 tools/gates/vocab_gate.py --root . --site site --require-site
+
+      - name: Prove the render is still reproducible
+        run: tools/check.sh
+
+      - name: Commit the post
+        id: commit
+        env:
+          WEEK: ${{ steps.week.outputs.week }}
+        run: |
+          git config user.name 'socaity digest'
+          git config user.email 'digest@socaity.dev'
+          git add "blog/posts/${WEEK}-ledger-digest.md"
+          if git diff --cached --quiet; then
+            echo "nothing new to publish"
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "blog: weekly digest ${WEEK} (generated)"
+          # A merge can land between checkout and here; rebasing keeps the
+          # digest's own commit rather than failing the whole cadence on a race.
+          git pull --rebase
+          git push
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+      - name: Open the one discussion thread for this digest
+        if: steps.commit.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 tools/blog/announce_digest.py --root . \
+            --week '${{ steps.week.outputs.week }}' --category Announcements
+
+      - name: Record the thread so the site can link it
+        if: steps.commit.outputs.published == 'true'
+        run: |
+          git add blog/discussions.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "blog: discussion thread for ${{ steps.week.outputs.week }}"
+          git pull --rebase
+          git push
+
+      # Rendered again, after the thread is recorded: the register links each
+      # digest to its discussion, and blog/discussions.json only exists in its
+      # final state once the announce step has run. This is the tree that ships.
+      - name: Render the tree that will be published
+        if: steps.commit.outputs.published == 'true'
+        run: tools/check.sh
+
+      - name: Package the site as the Pages artifact
+        if: steps.commit.outputs.published == 'true' && !github.event.repository.fork
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/
+
+  # Same shape and the same reasoning as graph-check.yml's deploy job: the
+  # elevated Pages permissions live in a job that checks out no code and runs
+  # none of the repository's own scripts.
+  deploy:
+    needs: digest
+    if: needs.digest.outputs.published == 'true' && !github.event.repository.fork
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+      actions: read
+      # contents is deliberately absent: this job checks out nothing.
+
+    # The same group graph-check.yml uses, so a merge deploying the site and the
+    # digest deploying the site queue behind each other instead of racing.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Read the Pages configuration
+        uses: actions/configure-pages@v6
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

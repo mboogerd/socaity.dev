@@ -1,0 +1,38 @@
+# Waivers for review-required words inside commit subjects the weekly digest
+# quotes verbatim (tools/blog/digest.py).
+#
+# WHY THIS FILE EXISTS
+#
+# The weekly digest reproduces every commit subject of the week. Commit messages
+# are outside the vocabulary standard's scope (§0), but the digest is not: it is
+# a published surface, and a word that reaches it is published whoever typed it.
+#
+# doc/standards/vocabulary-and-visual.md §1.6 gives review-required words a
+# waiver path, and §0 says the reason has to be written, not assumed. The digest
+# generator therefore does NOT write these waivers itself. It stops, names the
+# commit and the pattern, and waits for a person to add a line here in a commit.
+# A generator that granted itself waivers would leave no human anywhere on a
+# path that generates, gates, commits, pushes and announces on a cron -- the
+# review tier would exist everywhere except the one surface nobody reads first.
+#
+# The cost is real and deliberate: an unwaived subject fails the weekly job and
+# the digest is late until someone acts. That is what a review tier is for, and
+# socaity-ue3 already commits us to announcing a skip rather than papering over
+# one. The output itself is never edited to fix this; the fix is this file.
+#
+# FORMAT
+#
+#   <full 40-hex commit sha> | <exact pattern from banned-words.txt> | <reason>
+#
+# Blank lines and lines starting with `#` are ignored. The sha must be the full
+# one: an entry is pinned to a single commit and can never excuse a future one,
+# so nothing here can quietly become a standing exemption. The reason is
+# reproduced verbatim in the digest's `vocab-ok` comment, so write it for a
+# stranger reading the gate output, and say which of §1.5's grounds it rests on.
+
+# `socaity-uun: anti-crypto vocabulary and visual standard` -- the word names
+# this repository's own standard for refusing that vocabulary, in the subject
+# of the commit that added the standard. It is quoted history attributed to a
+# sha, never our own description of the project (§1.5), and redacting it would
+# mean the register of commits could not name the commit that banned the word.
+18de189b0f06941f91dea86b7a26630d0144cd9a | \bcrypto\b | quoted from the commit subject that added the anti-crypto standard itself; named as history attributed to a commit, never as our own description

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Blog{% endblock %}
+{% block main %}
+<h1>Blog</h1>
+<p>Every post below is a file in this repository, added by a commit. There is
+no editor and no draft store: a post exists once its Markdown file is merged,
+and the words you are reading are a build product of that file. The
+<em>History</em> column links each post's own commit log, so a post edited
+after publication shows the edit rather than hiding it.</p>
+
+<h2>The register</h2>
+{% if posts %}
+<table>
+<caption class="muted">Newest first. One row per published post.</caption>
+<thead>
+<tr><th scope="col">Published</th><th scope="col">Kind</th><th scope="col">Post</th><th scope="col">File</th></tr>
+</thead>
+<tbody>
+{% for post in posts %}
+<tr>
+<td>{{ post.date }}</td>
+<td>{{ post.kind_label }}{% if post.machine %}<br><span class="muted">written by a program</span>{% endif %}</td>
+<td><a href="{{ post.slug }}/">{{ post.title }}</a><br><span class="muted">{{ post.summary }}</span>
+{% if threads.get(post.slug) %}<br><a href="{{ threads.get(post.slug) }}">Discussion thread</a>{% endif %}
+</td>
+<td><a href="{{ post.source_url }}"><code>{{ post.source }}</code></a><br><a href="{{ post.history_url }}">History</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% else %}
+<p>No posts are published yet. This register is empty, and it says so rather
+than showing an example row.</p>
+{% endif %}
+
+<h2>Kinds of post</h2>
+<dl class="legend">
+{% for kind in kinds %}
+<dt>{{ kind.label }}</dt><dd>{{ kind.meaning }}</dd>
+{% endfor %}
+</dl>
+
+<h2>Follow this without an account</h2>
+<p><a href="{{ feed_url }}">RSS feed</a> — the whole archive, in a reader you
+control. There is no mailing list, because a mailing list is a copy of your
+address that we would then have to hold.</p>
+{% endblock %}
