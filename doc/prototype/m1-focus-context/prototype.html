@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M1 focus+context prototype — needs graph (socaity-8wg)</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#ffffff; --ink:#16191d; --muted:#5d6672; --line:#dfe3e8;
+    --accent:#2f5fd0; --accent-soft:#eaf0fd; --problem:#7a4bd0; --solution:#0f7a5a;
+    --warn:#a8600b; --warn-soft:#fdf2e2; --dead:#9aa3ae; --danger:#b0343a;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header{background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+  header .repo{font-weight:600}
+  header .stats{color:var(--muted);font-size:13px}
+  header .spacer{flex:1}
+  .who{font-size:13px;color:var(--muted)}
+  .who input{font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:6px;width:150px}
+  button{font:inherit;cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:5px 10px;color:var(--ink)}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{opacity:.9;color:#fff}
+  button.link{border:none;background:none;padding:0;color:var(--accent);text-decoration:underline}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;padding:16px;align-items:start;max-width:1400px;margin:0 auto}
+  @media (max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+  .crumbs{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+  .crumbs button.link{font-size:13px}
+  .chip{display:inline-block;font-size:11.5px;line-height:1.6;padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:#fbfcfd;color:var(--muted);white-space:nowrap}
+  .chip.problem{color:var(--problem);border-color:#e0d4f6;background:#f7f2ff}
+  .chip.solution{color:var(--solution);border-color:#cfe8de;background:#f0faf6}
+  .chip.favored{color:#0f7a5a;border-color:#cfe8de;background:#f0faf6}
+  .chip.contested{color:#a8600b;border-color:#f0dcbc;background:var(--warn-soft)}
+  .chip.longshot{color:#5d6672;border-color:var(--line);background:#f4f5f7}
+  .chip.speculative{color:#8a919b;border-color:var(--line);background:#fafbfc}
+  .chip.unweighted{color:#8a919b;border-color:#e6e8eb;background:#fff;font-style:italic}
+  .chip.disputed{color:var(--danger);border-color:#f0cdcf;background:#fdf2f3}
+  .chip.withdrawn{color:var(--dead);border-color:var(--line);background:#f4f5f7}
+  .chip.agent{color:#2f5fd0;border-color:#d3e0f8;background:var(--accent-soft)}
+  .chip.stale{color:var(--warn);border-color:#f0dcbc;background:var(--warn-soft)}
+  .chip.orphaned{color:var(--danger);border-color:#f0cdcf;background:#fdf2f3}
+  h1{font-size:20px;margin:6px 0 8px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+  .body{color:#333b45;margin:8px 0 10px}
+  .meta{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+  ul.rows{list-style:none;margin:0;padding:0}
+  ul.rows li{border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:8px;background:#fff}
+  ul.rows li.dim{background:#f4f5f7;color:var(--dead);border-style:dashed}
+  ul.rows li.dim .row-title{color:var(--dead);text-decoration:line-through}
+  .row-title{font-weight:550;color:var(--ink);text-align:left;background:none;border:none;padding:0;cursor:pointer;font-size:15px}
+  .row-title:hover{color:var(--accent);text-decoration:underline}
+  .row-actions{margin-top:6px;display:flex;gap:8px;flex-wrap:wrap}
+  .row-actions button{font-size:12px;padding:3px 8px}
+  .rationale{font-size:12.5px;color:var(--muted);margin-top:4px;font-style:italic}
+  .side .card{position:sticky;top:60px}
+  .log{max-height:340px;overflow:auto;font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .log div{border-bottom:1px solid var(--line);padding:5px 0}
+  .log .op{color:var(--accent)}
+  .empty{color:var(--muted);font-size:13px;font-style:italic}
+  .note{font-size:12.5px;color:var(--muted);background:#fbfcfd;border:1px dashed var(--line);border-radius:8px;padding:8px 10px;margin-top:8px}
+  .search{padding:5px 8px;border:1px solid var(--line);border-radius:7px;font:inherit;width:230px}
+  dialog{border:1px solid var(--line);border-radius:var(--radius);padding:16px;max-width:520px;width:92%}
+  dialog::backdrop{background:rgba(20,24,30,.35)}
+  dialog h3{margin:0 0 8px;font-size:16px}
+  dialog label{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
+  dialog input,dialog textarea,dialog select{width:100%;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:7px}
+  dialog .actions{margin-top:12px;display:flex;gap:8px;justify-content:flex-end}
+  details.tasks summary{cursor:pointer;font-size:13px;color:var(--muted)}
+  details.tasks ol{margin:8px 0 0 18px;padding:0;font-size:14px}
+  .all-nodes{columns:2;column-gap:16px;font-size:13px}
+  .all-nodes button.link{font-size:13px;text-align:left}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <span class="repo">vectorlite/vectorlite</span>
+  <span class="stats" id="stats"></span>
+  <input class="search" id="search" placeholder="Search nodes…" list="nodelist" autocomplete="off">
+  <datalist id="nodelist"></datalist>
+  <span class="spacer"></span>
+  <span class="who">you are <input id="actor" value="participant"> <span class="chip">human</span></span>
+  <button id="btn-all">All nodes</button>
+  <button id="btn-reset">Reset</button>
+</header>
+
+<div class="layout">
+  <main>
+    <div class="card">
+      <details class="tasks">
+        <summary>Session tasks (facilitator)</summary>
+        <ol>
+          <li>Find what is blocking <em>“Harden the existing single-node engine”</em> — name everything that has to be true first.</li>
+          <li>Dispute one edge you think is wrong, and say why.</li>
+          <li>Add one need that you think is missing.</li>
+        </ol>
+      </details>
+    </div>
+
+    <div id="focus-area"></div>
+    <div id="all-area" class="card hidden">
+      <h2>All nodes in this graph (this is the view focus+context replaces)</h2>
+      <div class="all-nodes" id="all-list"></div>
+    </div>
+  </main>
+
+  <aside class="side">
+    <div class="card">
+      <h2>History (append-only)</h2>
+      <div class="log" id="log"></div>
+      <div class="row-actions"><button id="btn-copy">Copy session log</button></div>
+      <div class="note">Nothing here is ever deleted. Every write is stamped with who asserted it and when.</div>
+    </div>
+  </aside>
+</div>
+
+<dialog id="dlg">
+  <form method="dialog" id="dlg-form">
+    <h3 id="dlg-title"></h3>
+    <div id="dlg-fields"></div>
+    <div class="actions">
+      <button value="cancel">Cancel</button>
+      <button class="primary" value="ok" id="dlg-ok">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+/* ------------------------------------------------------------------
+   M1 focus+context prototype — socaity-8wg
+   Schema shape follows council/socaity-sbb.md resolution:
+     nodes: {id:n-…, slug, type:problem|solution, title, body, status,
+             external_ref, provenance, estimates[]}
+     edges: first-class records stored inline on the SOURCE node,
+            {id:e-…, from, to, to_slug, type:refines|requires|equivalent_to,
+             status:asserted|disputed|settled, rationale?, provenance,
+             estimates[] (branch_probability lives on the refines edge)}
+     provenance: {actor_id, actor_kind, on_behalf_of?, model?, prompt_hash?,
+                  run_id?, asserted_at, evidence[]}
+   Weight display follows council/socaity-6kb.md: four fixed-threshold
+   buckets, thresholds never rendered, raw scalar never user-facing,
+   provenance + freshness chip always, stale -> "unweighted".
+------------------------------------------------------------------ */
+
+/* deterministic id generator so ids are stable across reloads */
+let _seed = 20260813;
+function rnd(){ _seed = (_seed * 1103515245 + 12345) & 0x7fffffff; return _seed / 0x7fffffff; }
+const B32 = "abcdefghijklmnopqrstuvwxyz234567";
+function mkid(prefix){ let s=""; for(let i=0;i<26;i++) s += B32[Math.floor(rnd()*32)]; return prefix + "-" + s; }
+
+const NOW = new Date("2026-08-13T09:00:00Z");
+function days(n){ return new Date(NOW.getTime() + n*86400000).toISOString(); }
+function ago(iso){
+  const d = Math.round((NOW - new Date(iso)) / 86400000);
+  if (d < 1) return "today";
+  if (d < 30) return d + " days ago";
+  const m = Math.round(d/30); return m + " month" + (m>1?"s":"") + " ago";
+}
+
+const RUN = "run-2026-08-11-decomposer-07";
+function agentProv(daysAgo, evidence){
+  return {actor_id:"agent:decomposer", actor_kind:"agent", on_behalf_of:"human:maintainer-anna",
+          model:"decomposer-v3", prompt_hash:"sha256:9f21…c40a", run_id:RUN,
+          asserted_at:days(-daysAgo), evidence: evidence?[evidence]:[]};
+}
+function humanProv(actor, daysAgo, evidence){
+  return {actor_id:"human:"+actor, actor_kind:"human", asserted_at:days(-(daysAgo||0)),
+          evidence: evidence?[evidence]:[]};
+}
+
+/* ---------------- seed graph: ingested issues of a real-shaped repo ------- */
+/* P(key,title,body,ref,approaches[])  S(key,title,body,weight,effort,requires[]) */
+function P(key,title,body,ref,approaches){return{k:"problem",key,title,body,ref,children:approaches||[]}}
+function S(key,title,body,weight,effort,requires){return{k:"solution",key,title,body,weight,effort,children:requires||[]}}
+
+const SEED = P("prod-ready",
+  "Teams cannot run Vectorlite in production",
+  "Rolled up from 23 issues and 4 discussion threads tagged production, stability and ops. Every self-host report ends in one of: it got slow, it corrupted, or nobody could see why.",
+  "#601",
+[
+  S("harden","Harden the existing single-node engine",
+    "Keep the current architecture; fix latency, durability, observability and memory behaviour in place.",
+    0.62,[4,9],
+  [
+    P("latency","Query latency degrades past 5M vectors",
+      "p99 goes from 12ms to 900ms between 4M and 6M vectors on the same hardware. Reported independently by three users.","#412",
+    [
+      S("prune","Prune the HNSW graph on insert","Bound out-degree at insert time instead of letting the graph densify.",0.55,[3,6],[
+        P("bench","No benchmark suite for recall vs latency",
+          "Nobody can tell whether a change trades recall for speed. Blocks every index change, not just this one.","#502",[
+          S("annbench","Port the ann-benchmarks harness","Reuse the standard datasets and recall metric rather than inventing one.",0.72,[2,4],[]),
+          S("synth","Generate synthetic datasets in-repo","Ship a generator so CI can run without downloading 8GB.",0.21,[1,3],[])
+        ])
+      ]),
+      S("shard","Shard the index by tenant","Split one large index into per-tenant indexes and fan out queries.",0.44,[6,14],[
+        P("tenant","There is no tenant concept in the storage schema",
+          "Segments are global; nothing carries a tenant key.","#437",[
+          S("tenantkey","Add a tenant key to the segment header","Additive header field, old segments read as tenant 0.",0.66,[2,5],[]),
+          S("dirsplit","One directory per tenant on disk","No format change; the filesystem is the partition.",0.30,[1,3],[])
+        ])
+      ]),
+      S("lru","Cache hot centroids in an LRU","Keep the top level of the graph resident and let the rest page.",0.28,[2,4],[]),
+      S("gpu","Offload ANN search to the GPU","CUDA kernel for the distance loop.",0.09,[10,24],[])
+    ]),
+
+    P("corrupt","Index corruption after unclean shutdown",
+      "Kill -9 during a flush leaves a segment that fails to open. Six reports, no reproducer until #377 attached one.","#377",
+    [
+      S("wal","Write-ahead log for index mutations","Log the mutation before touching the segment; replay on open.",0.64,[5,11],[
+        P("fsync","Fsync cost dominates small-batch writes",
+          "A durable WAL makes the 1-vector insert path 40x slower unless commits are batched.","#519",[
+          S("groupcommit","Group commit with a 5ms window","Amortise fsync across concurrent writers.",0.70,[2,4],[]),
+          S("fsyncoff","Offer an explicit fsync=off durability tier","Let users opt out with eyes open.",0.35,[1,2],[])
+        ])
+      ]),
+      S("snapshot","Atomic snapshot and rename on flush","Write a new segment beside the old one and rename it into place.",0.42,[3,7],[
+        P("winrename","Windows has no atomic rename over an existing file",
+          "ReplaceFile has different semantics and fails while readers hold handles.","#488",[
+          S("winreplace","Use ReplaceFileW with a retry loop","Platform-specific path behind the storage trait.",0.58,[1,3],[]),
+          S("nowin","Drop supported-platform status for Windows","Document it as best-effort and stop testing it.",0.14,[0,1],[])
+        ])
+      ]),
+      S("rebuild","Rebuild the index from the source of truth on startup","Treat the index as a cache that can always be regenerated.",0.19,[2,5],[])
+    ]),
+
+    P("metrics","The query path emits no metrics",
+      "When a query is slow there is nothing to look at. Ops teams refuse to run it.","#291",
+    [
+      S("otel","Emit OpenTelemetry spans from the query planner","Spans per stage: parse, filter, ANN, rerank.",0.61,[2,5],[]),
+      S("promc","Prometheus counters at the C API boundary","Cheaper, coarser, no tracing dependency.",0.39,[1,3],[])
+    ]),
+
+    P("memory","Memory use is unpredictable under concurrent writes",
+      "RSS doubles under a 16-writer load and does not come back down. OOM kills in containers.","#455",
+    [
+      S("backpressure","Backpressure on the write queue","Bound the queue and make writers wait instead of buffering.",0.63,[2,5],[
+        P("sdkretry","Client SDKs do not surface retry semantics",
+          "If the server pushes back, the SDKs swallow it or fail the call outright.","#463",[
+          S("sdkretry-typed","Typed Busy error plus documented backoff","One error type across all four SDKs.",0.68,[2,4],[]),
+          S("sdkretry-auto","Automatic retry inside every SDK","Hide it from the caller entirely.",0.26,[3,6],[])
+        ])
+      ]),
+      S("arena","Arena allocator for insert batches","One arena per batch, freed wholesale.",0.41,[4,8],[]),
+      S("sizing","Publish a memory sizing formula","Do not change the code; document the shape of the curve.",0.16,[1,2],[])
+    ])
+  ]),
+
+  S("faiss","Rewrite the index layer on top of Faiss",
+    "Stop maintaining our own ANN implementation and wrap a battle-tested one.",
+    0.44,[8,18],
+  [
+    P("faissdep","Faiss is a 400MB build dependency",
+      "It breaks the single-binary install story that most users came for.","#544",[
+      S("vendor","Vendor a trimmed Faiss build","Compile only the index types we expose.",0.57,[3,7],[]),
+      S("dynlink","Link Faiss dynamically behind a feature flag","Default build stays pure; power users opt in.",0.43,[2,4],[])
+    ]),
+    P("migrate","There is no migration path for existing on-disk indexes",
+      "Every current user has segments in the old format and no way forward.","#547",[
+      S("converter","Ship an offline index converter","One command, run while stopped.",0.55,[3,6],[]),
+      S("dualread","Dual-read both formats for one release","Slower, but nobody has to schedule downtime.",0.45,[4,9],[])
+    ])
+  ]),
+
+  S("hosted","Ship a hosted service and deprecate self-hosting",
+    "Solve production-readiness by operating it ourselves instead of shipping ops burden to users.",
+    0.24,[12,30],
+  [
+    P("authz","The core has no auth or multi-tenancy",
+      "Anything network-exposed today trusts its caller completely.","#556",[
+      S("nsauth","Token-scoped namespaces in the core API","Auth becomes a first-class concept in the engine.",0.52,[5,10],[]),
+      S("sidecar","Put auth in a proxy sidecar","Engine stays dumb; the proxy owns identity.",0.48,[2,5],[])
+    ]),
+    P("promise","Self-host users would need a migration promise",
+      "Announcing a hosted service without one reads as a rug-pull to the people who built the community.","#559",[
+      S("ltssupport","Commit to a 3-year LTS of the self-host build","Slow, expensive, credible.",0.61,[2,4],[]),
+      S("donate","Donate the self-host build to a foundation","Hand it to people whose incentives do not conflict.",0.39,[3,8],[])
+    ])
+  ]),
+
+  S("diskann","Adopt a DiskANN-style on-disk index",
+    "Change the fundamental data structure so that memory stops being the binding constraint.",
+    0.11,[14,30],
+  [
+    P("pagelayout","The on-disk format has no page-aligned layout",
+      "Random reads touch 3 pages where they should touch 1.","#563",[
+      S("segredesign","Redesign the segment format","Page-aligned nodes, explicit padding.",0.60,[6,12],[]),
+      S("mmapper","Use mmap with a custom pager","Let the OS do it, hint aggressively.",0.40,[4,9],[])
+    ])
+  ])
+]);
+
+/* ---------------- flatten seed into schema-shaped records ---------------- */
+const nodes = {};      // id -> node
+const edges = {};      // id -> edge (also referenced inline on source node)
+const byKey = {};      // seed key -> id
+let history = [];
+
+function slugify(t){ return t.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"").slice(0,48); }
+
+function addNode(rec, parentId, weight, effort, depth){
+  const id = mkid("n");
+  byKey[rec.key] = id;
+  const n = {
+    schema:1, id, slug:slugify(rec.title), type:rec.k, title:rec.title, body:rec.body,
+    status:"open", external_ref: rec.ref ? "github:vectorlite/vectorlite" + rec.ref : null,
+    provenance: agentProv(2 + depth, "sha256:issue-" + (rec.ref||"seed").replace("#","")),
+    estimates: [], edges: []
+  };
+  nodes[id] = n;
+  if (parentId){
+    // every edge points child -> parent; stored inline on the SOURCE (child) node
+    const type = rec.k === "solution" ? "refines" : "requires";
+    const src = rec.k === "solution" ? id : parentId;   // requires: solution -> problem
+    const dst = rec.k === "solution" ? parentId : id;
+    const e = {
+      schema:1, id: mkid("e"), from: src, to: dst, to_slug: nodes[dst] ? nodes[dst].slug : slugify(rec.title),
+      type, status:"asserted", rationale:null, provenance: agentProv(2 + depth), estimates: []
+    };
+    if (type === "refines" && typeof weight === "number"){
+      // branch_probability lives on the refines edge it weights (sbb §estimates)
+      const stale = (rec.key === "lru" || rec.key === "sizing" || rec.key === "nowin");
+      e.estimates.push({
+        schema:1, id: mkid("est"), kind:"branch_probability", value: weight, unit:"probability",
+        provenance: agentProv(stale ? 190 : 2), expires_at: stale ? days(-70) : days(60)
+      });
+    }
+    edges[e.id] = e;
+    nodes[src].edges.push(e.id);
+  }
+  if (rec.k === "solution" && effort){
+    n.estimates.push({
+      schema:1, id: mkid("est"), kind:"effort", value:{low:effort[0], high:effort[1]}, unit:"person-weeks",
+      provenance: agentProv(3), expires_at: days(45)
+    });
+  }
+  (rec.children||[]).forEach(c => addNode(c, id, c.weight, c.effort, depth+1));
+  return id;
+}
+const ROOT = addNode(SEED, null, null, null, 0);
+
+/* a real ingestion produces near-duplicates; the decomposer proposes an
+   equivalence edge, a human confirms it (match-then-propose, sbb) */
+(function addDuplicate(){
+  const dupId = mkid("n");
+  nodes[dupId] = {
+    schema:1, id:dupId, slug:"add-prometheus-metrics-to-the-server",
+    type:"problem", title:"Add Prometheus metrics to the server",
+    body:"Filed separately from #291. Almost certainly the same need, phrased as a solution.",
+    status:"open", external_ref:"github:vectorlite/vectorlite#308",
+    provenance: agentProv(2, "sha256:issue-308"), estimates:[], edges:[]
+  };
+  // the duplicate is also required by "harden" so it is reachable in context
+  const req = {schema:1, id:mkid("e"), from:byKey["harden"], to:dupId, to_slug:nodes[dupId].slug,
+    type:"requires", status:"asserted", rationale:null, provenance: agentProv(2), estimates:[]};
+  edges[req.id]=req; nodes[byKey["harden"]].edges.push(req.id);
+  // equivalence points newer -> older
+  const eq = {schema:1, id:mkid("e"), from:dupId, to:byKey["metrics"], to_slug:nodes[byKey["metrics"]].slug,
+    type:"equivalent_to", status:"asserted",
+    rationale:"Same need as #291; #308 states a solution rather than the problem.",
+    provenance: agentProv(2), estimates:[]};
+  edges[eq.id]=eq; nodes[dupId].edges.push(eq.id);
+})();
+
+/* a shared requirement: the benchmark suite is needed by two rival approaches.
+   This is what makes "what happens when a branch loses" non-trivial — some
+   children are exclusive to the losing branch, some are shared. */
+(function addSharedRequirement(){
+  const e = {schema:1, id:mkid("e"), from:byKey["faiss"], to:byKey["bench"],
+    to_slug:nodes[byKey["bench"]].slug, type:"requires", status:"asserted",
+    rationale:"A rewrite cannot be justified without a recall/latency baseline either.",
+    provenance: agentProv(2), estimates:[]};
+  edges[e.id]=e; nodes[byKey["faiss"]].edges.push(e.id);
+})();
+
+/* one edge already carries a human dispute so the state is visible on arrival */
+(function preDispute(){
+  const e = Object.values(edges).find(x => x.type==="refines" && x.from === byKey["hosted"]);
+  e.status = "disputed";
+  e.dispute_rationale = "Hosting is a business model, not a fix for the reported failures.";
+  log("dispute", e.id, "asserted", "disputed", humanProv("maintainer-anna", 6));
+})();
+
+/* ---------------- derived helpers ---------------- */
+function resolve(id){                       // follow merge redirects (bounded)
+  let n = nodes[id], hops = 0;
+  while (n && n.status === "merged" && n.merged_into && hops++ < 8) n = nodes[n.merged_into];
+  return n;
+}
+function outEdges(id, type){ return nodes[id].edges.map(e=>edges[e]).filter(e=>!type||e.type===type); }
+function inEdges(id, type){ return Object.values(edges).filter(e=>e.to===id && (!type||e.type===type)); }
+function parentEdgeOf(id){                  // solution -> the problem it refines
+  return outEdges(id,"refines")[0] || null;
+}
+function requiredByEdges(id){ return inEdges(id,"requires"); }        // problem -> solutions needing it
+function approachEdges(id){ return inEdges(id,"refines"); }           // problem -> competing solutions
+function requiresEdges(id){ return outEdges(id,"requires"); }         // solution -> problems it needs
+function equivalenceEdges(id){ return outEdges(id,"equivalent_to").concat(inEdges(id,"equivalent_to")); }
+
+function branchEstimate(edge){
+  const list = (edge.estimates||[]).filter(e=>e.kind==="branch_probability" && e.status!=="withdrawn");
+  return list.length ? list[list.length-1] : null;
+}
+function effortEstimate(node){
+  const list = (node.estimates||[]).filter(e=>e.kind==="effort" && e.status!=="withdrawn");
+  return list.length ? list[list.length-1] : null;
+}
+/* 6kb: fixed thresholds, never rendered; scalar never user-facing */
+function bucket(est){
+  if (!est) return {label:"unweighted", cls:"unweighted", stale:false, rank:-1};
+  const stale = new Date(est.expires_at) < NOW;
+  if (stale) return {label:"unweighted", cls:"unweighted", stale:true, rank:-1, est};
+  const v = est.value;
+  const b = v>=0.6 ? ["favored","favored"] : v>=0.4 ? ["contested","contested"]
+          : v>=0.15 ? ["long shot","longshot"] : ["speculative","speculative"];
+  return {label:b[0], cls:b[1], stale:false, rank:v, est};
+}
+/* a solution is "live" while it has not been withdrawn */
+function isLive(id){ return nodes[id].status === "open" || nodes[id].status === "resolved"; }
+/* a problem is orphaned when no live solution requires it any more */
+function isOrphaned(id){
+  const req = requiredByEdges(id).filter(e => e.status !== "disputed");
+  if (!req.length) return false;
+  return !req.some(e => isLive(e.from));
+}
+
+/* ---------------- history ---------------- */
+function log(op, target, before, after, prov, note){
+  history.push({op, target, before, after, prov: prov || currentProv(), note, at: new Date()});
+  renderLog();
+}
+function currentProv(){
+  return {actor_id:"human:"+(document.getElementById("actor").value||"participant"),
+          actor_kind:"human", asserted_at:new Date().toISOString(), evidence:[]};
+}
+function renderLog(){
+  const el = document.getElementById("log");
+  if (!history.length){ el.innerHTML = '<div class="empty">No changes yet.</div>'; return; }
+  el.innerHTML = history.slice().reverse().map(h =>
+    '<div><span class="op">' + h.op + '</span> ' + esc(shortTarget(h.target)) +
+    (h.before ? ' <span style="color:#8a919b">' + esc(h.before) + ' → ' + esc(h.after) + '</span>' : '') +
+    '<br><span style="color:#5d6672">' + esc(h.prov.actor_id) + ' · ' +
+    new Date(h.prov.asserted_at).toLocaleTimeString() + '</span>' +
+    (h.note ? '<br><span style="color:#5d6672">' + esc(h.note) + '</span>' : '') +
+    '</div>').join("");
+}
+function shortTarget(id){
+  if (nodes[id]) return nodes[id].title;
+  if (edges[id]) return edges[id].type + " " + short(edges[id].from) + "→" + short(edges[id].to);
+  return id;
+}
+function short(id){ return nodes[id] ? nodes[id].title.slice(0,28) + (nodes[id].title.length>28?"…":"") : id; }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------------- rendering ---------------- */
+let focusId = ROOT;
+
+function provChip(p){
+  const who = p.actor_kind === "agent"
+    ? "decomposer, " + (p.run_id || "run") : p.actor_id.replace("human:","");
+  return '<span class="chip ' + (p.actor_kind==="agent"?"agent":"") + '">' +
+    (p.actor_kind==="agent" ? "estimated by " : "asserted by ") + esc(who) +
+    " · " + ago(p.asserted_at) + '</span>';
+}
+function weightChip(edge){
+  const est = branchEstimate(edge);
+  const b = bucket(est);
+  if (!est) return '<span class="chip unweighted">unweighted</span>';
+  return '<span class="chip ' + b.cls + '">' + b.label + '</span>' +
+    (b.stale ? '<span class="chip stale">weight expired ' + ago(est.expires_at) + '</span>' : '') +
+    provChip(est.provenance);
+}
+function effortChip(node){
+  const e = effortEstimate(node);
+  if (!e) return '';
+  const stale = new Date(e.expires_at) < NOW;
+  return '<span class="chip">' + e.value.low + "–" + e.value.high + " " + e.unit + '</span>' +
+    (stale ? '<span class="chip stale">stale</span>' : '') + provChip(e.provenance);
+}
+function statusChips(node){
+  let h = '';
+  if (node.status === "withdrawn") h += '<span class="chip withdrawn">withdrawn — kept for the record</span>';
+  if (node.status === "merged") h += '<span class="chip withdrawn">merged into another node</span>';
+  if (node.type === "problem" && isOrphaned(node.id))
+    h += '<span class="chip orphaned">no live approach requires this any more</span>';
+  return h;
+}
+
+function crumbPath(id){
+  const path = []; let cur = id, guard = 0;
+  while (cur && guard++ < 20){
+    path.unshift(cur);
+    const n = nodes[cur];
+    let next = null;
+    if (n.type === "solution"){ const pe = parentEdgeOf(cur); next = pe ? pe.to : null; }
+    else { const re = requiredByEdges(cur)[0]; next = re ? re.from : null; }
+    cur = next;
+  }
+  return path;
+}
+
+function go(id){ const n = resolve(id); focusId = n.id; render(); window.scrollTo({top:0,behavior:"smooth"}); }
+
+function render(){
+  const n = nodes[focusId];
+  const crumbs = crumbPath(focusId);
+  let h = '';
+
+  h += '<div class="card">';
+  h += '<div class="crumbs">' + crumbs.map((c,i) =>
+        (i ? '<span>›</span>' : '') +
+        (c === focusId ? '<span>' + esc(nodes[c].title) + '</span>'
+                       : '<button class="link" onclick="go(\'' + c + '\')">' + esc(nodes[c].title) + '</button>')
+       ).join("") + '</div>';
+
+  h += '<span class="chip ' + n.type + '">' + n.type + '</span> ' + statusChips(n);
+  h += '<h1>' + esc(n.title) + '</h1>';
+  h += '<div class="body">' + esc(n.body) + '</div>';
+  h += '<div class="meta">' + provChip(n.provenance) +
+       (n.external_ref ? '<span class="chip">' + esc(n.external_ref) + '</span>' : '') +
+       effortChip(n) + '</div>';
+
+  /* equivalence (dedup) surface */
+  const eqs = equivalenceEdges(focusId);
+  if (eqs.length){
+    h += '<div class="note"><strong>Possible duplicate.</strong> ' +
+      eqs.map(e => {
+        const other = e.from === focusId ? e.to : e.from;
+        const dir = e.from === focusId ? "This node may be the same as" : "May be the same as this node:";
+        return esc(dir) + ' <button class="link" onclick="go(\'' + other + '\')">' + esc(nodes[other].title) + '</button>' +
+          (e.rationale ? '<div class="rationale">' + esc(e.rationale) + '</div>' : '') +
+          ' ' + provChip(e.provenance) +
+          (e.status === "settled" ? ' <span class="chip">confirmed</span>'
+            : e.status === "disputed"
+              ? ' <span class="chip disputed">not the same — disputed</span>' +
+                '<div class="rationale">disputed: ' + esc(e.dispute_rationale || "") + '</div>'
+            : ' <button onclick="confirmMerge(\'' + e.id + '\')">Confirm they are the same</button>' +
+              ' <button onclick="disputeEdge(\'' + e.id + '\')">Dispute</button>');
+      }).join("<hr style='border:none;border-top:1px solid #dfe3e8;margin:8px 0'>") + '</div>';
+  }
+  h += '</div>';
+
+  if (n.type === "solution"){
+    /* UP: the problem this approach addresses + the competing approaches */
+    const pe = parentEdgeOf(focusId);
+    if (pe){
+      const parent = nodes[pe.to];
+      const sibs = approachEdges(pe.to);
+      h += '<div class="card"><h2>This is one of ' + sibs.length + ' approaches to</h2>';
+      h += '<ul class="rows"><li><button class="row-title" onclick="go(\'' + parent.id + '\')">' +
+           esc(parent.title) + '</button><div class="meta">' + weightChip(pe) +
+           edgeStatusChip(pe) + '</div>' + edgeActions(pe) + '</li></ul>';
+      const others = sibs.filter(e => e.from !== focusId);
+      if (others.length){
+        h += '<h2 style="margin-top:12px">Competing approaches</h2>' + rankedList(others, "from");
+      }
+      h += '</div>';
+    }
+    /* DOWN: requires checklist */
+    const reqs = requiresEdges(focusId);
+    h += '<div class="card"><h2>Requires (' + reqs.length + ')</h2>';
+    h += reqs.length ? rankedList(reqs, "to", true)
+                     : '<div class="empty">Nothing recorded yet.</div>';
+    h += '<div class="row-actions"><button onclick="addNeed(\'' + focusId + '\')">+ Add a need this approach requires</button></div>';
+    if (isLive(focusId))
+      h += '<div class="row-actions"><button onclick="withdraw(\'' + focusId + '\')">Mark this approach as withdrawn (it lost)</button></div>';
+    else
+      h += '<div class="row-actions"><button onclick="reinstate(\'' + focusId + '\')">Reinstate this approach</button></div>';
+    h += '</div>';
+  } else {
+    /* problem: UP = solutions that need it, DOWN = competing approaches */
+    const needers = requiredByEdges(focusId);
+    h += '<div class="card"><h2>Needed by (' + needers.length + ')</h2>';
+    h += needers.length ? rankedList(needers, "from") : '<div class="empty">Top-level need — nothing above it.</div>';
+    h += '</div>';
+
+    const apps = approachEdges(focusId);
+    h += '<div class="card"><h2>' + apps.length + ' competing approaches</h2>';
+    h += apps.length ? rankedList(apps, "from") : '<div class="empty">No approach proposed yet.</div>';
+    h += '<div class="row-actions"><button onclick="addApproach(\'' + focusId + '\')">+ Add an approach</button>' +
+         '<button onclick="addSibling(\'' + focusId + '\')">+ Add another need like this one</button></div>';
+    h += '<div class="note">Weights are a decomposition agent\'s ordering, not a measurement. No market prices these yet.</div>';
+    h += '</div>';
+  }
+
+  document.getElementById("focus-area").innerHTML = h;
+  document.getElementById("stats").textContent =
+    Object.keys(nodes).length + " nodes · " + Object.keys(edges).length + " edges · showing 1 in focus";
+  renderAll();
+}
+
+function edgeStatusChip(e){
+  if (e.status === "disputed") return '<span class="chip disputed">edge disputed</span>';
+  if (e.status === "settled") return '<span class="chip">edge settled</span>';
+  return '';
+}
+function edgeActions(e){
+  return '<div class="row-actions">' +
+    (e.status === "disputed"
+      ? '<span class="rationale">disputed: ' + esc(e.dispute_rationale || "") + '</span>'
+      : '<button onclick="disputeEdge(\'' + e.id + '\')">Dispute this link</button>') +
+    '</div>';
+}
+
+function rankedList(edgeList, side, showOrphan){
+  const rows = edgeList.map(e => {
+    const id = side === "from" ? e.from : e.to;
+    const node = nodes[id];
+    const b = bucket(branchEstimate(e));
+    return {e, node, rank: b.rank, live: isLive(id)};
+  }).sort((a,b) => (b.live - a.live) || (b.rank - a.rank));
+
+  return '<ul class="rows">' + rows.map(r => {
+    const n = r.node, e = r.e;
+    const dim = !r.live || n.status === "merged";
+    let extra = '';
+    if (n.type === "solution" && e.type === "refines") extra = weightChip(e);
+    if (n.type === "solution") extra += effortChip(n);
+    if (showOrphan && n.type === "problem" && isOrphaned(n.id))
+      extra += '<span class="chip orphaned">no live approach requires this</span>';
+    if (n.status === "withdrawn") extra += '<span class="chip withdrawn">withdrawn — kept for the record</span>';
+    const kids = n.type === "solution" ? requiresEdges(n.id).length : approachEdges(n.id).length;
+    return '<li class="' + (dim ? "dim" : "") + '">' +
+      '<button class="row-title" onclick="go(\'' + n.id + '\')">' + esc(n.title) + '</button>' +
+      '<div class="meta"><span class="chip ' + n.type + '">' + n.type + '</span>' + extra +
+      edgeStatusChip(e) + '<span class="chip">' +
+        (n.type === "solution" ? kids + " requirements" : kids + " approaches") + '</span></div>' +
+      (e.rationale ? '<div class="rationale">' + esc(e.rationale) + '</div>' : '') +
+      edgeActions(e) + '</li>';
+  }).join("") + '</ul>';
+}
+
+function renderAll(){
+  const el = document.getElementById("all-list");
+  el.innerHTML = Object.values(nodes).sort((a,b)=>a.title.localeCompare(b.title)).map(n =>
+    '<div><button class="link" onclick="go(\'' + n.id + '\')">' + esc(n.title) + '</button> ' +
+    '<span class="chip ' + n.type + '">' + n.type[0] + '</span></div>').join("");
+  const dl = document.getElementById("nodelist");
+  dl.innerHTML = Object.values(nodes).map(n => '<option value="' + esc(n.title) + '">').join("");
+}
+
+/* ---------------- mutations (all append-only, all stamped) ---------------- */
+function disputeEdge(eid){
+  const e = edges[eid];
+  ask("Dispute this link", [{name:"rationale", label:"Why is this link wrong? (one line)", type:"text", required:true}],
+    v => {
+      const before = e.status;
+      // append-only (sbb): the asserter's original rationale is never overwritten;
+      // the dispute reason is a separate field so both halves of the contest survive.
+      e.status = "disputed"; e.dispute_rationale = v.rationale;
+      e.dispute_provenance = currentProv();
+      log("dispute", eid, before, "disputed", e.dispute_provenance, v.rationale);
+      render();
+    });
+}
+function confirmMerge(eid){
+  const e = edges[eid];
+  e.status = "settled";
+  const loser = nodes[e.from];
+  loser.status = "merged"; loser.merged_into = e.to; loser.merged_at = new Date().toISOString();
+  log("merge", loser.id, "open", "merged → " + short(e.to), currentProv(),
+      "Tombstone kept; the node id still resolves.");
+  go(e.to);
+}
+function withdraw(id){
+  const n = nodes[id];
+  const before = n.status;
+  n.status = "withdrawn"; n.withdrawn_at = new Date().toISOString();
+  log("withdraw", id, before, "withdrawn", currentProv(),
+      "Nothing was deleted. Requirements only this approach needed are now marked as required by no live approach.");
+  render();
+}
+function reinstate(id){
+  const n = nodes[id]; const before = n.status; n.status = "open";
+  log("reinstate", id, before, "open"); render();
+}
+function addNeed(solutionId){
+  ask("Add a need this approach requires",
+    [{name:"title", label:"What has to be true first?", type:"text", required:true},
+     {name:"body", label:"Any detail (optional)", type:"textarea"}],
+    v => {
+      const id = mkid("n");
+      nodes[id] = {schema:1, id, slug:slugify(v.title), type:"problem", title:v.title,
+        body:v.body||"", status:"open", external_ref:null, provenance: currentProv(),
+        estimates:[], edges:[]};
+      const e = {schema:1, id:mkid("e"), from:solutionId, to:id, to_slug:nodes[id].slug,
+        type:"requires", status:"asserted", rationale:null, provenance: currentProv(), estimates:[]};
+      edges[e.id]=e; nodes[solutionId].edges.push(e.id);
+      log("add-need", id, "", "created", nodes[id].provenance, "requires edge from " + short(solutionId));
+      go(id);
+    });
+}
+function addApproach(problemId){
+  ask("Add a competing approach",
+    [{name:"title", label:"What is the approach?", type:"text", required:true},
+     {name:"body", label:"How would it work? (optional)", type:"textarea"}],
+    v => {
+      const id = mkid("n");
+      nodes[id] = {schema:1, id, slug:slugify(v.title), type:"solution", title:v.title,
+        body:v.body||"", status:"open", external_ref:null, provenance: currentProv(),
+        estimates:[], edges:[]};
+      const e = {schema:1, id:mkid("e"), from:id, to:problemId, to_slug:nodes[problemId].slug,
+        type:"refines", status:"asserted", rationale:null, provenance: currentProv(), estimates:[]};
+      edges[e.id]=e; nodes[id].edges.push(e.id);
+      log("add-approach", id, "", "created", nodes[id].provenance,
+          "No weight — a human proposal carries no agent estimate.");
+      go(id);
+    });
+}
+function addSibling(problemId){
+  const needers = requiredByEdges(problemId);
+  if (!needers.length){ alert("This is the top-level need; add an approach instead."); return; }
+  addNeed(needers[0].from);
+}
+
+/* ---------------- tiny dialog helper ---------------- */
+let dlgHandler = null;
+function ask(title, fields, cb){
+  const dlg = document.getElementById("dlg");
+  document.getElementById("dlg-title").textContent = title;
+  document.getElementById("dlg-fields").innerHTML = fields.map(f =>
+    '<label for="f-' + f.name + '">' + esc(f.label) + '</label>' +
+    (f.type === "textarea"
+      ? '<textarea id="f-' + f.name + '" rows="3"></textarea>'
+      : '<input id="f-' + f.name + '" type="text">')).join("");
+  dlgHandler = () => {
+    const v = {};
+    let ok = true;
+    fields.forEach(f => {
+      v[f.name] = document.getElementById("f-" + f.name).value.trim();
+      if (f.required && !v[f.name]) ok = false;
+    });
+    if (!ok){ alert("Please fill in the required field."); return false; }
+    cb(v); return true;
+  };
+  dlg.showModal();
+  const first = document.querySelector("#dlg-fields input,#dlg-fields textarea");
+  if (first) first.focus();
+}
+document.getElementById("dlg-form").addEventListener("submit", ev => {
+  const dlg = document.getElementById("dlg");
+  if (ev.submitter && ev.submitter.value === "ok" && dlgHandler){
+    if (dlgHandler() === false) ev.preventDefault();
+  }
+});
+
+/* ---------------- chrome ---------------- */
+document.getElementById("btn-all").addEventListener("click", () => {
+  document.getElementById("all-area").classList.toggle("hidden");
+});
+document.getElementById("btn-reset").addEventListener("click", () => location.reload());
+document.getElementById("btn-copy").addEventListener("click", () => {
+  const text = history.map(h =>
+    new Date(h.prov.asserted_at).toISOString() + "  " + h.op + "  " + shortTarget(h.target) +
+    (h.before ? "  [" + h.before + " -> " + h.after + "]" : "") +
+    "  by " + h.prov.actor_id + (h.note ? "  // " + h.note : "")).join("\n") || "(no events)";
+  navigator.clipboard && navigator.clipboard.writeText(text);
+  const ta = document.createElement("textarea");
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch(e){}
+  document.body.removeChild(ta);
+  alert("Session log copied:\n\n" + text);
+});
+function runSearch(input){
+  const t = input.value.trim().toLowerCase();
+  if (!t) return;
+  const hit = Object.values(nodes).find(n => n.title.toLowerCase() === t)
+           || Object.values(nodes).find(n => n.title.toLowerCase().includes(t) && t.length > 2);
+  if (hit){ input.value = ""; go(hit.id); }
+}
+document.getElementById("search").addEventListener("change", ev => runSearch(ev.target));
+/* "change" alone only fires on blur; participants press Enter and see nothing happen */
+document.getElementById("search").addEventListener("keydown", ev => {
+  if (ev.key === "Enter"){ ev.preventDefault(); runSearch(ev.target); }
+});
+
+renderLog();
+render();
+</script>
+</body>
+</html>
