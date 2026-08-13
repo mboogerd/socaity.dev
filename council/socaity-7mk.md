@@ -60,3 +60,29 @@ CONSENT, conditional on one amendment to point 5: **evidence must be hash-only o
 ### Facilitator
 Standing proposal (amended through Round 2): keypair primitive with — canonical actor_key = multibase z6Mk… string (PE's Round-2 form; IS explicitly deferred final encoding to PE/schema); no-free-text on-ledger enforced by schema validator; **evidence hash-only on-ledger, resolvable URLs in an off-ledger erasable evidence table** (legal's blocking amendment — supersedes IS's warn-only treatment of URIs); event kinds key.successor_designated / key.rotated / key.rebound; founder on the same primitive; no private-key custody; M4 attestation hook; M0 terms language (permanence, erasure scope, KYC-at-payout, URI/hash guidance).
 Open objections: none standing. Round 3 = closure: confirm (a) IS and PE accept the hash-only evidence rule (both previously allowed URIs on-ledger), (b) IS accepts PE's multibase-string encoding (IS had conceded to "raw bytes" before PE switched to multibase — encodings crossed mid-round).
+
+## Round 3
+
+### [identity-specialist]
+CONSENT to both. (a) Hash-only evidence is strictly stronger than my warn-only treatment — it removes the one channel where a contributor could irrevocably self-doxx onto the ledger; the off-ledger table keeps resolvability without permanence. (b) Multibase z6Mk… is my original encoding, now with PE's guards — identity-neutral and migration-friendly for M4 credential binding. All paramount constraints satisfied.
+
+### [platform-engineer]
+CONSENT. The hash-only rule strengthens replay and forkability: URLs on-ledger are network-dependent and mutable-at-target — a fork job dereferencing github.com is the privileged-external-dependency failure reappearing in the evidence field. Hashes and bare SHAs verify offline; socaity-wg8 gets stronger. Implementation note: forks inherit the ledger but not the erasable evidence table, so evidence remains *verifiable* post-fork (hash matches artifact) even where no longer *discoverable* (no URL) — the correct trade; the schema validator enforces hash-only mechanically, same as no-free-text.
+
+### [legal-counsel]
+CONSENT. The package integrates my blocking amendment verbatim; M0 terms language included as part of this consent; encoding and event kinds legally neutral. All Round-1 paramount constraints satisfied.
+
+## Resolution
+
+ADOPTED by consent, Round 3, no paramount objections standing.
+
+**The ledger identity primitive (schema v1, effective from entry #1):**
+1. Contributor identity = self-generated Ed25519 keypair, held by the contributor. Canonical on-ledger form: multibase string z6Mk… (multicodec ed25519-pub + base58btc), without did:key: prefix; sig_alg field (ed25519-v1), additive-only. Verification = prefix-strip + Ed25519 verify; the forkability CI job fails if verification ever requires a DID library or network resolution.
+2. On-ledger (permanent): actor_key, structured payload (typed references only — schema-validator-enforced no free text), content-hash/structured-artifact evidence refs only (bare commit SHAs acceptable; never resolvable URLs), timestamp, signature over canonical serialization, signed status-change entries per the Ledger Validation Policy.
+3. Off-ledger (mutable, erasable): profile (display name, avatar, links) keyed by public key — its deletion is the Art. 17 erasure mechanism; verified-link table (bidirectional signed GitHub attestation, revocable); evidence table (entry → resolvable URLs). Forks inherit the ledger, not these tables: evidence stays verifiable, not necessarily discoverable.
+4. Key lifecycle as forward-only ledger events: key.successor_designated (repeatable, latest wins), key.rotated (signed by old key or designated successor), key.rebound (only via the socaity-zjr adjudication process, with adjudication_ref). No privileged mutation; replay resolves continuity deterministically.
+5. No platform custody of private keys, ever (M1+ may offer platform-stored *encrypted* blobs the platform cannot use). Founder uses the same primitive — no platform-god identity.
+6. Pseudonymity boundary, stated in M0 terms: entries are permanent and public; erasure covers off-ledger data only; earning is pseudonymous forever, but fiat payout at M5 requires identity binding at claim time via key-control proof to a PSP-run KYC flow (DAC7/tax/sanctions data lives with the PSP or a segregated retention-bound store, never on-ledger). Personhood verification is never a precondition for supply-side ledger entries.
+7. M4 hook: optional opaque attestation field (hash) on entries; personhood credentials later bind to the contributor key; nothing recorded at M0 changes.
+
+Downstream: resolves the design half of socaity-5c5 (GDPR posture) and gives socaity-a8o its shape (key lifecycle events); socaity-5d0's fork-verification requirement lands in socaity-wg8's acceptance test; socaity-zyt schema v1 unblocked (actor_key semantics, event kinds, validator rules fixed). M0 terms language (permanence/erasure/KYC-at-payout, hash-vs-URI guidance) joins the socaity-1ux counsel-review package.
