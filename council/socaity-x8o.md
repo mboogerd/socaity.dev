@@ -54,3 +54,30 @@ CONSENT with one structure amendment + two confirmations. **Amendment — epoch-
 Standing proposal: MD §1–6 as amended + PE's engineering envelope + PE's epoch-clamp + explicit mode-election-in-observation + legal's presentation amendments (epoch-weight vocabulary, in-artifact disclosures, no currency formatting) + the 19p-gated sequencing chain + mode-A third-party-redemption tripwire.
 One residual: tie-break — MD and PE crossed concessions (MD→hash, PE→chain-position-id, each accepting the other). Substantive arguments: MD's Goodhart point (any submission-order-correlated ordering gives a micro earliness premium and invites timestamp races) applies to chain position as well as ingestion ids; legal independently prefers hash on neutrality optics. PE states either is acceptable. Facilitator applies the consent rule: hash is the only option with no objection-shaped argument against it — **entry hash** enters the standing proposal.
 Round 3 = closure: all three confirm the final package.
+
+## Round 3
+
+### [mechanism-designer]
+CONSENT. Clamp gaming check: the only added vector would be forward epoch-shopping (hold an observation until e closes → clamps into e+1), but that option exists trivially anyway (submit later); the clamp removes the strictly worse path — backdating into a closed epoch whose D_e is known and final, i.e. shopping with perfect information. Delaying is self-taxing under the non-increasing pie and growing denominator; confirmation risk compounds with age. Net: attack surface shrinks. Final consent to the full package.
+
+### [legal-counsel]
+CONSENT. Amendments 1–3 incorporated; 19p precondition in the chain; remainder entirely to contributors; no transfer operation; third-party-redemption tripwire recorded; hash tie-break matches the neutrality preference. (Analysis for decision-making, not legal advice; artifact wording review remains with licensed counsel.)
+
+### [platform-engineer]
+CONSENT to the full package. Hash tie-break is fork-stable, computed over immutable observation content. No residual objections.
+
+## Resolution
+
+ADOPTED by consent, Round 3, no paramount objections standing.
+
+**The distribution rule (architecture final; parameter values delegated):**
+
+1. **Epochs:** gapless fixed-length intervals in ledger time anchored at genesis; assignment by observation timestamp, **clamped**: an observation appended after EpochClosed(e) goes to the earliest still-open epoch. Epoch 0 = the itemized pre-genesis founder position, opened and closed at genesis; no later entry may claim it.
+2. **Pie schedule:** P_e ("epoch weight" — never "claim units"/"credits") is a pure non-increasing function of epoch index, published normalized with its rescaling-invariance stated in the artifact; recommended constant (the growing denominator IS the earliness premium); no stacked premium multiplier, ever. Weights confer no redemption value; realized value depends solely on discretionary declarations, ∝ R_i/ΣR_j; no currency-style formatting anywhere.
+3. **Denominator:** conversion schedule V (versioned code) maps native units → valuation units (1 vu = 1 standard contributor-hour); founder rate is V applied to founder hours, same table, citing a verifiable external referent. D_e = Σ confirmed weights, mode-blind; final only at epoch close + zjr audit.
+4. **Two modes, elected irrevocably in the immutable observation record:** A = compute credit w×r (closed-loop, keypair-bound, no transfer operation exists, no distribution claim; tripwire: redeemable solely against platform compute); E = epoch share, exact rational w/D_e. All confirmed contributions enter D_e regardless of mode; forgone fractions lapse. Accrual in both modes is a pure function of a confirmed past observation — no accrual condition may reference future conduct. R_i = Σ_e P_e·(w_{i,e,E}/D_e); distributions ∝ R_i over closed, audited epochs only.
+5. **Arithmetic:** integer micro-vu weights; exact rationals; floats banned (AST-lint). Payout: floor to quantum + largest remainder, ties by entry hash; table sums exactly to the declared amount; residual entirely to contributors.
+6. **Rule-as-code:** pure function (ledger_export + validation snapshot + declared amount) → payout table; Python 3 stdlib reference implementation (fractions.Fraction), zero dependencies, canonical JSON in/out, payout-table hash is a ledger event. In-band version binding: RuleVersionPublished / MetaRulePublished / EpochOpened(e, rule_version_hash) / EpochClosed(e, checkpoint_hash); the meta-rule's validity predicate gates amendments (unopened epochs only, structure unchanged). Harness at M0: ≥10 golden vectors, property tests (exact conservation, permutation invariance, determinism), forkability CI from public artifacts in a clean container.
+7. **Sequencing precondition (hard):** socaity-19p resolved → V complete (no placeholders) → RuleVersionPublished + MetaRulePublished → epoch 0 itemized/closed → EpochOpened(1) → only then may the first external ledger entry be appended. EpochOpened's validity predicate enforces this mechanically.
+
+Parameters delegated: L and P_e curve → socaity-9cb; V rates (founder rate, tokens-per-vu) and absolute rate r → socaity-19p; audit-slice cap per zjr. All fixed before M0 publication via the meta-rule.
