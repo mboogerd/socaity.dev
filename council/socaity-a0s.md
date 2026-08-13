@@ -29,3 +29,27 @@ Lens: the license is only a forkability guarantee if clone-plus-one-command stay
 ### Facilitator
 Standing proposal: AGPL-3.0-or-later (platform core) + DCO-no-CLA + Apache-2.0 permissive shell (SDKs, rule module, export schemas, verification/fork tooling, renderer) + CC0 for platform-originated ledger/graph records + CC-BY-4.0 for the M2 index (provenance manifest, SA slices segregated or trimmed) + GDPR non-purport rider + docs CC-BY-4.0 + ComputeNet permissive-independent + REUSE compliance + the fork-CI license-compliance assertion.
 One delta for Round 2: **graph/ledger data — CC0 (GW: attribution machinery reduces real forkability; legal: strongest no-moat, waives DB right) vs ODbL (PE preference: share-alike keeps forks' data open).** Note PE's paramount list does not protect ODbL — it only bars non-dischargeable attribution, which CC0 trivially satisfies; and legal warns ODbL scares the §3 OSPO audience + adds CC-compatibility friction. PE to rule: consent to CC0 or hold ODbL with reasons. Also GW to confirm the expanded Apache shell (rule module + tooling, beyond SDKs).
+
+## Round 2
+
+### [platform-engineer]
+CONSENT to CC0 for platform-originated graph/ledger records — conviction, not deference: (1) my own acceptance test decides it (CC0 makes the fork-CI compliance check trivially green forever; ODbL makes it a growing obligation-tracking problem — the license I preferred fails the test I wrote); (2) share-alike on data is structurally redundant (a fork that closes its data forfeits the network effects that made forking worthwhile — a stale snapshot CC0 already permits; the capture-check is enforced by wg8 + AGPL-core, not data copyleft); (3) CC0's DB-right waiver is the stronger no-moat (ODbL keeps the weapon and promises to point it nicely; CC0 destroys it — for a record whose trust story is "no future operator can revoke this," destruction beats stewardship). Load-bearing conditions, both standing: the GDPR rider ships on the CC0 dedication; the fork-CI assertion is per-slice.
+
+### [grant-writer]
+CONSENT to the expanded Apache shell — it strengthens the NLnet story: AGPL+DCO core remains the reviewed-and-rewarded anti-capture guarantee; a permissive shell making audits and forks frictionless inside allergic institutions is "forkability is executable" made credible.
+
+### [legal-counsel]
+CONSENT — package mutually consistent, no paramounts touched; standing conditions: socaity-2p5 remains a hard dependency before any outbound label is final; licensed IP practitioner sanity-checks the data layer before filing.
+
+## Resolution
+
+ADOPTED by consent, Round 2.
+
+**The license set (statable verbatim in socaity-4we):**
+1. **Platform core: AGPL-3.0-or-later, DCO inbound, no CLA ever.** The dispersal of copyright across contributors is the anti-capture device (relicensing becomes practically impossible for anyone, operator included); AGPL §13 closes capture-by-hosting; license constitutionally frozen — a feature. REUSE compliance committed in the application.
+2. **Permissive shell: Apache-2.0** for the distribution-rule module (auditors embed it anywhere, no network-clause trip — universal runnability is the trust artifact), export/format schemas, verification + fork tooling, the renderer that travels with the data, and client SDKs. "Exit is cheap" carries no asterisk.
+3. **Platform-originated ledger records + graph structure: CC0-1.0** (waives the EU sui generis database right — no future rights-holder can revoke forkability; attribution machinery deleted rather than managed). With the GDPR non-purport rider on every data license: covers copyright/database rights only; grants nothing data-protection law restricts; reusers are independent controllers.
+4. **M2 index dataset: CC-BY-4.0** with in-band attribution declared in the export format spec (ledger provenance intact + source URI per CC-BY §3(a); attribution grows with fork depth, never contributor count); per-record provenance manifest; SA-encumbered inbound sources segregated into a labeled slice or trimmed. Outbound label per slice = most restrictive inbound term (socaity-2p5 is a hard dependency before labels are final). Methodology + docs + manifesto: CC-BY-4.0.
+5. **ComputeNet: independent choice, constrained permissive-compatible** (no copyleft leakage across the substrate boundary in either direction) — recorded as a boundary constraint, decided in ComputeNet's own governance.
+6. **Enforcement as CI:** wg8's fork job gains a per-slice license-compliance assertion — republished output redistributable under the declared licenses with zero manual steps, verified per run.
+7. Grant text discipline: never "the ledger is immutable" — "append-only with a data-protection process." Licensed IP practitioner sanity-checks the data layer before the application files (joins socaity-7kv scope).
