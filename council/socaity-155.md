@@ -48,3 +48,26 @@ CONSENT with four bindings. **(i) Adopt reliability semantics; walk-sum withdraw
 
 ### Facilitator
 DA's Round-2 binding (ii) already contains MD's amendment (A) verbatim ("default 1 per INDEPENDENT dependent — distinct owner/org; Sybil dedup lives in d"). Only (B), the rename, is new. Round 3 = pro-forma: DA accepts the rename + the F==0 assertion; MD confirms DA's estimator machinery (HLL tiers, Philox-on-checkpoint-hash, two-tier lock-in).
+
+## Round 3
+
+### [data-analyst]
+CONSENT — (B) accepted: "uniform-demand prior" is the truthful name and hardens the grant pitch; the F==0 assertion joins both instantiations' suites.
+
+### [mechanism-designer]
+CONSENT — estimator machinery accepted as-is; (A) satisfied verbatim; nothing remains open.
+
+## Resolution
+
+ADOPTED by consent, Round 3, no paramount objections standing.
+
+**The unified subsidy-signal computation (M2 index = platform signal, literally):**
+1. **One operator:** F(v) = Σ_s d(s)·R(s,v), where d = validated demand mass (the ONLY value source; structure routes value, never creates it — enforced by the shared test `F == 0 wherever d == 0 upstream`) and R(s,v) = α-damped once-per-(source,target) reliability that s's need is served through v (AND/OR semantics; walk-sums rejected).
+2. **Two adapters, one codebase:** shared module foundationalness(graph, d, p, α) consuming the sbb schema. M4 binding: d = person-weighted demand, p = contestable branch probabilities. M2 binding: package graph as degenerate all-AND instance (project-level nodes per is4; runtime requires-edges; equivalence classes from categories/curations/substitution-events give partial OR structure with p ∝ dependent share); **d(s) = 1 per independent dependent passing the validation gate** (distinct owner/org, tenure weighting, per-registrant caps — the gate is part of the demand-source definition and applies to every variant), published as the primary "**uniform-demand prior**" variant; usage-evidence weights (OSV reach, distro inclusion — never downloads) as sensitivity variant.
+3. **Computation:** exact closed form on the all-AND case (R = α^dist); HyperANF/HLL sketches at scale (deterministic per fixed hash, error bound published, depth cap L published); exact verification pass for top-k and the crisis backtest. M4 OR-case: Monte Carlo with counter-based PRNG keyed on (checkpoint_hash, source_id, replicate_index) — derived state, not entropy. Two-tier lock-in: M4 code on M2 instance reproduces the index bit-for-bit; MC bit-for-bit given checkpoint hash; property test pins MC to the exact path on degenerate graphs.
+4. **Gap function in the shared module:** m(v) = g(F(v), S(v)) = F/(S+s₀) (regularized, never raw ratio; s₀ swept); S adapter-supplied (ternary support per l7f maps in via published thresholds).
+5. **Decay on inputs, never on F post-hoc;** half-life per node type, calibrated from M2 re-crawl data; refresh by re-observation/contest-survival; decay keys on dependent behavior, never maintainer activity.
+6. **Publication requirements (ship-blockers):** acknowledged-differences list (demand proxied; adoption ≠ value; sparse OR coverage overstates substitutables — direction of bias stated; no refines hierarchy; dev/runtime split per-ecosystem honesty; static snapshot); α/d/s₀ sensitivity sweeps; HLL error + depth cap; crisis backtest (xz, log4j, core-js, event-stream, colors/faker) — if it fails, delay, don't massage; code + data released with the index.
+7. **Standing rails:** branch probabilities never self-declared by beneficiaries (M2 cannot validate this defense — flagged honestly); no money purchasing demand weight in either instantiation; no credit payouts on this signal before strategic-agent simulation (M2 publication is reputational-stakes only).
+
+Downstream: socaity-chk now formalizes THIS operator (spec + Goodhart pass on the gate and equivalence-class machinery); socaity-dad (backtest) and socaity-4kj (operating cost) execute against it.
