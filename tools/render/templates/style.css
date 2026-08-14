@@ -183,7 +183,12 @@
   h2 { font-size: var(--t-h2); line-height: var(--lh-heading); margin-top: var(--s8); }
   h3 { font-size: var(--t-h3); line-height: var(--lh-heading); margin: 0 0 var(--s2); }
   a { color: var(--accent); }
-  a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  /* The two-element focus ring that stood here — `a:focus-visible,
+     summary:focus-visible` — is DELETED, not overridden. §K asks for a SYSTEM
+     rule, and a list of elements is the opposite of one: it is a list that
+     goes stale the first time a template grows a `<select>`, which /ledger's
+     calculator already had. Its replacement is the bare `:focus-visible` in
+     the W5 block at the foot of this file. */
   table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
   th, td { border-bottom: 1px solid var(--rule); text-align: left; padding: 0.35rem 0.4rem;
            vertical-align: top; }
@@ -274,7 +279,14 @@
   .ledger-calc select { font: inherit; font-size: 0.95rem; padding: 0.2rem; }
   .ledger-out { font-family: system-ui, sans-serif; }
   .ledger-out strong { font-size: 1.25rem; }
-  pre.ledger-cmd { overflow-x: auto; background: #f3f3f1; padding: 0.5rem 0.6rem; font-size: 0.8rem; }
+  /* The `background: #f3f3f1` literal that stood in this rule is DELETED by
+     W5. It was already dead — socaity-0tc's `pre.ledger-cmd` further down
+     paints the same box in --paper-sunk, same layer, later — but a paper-
+     coloured literal in a stylesheet that now has a dark register is a
+     latent bug, not dead code: it is one reordering away from painting a
+     near-white block on a #16181B page. Deleting it leaves the token block
+     as the only place in this file where a colour is chosen. */
+  pre.ledger-cmd { overflow-x: auto; padding: 0.5rem 0.6rem; font-size: 0.8rem; }
   pre.ledger-statement { white-space: pre-wrap; font: 0.9rem/1.6 Georgia, "Times New Roman", serif; }
 
   /* --- the three claim pages -------------------------------------------
@@ -282,7 +294,11 @@
      line overflows the column at 390px. The three templates carried three
      near-identical copies of `.claim pre`; the one below is the copy
      /claim/ and /claim/reserved/ used verbatim. */
-  .claim pre { background: #f4f3f1; border: 1px solid var(--rule); padding: 0.7rem 0.8rem;
+  /* `background: #f4f3f1` deleted here for the same reason as `pre.ledger-cmd`
+     above: W2d already repaints this box in --paper-sunk, and a light literal
+     that only ever wins by losing is a dark-mode failure waiting for a
+     reorder. */
+  .claim pre { border: 1px solid var(--rule); padding: 0.7rem 0.8rem;
                overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.8rem 0; }
   /* /claim/merge-comment/ shows one stored file verbatim rather than command
      lines, so its single <pre> wraps instead of scrolling and is set a step
@@ -1730,4 +1746,290 @@
   .ledger-derivation { font-size: var(--t-micro); color: var(--ink-3); }
   .claim .entry dt { font-size: var(--t-micro); }
   .claim .exhibit { font-size: var(--t-micro); }
+}
+
+/* ==========================================================================
+   W5 — dark mode, print, and focus. socaity-e9a.
+   council/socaity-0hb.md §B (colour: "dark mode is a token-only swap under
+   prefers-color-scheme with color-scheme: light dark; no toggle") and §K
+   (motion, focus, print), with Amendment 1 A5 (hue is permitted as a
+   REDUNDANT third channel) and A1 (every refusal paired with the assertion
+   it protects).
+
+   WHY THIS BLOCK IS LAST, and why it is short. Dark mode was sequenced after
+   every surface on purpose: if it had landed in W0 with the palette, each of
+   the eight tickets since would have had to keep two palettes in step, and
+   the second palette would have been maintained by whoever remembered. It is
+   last because it is a token swap, and it is a token swap because every rule
+   above it names a token rather than a colour. This block is the proof of
+   that property: if any surface needed its own dark rule, the surface was
+   painting a colour it did not declare.
+
+   THREE ASSERTIONS, one per part:
+
+   · DARK IS THE SAME DOCUMENT, NOT A SECOND DESIGN. Ten tokens change value.
+     No rule below the token block is re-opened, nothing is repositioned,
+     nothing is hidden and nothing gains a dark-only component. Light stays
+     the primary register: it is what the OG cards, the screenshots in the
+     blog and every published crop render in, and `blog_card.html` is not
+     merely unaffected but structurally incapable of being affected — it
+     carries its own inline palette and never loads this file.
+   · A RECORD YOU CAN PRINT IS A RECORD. The ledger and the manifesto are
+     evidence. Evidence that loses its citations, its rail and the inside of
+     its disclosures when it reaches paper is a screenshot of evidence.
+   · FOCUS IS A SYSTEM RULE, NOT A LIST. One selector, every focusable thing,
+     including the ones the templates have not grown yet.
+
+   MOTION, confirmed rather than assumed (§K). After the socaity-0tc redesign
+   this file contains no `transition`, no `animation`, no `@keyframes`, no
+   `transform` and no `scroll-behavior` — grep for all five. The only motion
+   on the site is the UA's own `<details>` disclosure, on the legend and on
+   the provenance object, which the user agent already governs. So
+   `prefers-reduced-motion` still needs no branch, and adding an empty one
+   would assert a design decision this stylesheet does not make.
+   ========================================================================== */
+
+@layer tokens {
+  /* --- B. COLOUR — dark ------------------------------------------------
+     The same warm ink on warm paper, inverted: #16181B is a warm near-black
+     (blue-neutral by a hair, so the paper does not go green) and #E9E6E0 is
+     the paper colour reading as ink. Ten values, no eleventh rule.
+
+     `screen and` is load-bearing and is the reason the print block below
+     needs no palette of its own: a browser asked to print a page whose
+     reader has the OS in dark mode would otherwise put 14:1 white-on-black
+     through a printer. Print takes the light palette, always, by
+     construction rather than by a second override.
+
+     EVERY RATIO BELOW WAS COMPUTED FROM THESE HEX VALUES with the WCAG 2.x
+     relative-luminance formula, not copied from the resolution's table. The
+     table proved correct in all ten cases: nothing needed re-toning. Values
+     are printed to two decimals. The ground is --paper #16181B unless named.
+
+     The tightest pairing in the dark palette is --ink-3 on --paper-sunk at
+     4.55:1 — 0.05 over the AA floor, against 4.69:1 for the same pairing in
+     light. It has one call site, `.masthead__nav .muted` ("(not yet
+     published)") on the masthead band, and it passes. Recorded here because
+     it is the pairing that a future re-tone of either token breaks first;
+     neither may move without recomputing this number.
+
+     ONE VALUE IS NOT IN THE RESOLUTION: --accent-wash, which §B never
+     specified because when §B was written no surface used it. Two surfaces
+     use it now (the node page's contest section and /ledger's open row), and
+     both are derived below rather than guessed.
+
+     WHAT DARK DOES TO THE SURFACES THE REDESIGN ADDED, checked one at a
+     time, because legibility is not the test — MEANING is:
+
+     · THE MASTHEAD BAND. --paper-sunk with an --ink bottom rule. In light the
+       band is 1.10:1 darker than the page; in dark it is 1.11:1 lighter. The
+       token is called "sunk" and in dark it lifts, which is not an
+       inconsistency: on both grounds it is the same distance from the page
+       in the direction that reads as a distinct surface, and on both grounds
+       the rule under it is --ink, the strongest horizontal line on the site.
+     · THE EVIDENCE STRIP. --rule-strong above, --rule hairlines between
+       (1.46:1 in dark against 1.42:1 in light — decorative on both, which is
+       what --rule is licensed for), the artifact names in --ink at 14.28:1
+       and their notes in --ink-2 at 8.24:1. Unchanged ranking.
+     · THE ROADMAP DIAGRAM. A problem is the page's own ground inside an
+       --ink-2 border (8.24:1); an approach is --paper-sunk inside
+       --rule-strong (3.33:1 on its own fill, over the 3:1 non-text floor).
+       In dark the approach boxes lift off the page instead of sinking into
+       it, and the pairing still differs in FILL, in BORDER WEIGHT and in the
+       kind chip's word — three channels, none of them hue, exactly as in
+       light.
+     · THE EMPHASIS SURFACES. See --accent-wash below; they are the two
+       places where a careless dark palette changes what the page MEANS
+       rather than how it looks. */
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --paper:      #16181B; /* ground */
+      --paper-sunk: #1F2226; /*  1.11:1 vs --paper — a surface, never text */
+      --ink:        #E9E6E0; /* 14.28:1 on --paper · 12.82:1 on --paper-sunk */
+      --ink-2:      #B5B0A7; /*  8.24:1 on --paper ·  7.40:1 on --paper-sunk */
+      --ink-3:      #8E8880; /*  5.07:1 on --paper ·  4.55:1 on --paper-sunk —
+                                 text floor; the tightest pairing in either
+                                 palette, and it clears AA */
+      --rule:       #32363B; /*  1.46:1 — decorative hairlines ONLY, same
+                                 licence as in light: below 3:1, so it may
+                                 separate and may never mean */
+      --rule-strong:#6C737C; /*  3.71:1 on --paper ·  3.33:1 on --paper-sunk —
+                                 both clear the 3:1 non-text floor, so the
+                                 chip hairline, the provenance edge and the
+                                 ledger's binding bar still carry meaning */
+      --accent:     #8FB6E0; /*  8.42:1 on --paper ·  7.56:1 on --paper-sunk ·
+                                 7.62:1 on --accent-wash. Also the focus ring
+                                 below, which is why it is measured on all
+                                 three grounds it can land on */
+
+      /* DERIVED HERE, not in §B. The light wash is the paper lifted 1.12:1
+         toward the accent's hue; this is the same move on the same axis, in
+         the direction dark has available: #1A2130 is the ground lifted
+         1.10:1 toward the accent, and it is the ONLY dark value in this
+         palette that was chosen rather than transcribed.
+
+         The three constraints it was solved against, all computed:
+           · --ink 12.93:1, --ink-2 7.46:1, --ink-3 4.59:1 — every ink in the
+             palette clears AA on it, with more headroom than the same inks
+             have on --paper-sunk, so no text has to be re-toned to sit here;
+           · --rule-strong 3.36:1 — the 1px border that boxes both emphasis
+             surfaces still clears the 3:1 non-text floor;
+           · 1.10:1 against --paper, matching light's 1.12:1, so the surface
+             is a lift and not a panel.
+
+         AND THE PART THAT IS NOT A NUMBER. These two surfaces are the same
+         object in two places: the affordance to become part of the record.
+         In dark, a surface that is LIGHTER than its page reads as lit, and
+         both of them have to keep the meaning they were built for:
+           · /ledger's open row is the one open door on the site — the row
+             nobody has written yet. Lit, on a page of unlit rows, is that
+             row's meaning rendered rather than merely preserved;
+           · the node page's contest section must read as EMPHASIS, never as
+             a warning. This is where a dark palette goes wrong by reflex: a
+             tinted emphasis surface reaches for amber or red, and a
+             contested edge — the mechanism working — arrives on the page
+             wearing the colour of a fault. Hence a COOL wash, on the
+             accent's own axis, and hence --flag-contested (#D9A05B, warm)
+             staying exactly where §B put it: reserved for genuine defects,
+             with zero call sites, waived in the gate's RESERVED_TOKENS. The
+             hue in this block is redundant under A5 — the border weight, the
+             heading, the position and the words all say emphasis in
+             greyscale — and it is redundant in the safe direction. */
+      --accent-wash:#1A2130;
+
+      /* Defects only, NOT the chip states — §B's watch-item survives the
+         swap: the status system renders in the ink family in both palettes,
+         so there is no hue in it to invert. Both are measured on --paper and
+         both are ready for the first real defect surface. */
+      --flag-contested: #D9A05B; /*  7.73:1 — defects only */
+      --flag-settled:   #7FC08E; /*  8.33:1 — defects only */
+    }
+  }
+}
+
+@layer base {
+  /* The declaration that makes the swap complete rather than nearly
+     complete. /ledger's calculator is two native `<select>` elements, and a
+     UA that has not been told the page has a dark register paints them light
+     — a white control with black text, on a #16181B page, at the one place
+     on the site where a reader is asked to compute something. `light dark`,
+     in that order, also states which register is primary. It is here in
+     `base` rather than in `tokens` because it is not a custom property and
+     it paints: the layer contract at the top of this file is a contract. */
+  html { color-scheme: light dark; }
+
+  /* THE SYSTEM RULE (§K). Not a list of elements — a list is what was here
+     before, it named two, and the site has had a `<select>` on /ledger since
+     before this stylesheet existed. Bare `:focus-visible` is every focusable
+     thing on every surface, including the ones no template has grown yet,
+     and it is the UA's own judgement about when a focus ring is wanted, so a
+     mouse click does not draw one and a Tab key always does.
+
+     3px because 2px against a hairline-ruled document is not a ring, it is
+     another rule; `outline-offset` so the ring never sits on the glyphs it
+     is pointing at. --accent carries it in both palettes — 9.34:1 on light
+     paper, 8.42:1 on dark — which is the whole reason the colour is a token
+     here: a literal would have been correct in exactly one of the two.
+     `outline` is used rather than a border or a shadow because it does not
+     reflow the page and it survives `forced-colors`. */
+  :focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+@layer surfaces {
+  /* --- @media print (§K) ------------------------------------------------
+     Written for the ledger and the manifesto, which are the two surfaces the
+     resolution names, and applied site-wide because scoping it to two would
+     mean the other five print worse on purpose. Three requirements, plus the
+     two page-break rules a printed record actually needs.
+
+     These rules live in `surfaces`, the strongest layer, so each one wins
+     over the screen rule it corrects without having to restate that rule's
+     selector specificity. Nothing here has a dark twin: the palette block
+     above is `screen and`, so paper always gets the light register. */
+  @media print {
+    /* 1. THE RAIL COLLAPSES INLINE. On screen above 60rem a filled rail is
+       track 1 of a grid; on paper there is no viewport to be wide, and a
+       187px column of provenance beside a 646px column of argument wastes a
+       third of the sheet. It collapses exactly the way it collapses on a
+       phone — into the flow, in source order, above the block it annotates —
+       so the printed reading order is the spoken one and the phone one.
+
+       STATED PLAINLY, because a rule that cannot fire looks like a rule that
+       works: as of socaity-0tc NO surface fills the rail that is a DIRECT
+       child of `main`, so `main:has(> .rail:not(:empty))` matches nothing
+       today and the grid is never on, on paper or on screen. The node page's
+       provenance object lives in a second `.rail` further down the document,
+       which renders inline already and only needs the spacing below. The
+       grid override is therefore defensive: §C's two-track grid is still the
+       specified layout and the day a generator fills the rail again, print
+       must not have to be remembered. */
+    main:has(> .rail:not(:empty)) {
+      display: block;
+      max-width: none;
+    }
+    .rail { margin-bottom: var(--s4); }
+    .rail > * { max-width: var(--measure); }
+
+    /* 2. LINKS RENDER THEIR HREF. A printed ledger whose citations are blue
+       words is a claim without its evidence — the one failure mode this site
+       exists to argue against. In `main` and `footer` only: the masthead nav
+       and the skip link are navigation, and a paper page has none.
+       Fragment links print nothing, because `#legend` on paper is an
+       instruction to look down the page, which the reader can already do.
+
+       MEASURED on the printed ledger, and the reason this rule carries four
+       declarations rather than one: the per-row "Challenge this entry" link
+       is a 150-character prefilled issue URL, and printed at --t-body in the
+       link's own 600 weight it out-massed the entry it hangs off — three
+       bold lines of query string per record, thirty records. The href is
+       metadata about the link, so it is set as metadata: the --t-micro
+       floor, --ink-2, the mono face, normal weight. The citation stays
+       legible and the sentence stays the loudest thing in the row. */
+    main a[href]::after,
+    footer a[href]::after {
+      content: " <" attr(href) ">";
+      font-family: var(--font-mono);
+      font-size: var(--t-micro);
+      font-weight: normal;
+      color: var(--ink-2);
+      overflow-wrap: anywhere;
+    }
+    main a[href^="#"]::after,
+    footer a[href^="#"]::after { content: ""; }
+
+    /* 3. DETAILS FORCED OPEN. Paper has no disclosure triangle, so a closed
+       `<details>` on paper is content that was deleted silently. Two
+       spellings, as in the legend's own print rule above: `::details-content`
+       is how a current engine hides the closed content and `display` on the
+       children is how older ones do. The provenance disclosure's ▸ marker
+       goes with them: a closed-state affordance printed beside its open
+       content is a lie about the object. */
+    details > *:not(summary) { display: block; }
+    details::details-content { content-visibility: visible; }
+    .prov__disclosure > summary::after { content: ""; }
+
+    /* The two rules that make the ledger a RECORD on paper rather than a
+       screenshot of one. A record is an entry row and its meta row — the
+       status, the challenge window, the recompute command — and a page break
+       between them separates a number from the instructions for checking it.
+       The scroller goes too: `overflow-x: auto` on paper is a box that
+       clips, and `min-width: 33rem` is a screen measurement. */
+    .ledger-scroll { overflow-x: visible; }
+    .ledger-scroll > table { min-width: 0; }
+    .ledger-scroll tr.ledger-entry,
+    .ledger-scroll tr.ledger-meta,
+    .figure,
+    .ledger-unwritten,
+    .contest { break-inside: avoid; }
+
+    /* The masthead band prints as its rule, not as its fill. Browsers drop
+       background fills on paper by default, which would leave a band of
+       nothing holding the wordmark; saying so explicitly means the identity
+       object prints the same way whether or not the reader has "background
+       graphics" ticked. */
+    .masthead { background: none; }
+  }
 }
