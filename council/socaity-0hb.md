@@ -298,3 +298,54 @@ On the percentage paramount — **half checkable, half not, and the unenforceabl
 **Sequencing (platform-engineer, adopted).** W0: `style.css` token skeleton ∥ `html_gate.py` with checks (a),(e). W1: `base.html` rail/masthead/head-block/HOOK fix ∥ per-template `<style>` consolidation. W2: chips+legend ∥ provenance ∥ ledger table + figure component ∥ `/claim` floor + shared `.register`. W3: nav removal + in-body links ∥ `<time>` markup + check (d). W4: `card.html` + og tags + A1, then the palette drift check. W5: dark mode, print, focus. Exactly one ticket owns `render.py`; W2's four tickets take named fixed sections in `style.css` so edits stay append-only within their own block.
 
 **Split out (not dropped):** the `/roadmap` contested-edges strip and `good-first-dispute` list (community-builder files, before M0 publishes); "settled contest readable as a story" (**not implementable** without a new edge-schema field — validator change and schema version bump, a graph-schema issue); and the pre-existing presentation logic in `render.py` (`NODE_CHIPS`, `EDGE_CHIPS`, `weight_label`), frozen at current size here.
+
+## Amendment 1 — adopted by the founder, 2026-08-14
+
+Source: the critique round in `council/socaity-s0n.md`, in which four
+participants independently judged the built site against the audience. Every
+clause below was withdrawn or proposed by its own author. The founder adopted
+A1–A8 as written.
+
+**Diagnosis being corrected.** The register chosen in this resolution was right.
+The resolution was made almost entirely of refusals, so the implementation took
+the minimum the refusals allowed and every check went green. In the
+product-designer's words: *"I specified twenty ways to fail and zero ways to
+succeed."*
+
+- **A1 — the pairing rule.** Every refusal in this specification must be paired
+  with a positive assertion at the same level of specificity. A prohibition may
+  not ship without the assertion it protects. A gate that checks a refusal never
+  counts as verification of the assertion beside it.
+- **A2 — §J gains assertion gates**, not only prohibition gates: no `:root`
+  token with zero `var()` references; no heading below 1.4× body size; no
+  `<pre>` exceeding its container; every declared surface carries the identity
+  object. These land before the design work they protect.
+- **A3 — §H gains a masthead component** on all surfaces (the wordmark
+  currently exists on one of seven): wordmark at `--t-h2`, full-bleed band on
+  `--paper-sunk` with an `--ink` bottom rule, nav as a table of contents at
+  `--t-micro` with `aria-current`. The tagline drops to `--t-body`. This
+  supersedes R1b's implicit "nothing may be large", which its author withdrew.
+- **A4 — §C's rail list becomes ordered.** Nothing that annotates the masthead
+  may enter the rail; the first rail item aligns to the first block it
+  annotates, never to the `h1`; the colophon moves to the footer; the provenance
+  object collapses to one line with its `<dl>` inside a `<details>`, preserving
+  symmetry in the channel that carries it — the word.
+- **A5 — §B permits hue as a redundant third channel.** Marker shape and word
+  are unchanged and greyscale legibility is preserved. §D had already won
+  hue-never-alone with three redundant channels; banning the third bought
+  nothing.
+- **A6 — what must be LOUD.** On every surface the affordance to act renders at
+  least `--t-body` in `--ink`, and no contest or claim affordance may be the
+  smallest text on its page. Named because the previous specification fixed what
+  may never be louder than what, and never once fixed what must be loud.
+- **A7 — `/claim` commands wrap rather than clip** (four of six overflow their
+  container at desktop width today, silently, on the only conversion surface on
+  the site), and `/roadmap` is designed rather than listed.
+- **A8 — R1's diagram ban is narrowed** to decorative illustration only. A site
+  about a needs graph may carry one honest diagram drawn from real data.
+
+**Process amendment.** The design is to be produced as a rendered prototype
+through the real toolchain and reviewed as pixels, before it is decomposed into
+tickets. The failure this corrects is structural: a prose specification, tickets
+verified against their own checklists, and no one looking at the built result
+until the founder did.
