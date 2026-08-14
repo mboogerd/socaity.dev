@@ -593,6 +593,11 @@ def main(argv=None):
         write(os.path.join(out, *path.split("/")), pages[path][0])
     write(os.path.join(out, "style.css"),
           open(os.path.join(here, "templates", "style.css"), encoding="utf-8").read())
+    # The custom domain, emitted by the renderer rather than bolted onto the
+    # Pages artifact in CI, so the deployed tree stays exactly the tree
+    # tools/check.sh proved reproducible. GitHub drops the custom domain from a
+    # workflow-published site if CNAME is missing from the artifact.
+    write(os.path.join(out, "CNAME"), "socaity.dev\n")
 
     export = {"schema": 1, "clock": clock,
               "nodes": [n for _p, _nm, n in sorted(nodes, key=lambda t: t[2]["id"])],
