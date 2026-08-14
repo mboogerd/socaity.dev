@@ -276,6 +276,18 @@ These are open questions, not answers we are withholding:
   [sustainability.md](sustainability.md), and the trigger condition for the
   split is not defined.
 
+One part of this is settled, and it is the part a contributor meets first:
+there is no account on this site. Nothing here has a password, a login or a
+sign-up, and your name on the record is a key you hold on your own machine. If
+work of yours is ever accepted, the entry is written the same day and reads
+*attribution reserved* until you attach that key to it —
+[what claiming an entry actually involves](/claim/) is written out end to end,
+including what the record stores, what it does not, and why you may decline the
+whole thing and lose nothing.
+<!-- The one absolute path in this file: /claim/ is a rendered surface, not a
+     Markdown page, so the doc link rewriter (which sends a relative link to
+     the repository) cannot address it. -->
+
 The honest summary: one human, one voice is a **requirement** the project has
 committed to and a **problem** it has not solved. The commitments that survive
 the gap are that influence is never bought, that the demand side does not ship

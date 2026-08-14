@@ -162,7 +162,7 @@
      set for the tail face in the stack. */
   html { font-size: 17px; }
   body { max-width: 44rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; background: var(--bg);
-         color: var(--ink); font: 1rem/1.6 Georgia, "Times New Roman", serif; }
+         color: var(--ink); font: 1rem/1.6 var(--font-text); }
   header nav, footer { font-family: system-ui, sans-serif; font-size: 0.9rem; }
   header { border-bottom: 1px solid var(--rule); padding-bottom: 0.5rem; margin-bottom: 2rem; }
   /* Wider viewports get the standard's breathing room (V1); the measure itself
@@ -207,17 +207,14 @@
             font-size: 0.85rem; }
   .crumbs li { display: inline; }
   .crumbs li::after { content: " › "; color: var(--muted); }
-  .chips { margin: 0.3rem 0; }
-  .chip { display: inline-block; font-family: system-ui, sans-serif; font-size: 0.75rem;
-          padding: 0.1rem 0.5rem; border: 1px solid var(--ink); border-radius: 0.8rem;
-          margin-right: 0.35rem; }
-  .chip-open { border-style: solid; }
-  .chip-done { border-style: double; }
-  .chip-withdrawn { color: var(--muted); border-color: var(--muted); border-style: dotted; }
-  .chip-merged { border-style: solid; background: #eeeeee; }
-  .chip-contested { border-style: dashed; border-color: #8a5300; color: #8a5300; }
-  .chip-settled { border-style: solid; border-color: #1f5c2e; color: #1f5c2e; }
-  .chip-weight, .chip-ticket { border-style: solid; border-color: var(--muted); color: var(--muted); }
+  /* The chip rules that stood here are DELETED, not overridden, and the
+     deletion is the point of W2a — see its block at the foot of this file.
+     They were a 0.8rem pill with an amber `contested` (#8a5300) against a
+     green `settled` (#1f5c2e): a traffic light, on which a reader ranks the
+     states by hue before reading a word, and contested reads as the fault.
+     Overriding them from the W2a block would have worked — same specificity,
+     later in the file — but would have left three status hues in the
+     stylesheet for the next reordering to resurrect. */
   .checklist { list-style: none; padding-left: 0; }
   .checklist li { border-bottom: 1px solid var(--rule); padding: 0.4rem 0; }
   .checklist li.done, h1.done { text-decoration: line-through; }
@@ -247,7 +244,9 @@
      the two exhibits. Nothing here is color-only. */
   .ledger-block { border: 1px solid var(--rule); padding: 1.2rem 1.2rem 1.4rem; margin: 2rem 0; }
   .ledger-fixture { font-family: system-ui, sans-serif; font-size: 0.95rem; border: 1px solid var(--rule); padding: 0.8rem 1rem; }
-  .ledger-register { font-family: system-ui, sans-serif; font-size: 1.05rem; border-left: 3px solid var(--ink); padding-left: 0.9rem; }
+  /* `.ledger-register` was here. DROPPED by W2d (§H): the ledger's copy of
+     the register sentence now takes the one shared `.register` object, like
+     every other surface that carries it. */
   .ledger-headline { font-size: 1.05rem; }
   .ledger-figure { font-size: 1.9rem; line-height: 1.2; margin: 0.2rem 0; font-family: system-ui, sans-serif; }
   .ledger-because { font-size: 1.15rem; font-family: system-ui, sans-serif; margin: 0 0 0.6rem; }
@@ -364,7 +363,8 @@
      `.ledger-register` is retired by W2d, which also puts this class on the
      surfaces whose markup it owns. */
   .register,
-  .doc--manifesto > p:nth-of-type(3) {
+  .doc--manifesto > p:nth-of-type(3),
+  .doc--faq > blockquote:first-of-type {
     font-family: var(--font-text);
     font-size: var(--t-lede);
     line-height: var(--lh-lede);
@@ -377,7 +377,8 @@
   /* The sentence is the object; the bold run inside it was the old way of
      saying so and would now say it twice. */
   .register > strong,
-  .doc--manifesto > p:nth-of-type(3) > strong { font-weight: inherit; }
+  .doc--manifesto > p:nth-of-type(3) > strong,
+  .doc--faq > blockquote:first-of-type strong { font-weight: inherit; }
 }
 
 @layer surfaces {
@@ -475,4 +476,694 @@
     }
     .doc--manifesto > hr:first-of-type { margin: var(--s6) 0 var(--s7); }
   }
+}
+
+/* ==========================================================================
+   W2a — the status chip system, the legend disclosure and the contest
+   section. council/socaity-0hb.md §D (chips), §B (no hue in the status
+   system), §J·c (the gate that keeps a chip's word mandatory).
+
+   Its own block, in `objects`, so the four concurrent W2 tickets merge
+   cleanly: nothing below re-opens a rule any other ticket owns, and every
+   value is a W0a token — this ticket introduces no colour literal.
+
+   THE ARGUMENT, because the CSS is short and the reasoning is what has to
+   survive the next edit:
+
+   · NO HUE. The status system renders in the ink family only. The pairing
+     that was here before — amber contested against green settled — is a
+     traffic light: it encodes the states on an ordinal good→bad axis, and a
+     reader ranks them by hue before reading a word. Removing hue does not
+     merely add a channel, it makes the ranking unavailable, so "no
+     colour-only signalling" holds by construction rather than by counting
+     channels. Both flag tokens are thereby freed for what they are for:
+     genuine defects (a stale estimate, CI drift), never a status.
+   · WHAT THE REMAINING ORDER ENCODES. Lightness is still a ranking channel —
+     --ink → --ink-2 → --ink-3 is orderable and there is no pretending
+     otherwise. What it ranks is the record's ACTIVITY, not a contributor's
+     worth: live (open, contested) → resolved (confirmed, settled, merged) →
+     inert (withdrawn, reserved). Contested therefore sits at the STRONG end
+     and is the darkest chip on the page. That is the point of the whole
+     section: a contested edge is the mechanism working, not a fault.
+     WATCH-ITEM, recorded in the resolution and repeated here because this is
+     where it would be violated: CONTESTED MAY NEVER MIGRATE TO --ink-3. The
+     day contested renders inert under "de-emphasise the noise" pressure is
+     the day the fault reading returns through the back door, in greyscale,
+     with no hue left to blame.
+   · NO PILL. 2px radius, no fill, one hairline. A pill with a tinted fill is
+     a badge, a badge is a product-UI object, and the register this site is
+     arguing in is a document. The border is --rule-strong (3.50:1) because a
+     border that carries meaning may not sit under the 3:1 non-text floor.
+   · THREE REDUNDANT CHANNELS, none of them hue: marker shape, the word, and
+     the value the chip sits beside. The word is why check C exists — a chip
+     that lost its text would be shape-only signalling, which is the same
+     failure as colour-only with a different alibi.
+   · THE 45° HATCH IS NOT HERE, and its absence is deliberate. It belongs to
+     provenance (W2b), where it distinguishes `written by a person` from
+     `written by a program`. Spending the same idiom on contested would make
+     agent-authored work share a texture with contested and manufacture
+     exactly the fault-association this section removes.
+   ========================================================================== */
+
+@layer objects {
+  /* The row. Chips are metadata beside a fact, never the fact. */
+  .chips { margin: var(--s1) 0; }
+
+  /* The chip. No fill, no pill, one hairline, the --t-micro floor.
+     `color` is the state's ink token and the marker inherits it through
+     currentColor, so a state is one declaration, not two. */
+  .chip {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: var(--t-micro);
+    line-height: 1.3;
+    padding: 1px var(--s2);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    background: none;
+    color: var(--ink-2);
+    margin-right: var(--s1);
+  }
+
+  /* The marker. 8px, square, and never alone: every rule below changes the
+     shape, never the presence, so the chip is legible with images off, in
+     greyscale, and — via its word — with this stylesheet gone entirely.
+     `background-origin: border-box` matters for the contested divider: it
+     lets the bar run the full 8px height rather than stopping at the inner
+     edge of the outline. */
+  .chip-open::before,
+  .chip-done::before,
+  .chip-merged::before,
+  .chip-settled::before,
+  .chip-contested::before,
+  .chip-withdrawn::before,
+  .chip-reserved::before {
+    content: "";
+    display: inline-block;
+    box-sizing: border-box;
+    width: 8px;
+    height: 8px;
+    margin-right: var(--s1);
+    vertical-align: baseline;
+    background-origin: border-box;
+    background-clip: border-box;
+  }
+
+  /* LIVE — --ink, the darkest text on the page. */
+  .chip-open,
+  .chip-contested { color: var(--ink); }
+
+  /* open: hollow square. The state that is waiting for someone. */
+  .chip-open::before { border: 1px solid currentColor; }
+
+  /* contested: A SQUARE WITH A VERTICAL DIVIDER — two sides, which is what a
+     contest is. A 2px bar down the middle of an 8px outline, not 1px: at this
+     size a hairline divider disappears on a non-retina screen and the marker
+     collapses into the hollow square that means `open`. The two must not be
+     confusable, because they are the two live states. */
+  .chip-contested::before {
+    border: 1px solid currentColor;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 2px 100%;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+  }
+
+  /* RESOLVED — --ink-2. Settled, confirmed and merged are the record at
+     rest: still fully legible (8.99:1), one step back from live. */
+  .chip-done,
+  .chip-merged,
+  .chip-settled { color: var(--ink-2); }
+
+  /* filled square: the question is closed. */
+  .chip-done::before,
+  .chip-merged::before,
+  .chip-settled::before { background-color: currentColor; }
+
+  /* INERT — --ink-3, the text floor (5.16:1), still AA. Withdrawn and
+     reserved are states nobody is acting on. Contested is NOT here. */
+  .chip-withdrawn,
+  .chip-reserved { color: var(--ink-3); }
+
+  /* dotted: withdrawn — the outline of a thing that was taken back. */
+  .chip-withdrawn::before {
+    border: 1px dotted currentColor;
+    border-color: currentColor;
+  }
+
+  /* dashed: reserved — an outline held open for something not there yet. */
+  .chip-reserved::before { border: 1px dashed currentColor; }
+
+  /* NOT status, and therefore markerless: these two carry an annotation (a
+     weight, a ticket, a challenge window), not a state of the record. Giving
+     them a marker would enlarge the status vocabulary by two meanings nobody
+     defined. They keep the same box so the row stays a row. */
+  .chip-weight,
+  .chip-ticket {
+    color: var(--ink-2);
+    border-color: var(--rule-strong);
+    border-style: solid;
+  }
+
+  /* The legend, collapsed (§D). Safe to collapse precisely BECAUSE every chip
+     above carries its own word: this is a glossary, not a decoder, and a page
+     whose legend has to be open has under-specified its chips. Three
+     conditions from the council, all met here: the summary names its function
+     rather than saying `Legend`; it stays in the DOM; and it sits BELOW the
+     contest section in source order — it is in the page footer, and the
+     contest section is in <main>. */
+  .legend-marks > summary {
+    font-family: var(--font-ui);
+    font-size: var(--t-micro);
+    cursor: pointer;
+  }
+  .legend-marks > *:not(summary) { margin-top: var(--s3); }
+
+  /* Forced open in print, because paper has no disclosure triangle. Two
+     spellings on purpose: `::details-content` is how a current engine hides
+     the closed content, `display` on the children is how older ones do. */
+  @media print {
+    .legend-marks > *:not(summary) { display: block; }
+    .legend-marks::details-content { content-visibility: visible; }
+  }
+}
+
+/* ==========================================================================
+   W2d — the /claim typographic floor, and the one shared register object.
+   council/socaity-0hb.md §C (consent is a text-column object on every
+   surface), §H (one `.register` class), §I (the in-body link set), plus
+   community-builder's paramount as accepted verbatim in round 3.
+
+   Its own block, so the four concurrent W2 tickets merge cleanly. Two rules
+   outside it were edited rather than duplicated, and both are one selector
+   list each: `.register` gained the /faq alias in W1a's `objects` block, and
+   `.ledger-register` was deleted from W1b's `surfaces` block. Every value
+   here is a W0a token; this ticket introduces no literal.
+
+   THE FLOOR, and why it is a stylesheet problem rather than a copy problem:
+
+   · A REASSURANCE SENTENCE IS NEVER SMALLER, GREYER OR LOWER THAN THE
+     COMMAND IT ACCOMPANIES. That is the whole review test. If it fails, the
+     page has become an application form and the change is wrong regardless
+     of what else it fixed. The failure is not a wording failure: /claim's
+     copy is already an invitation. It is a *ranking* failure — three grey
+     `pre` blocks shouting over a sentence in muted 0.85rem sans.
+   · WHERE THE PRESSURE COMES FROM. A two-track grid creates a default sink
+     for anything that looks like metadata, and consent copy pattern-matches
+     to metadata: it is short, it is about the reader rather than the task,
+     and it reads as an aside. So it drifts into the rail, into --t-micro,
+     into --ink-3 — each step defensible on its own, and the sum of them is
+     an application form with friendly copy on top. Hence §C's closed rail
+     list, and hence this block: /claim fills NO rail at all, and nothing
+     below sets a reassurance sentence under --t-body or under --ink.
+   · WHY THE COMMANDS COME DOWN RATHER THAN THE SENTENCES GOING UP. Raising
+     the reassurance above --t-body would fix the ranking and break the
+     register: a page that shouts reassurance is a page that expects to be
+     disbelieved. So the `pre` blocks sit AT --t-body — equal to, never above,
+     the sentence telling you that you may decline.
+   · POSITION IS PART OF THE FLOOR. "Smaller, greyer OR LOWER": each step's
+     reassurance is emitted above its `pre` in claim.html, not under it, and
+     the consent object sits on the first screen rather than inside step 1.
+     A machine holds the first half — html_gate.py check S1 — and source
+     order holds the second.
+   ========================================================================== */
+
+@layer objects {
+  /* The /faq alias, continued. The FAQ authors the register sentence as a
+     Markdown blockquote — the subset has no attribute syntax, so there is no
+     class to hang on it — and it therefore arrives wearing `.doc blockquote`:
+     a 3px left bar, the quote's own vertical margins, and a paragraph inside
+     it carrying UA margins. The object is rules above and below and nothing
+     else, so those three come off here. Without this the same sentence is a
+     pull-quote on /faq and a ruled strip everywhere else, which is the
+     two-shapes failure §H names. */
+  .doc--faq > blockquote:first-of-type { border-left: 0; padding-left: 0; }
+  .doc--faq > blockquote:first-of-type > p { margin: 0; }
+  .doc--faq > blockquote:first-of-type > p + p { margin-top: var(--s3); }
+
+  /* Reassurance: consent, refusal, and every sentence whose job is to tell
+     the reader that nothing is being taken from them. --t-body in --ink, in
+     the body face, in the text column. There is no `.reassure--small` and
+     there must never be one: the day this object acquires a quiet variant is
+     the day the floor stops being a floor. */
+  .reassure {
+    font-family: var(--font-text);
+    font-size: var(--t-body);
+    line-height: var(--lh-body);
+    color: var(--ink);
+    margin-top: var(--s5);
+  }
+}
+
+@layer surfaces {
+  /* --- /claim, /claim/reserved/, /claim/merge-comment/ ------------------
+
+     The commands. W1b's `.claim pre` is the box (ground, hairline, scroll);
+     what changes here is the type: --t-body, so a command is exactly as
+     large as the sentence beside it and never larger. `code` is set
+     explicitly because `base` sets `code { font-size: 0.85em }` — inherited
+     into a `pre` at --t-body that lands the command at 14.45px, which would
+     satisfy the floor by shrinking the wrong half of the page. --font-mono
+     ends in `monospace`, so the stack has a defined tail (§A) instead of
+     relying on the UA's default fixed face; the ground moves to
+     --paper-sunk, which is the palette's surface token and 1.10:1 against
+     --paper, so the block reads as a quoted artifact rather than a control. */
+  .claim pre { font-family: var(--font-mono); font-size: var(--t-body);
+               line-height: var(--lh-body); background: var(--paper-sunk);
+               border-color: var(--rule); color: var(--ink); }
+  .claim pre code { font-size: inherit; }
+
+  /* The disclosures under "Before you close the terminal" are reassurance
+     with a lid on: "the passphrase, and what losing the key would mean",
+     "no GitHub account, or you would rather not use one". A summary is the
+     only visible half of the sentence until someone clicks, so it is held to
+     the same floor as the sentence inside — body face, --t-body, --ink. */
+  .claim details > summary { font-family: var(--font-text);
+                             font-size: var(--t-body); color: var(--ink); }
+
+  /* The lede keeps its step above body size: it is prose about the reader's
+     own merged work, and demoting it would rank the commands above it again.
+     Stated as a token rather than the inherited 1.05rem literal. */
+  .claim .lede { font-size: var(--t-lede); line-height: var(--lh-lede); }
+
+  /* The consent object on the first screen (launch-strategist's tell 4:
+     "key-and-signature ceremony without its reason at the point of ceremony").
+     No box, no fill, no bar — the register strip above it already owns the
+     ruled-object vocabulary on this page, and a second bordered object beside
+     it would read as a notice to be acknowledged. What makes it an object
+     rather than a paragraph is its fixed slot: between the register and the
+     first command, on every claim surface, at full size. */
+  .claim > .reassure--consent { margin-top: var(--s6); margin-bottom: var(--s7); }
+
+  /* Each step's reassurance sits ABOVE its command in the source, so this is
+     only the spacing that keeps the pairing legible: the sentence hugs the
+     block it explains and the gap to the previous step stays larger. */
+  .claim ol.steps > li > .reassure { margin-top: var(--s4); margin-bottom: var(--s2); }
+}
+
+/* ==========================================================================
+   W2b — the provenance object. council/socaity-0hb.md §E.
+
+   Its own named block, appended rather than merged into the sections above,
+   because layers accumulate and a rule's layer decides where its file
+   position does not. Every value below is a W0a token; this ticket
+   introduces no literal.
+
+   THE RULE THIS OBJECT IS BUILT AROUND: a visual difference may encode a
+   fact about WHO OR WHAT; it may never encode a judgement about QUALITY.
+   The operational form is an ordering test — if a reader can rank the two
+   values, the difference must be textual. Solid-versus-hatch on an otherwise
+   identical rule is not orderable. Solid-versus-nothing, coloured-versus-
+   grey, badge-versus-none and boxed-versus-unboxed all are, and all are
+   forbidden here.
+
+   So `.prov` and `.prov--agent` are one object with one fill. Identical
+   width, identical position, identical colour token, identical rule
+   geometry; the CSS diff between them is ONE DECLARATION, which is a binding
+   review item and the reason the edge is painted as a background rather than
+   drawn as a border — a border-image variant would have needed three lines
+   to say the same thing and the count is the check.
+
+   What is deliberately absent:
+     · no hue. --rule-strong paints both fills; no flag token comes near
+       this object. --flag-contested and --flag-settled are for defects.
+     · no striping of annotated content. The mark is on the statement about
+       the work, never on the work. Striping the work is the scarlet letter,
+       and its second-order effect is contributors laundering agent writes as
+       human — which destroys the disclosure rule maintainers are asked to
+       trust.
+     · no badge. No fill, no tick, no shield, no warning register, and no
+       verification grammar in any word this object renders. `unverified` is
+       the worst of the forbidden words because it names an absence and
+       invites the reader to supply the positive term.
+     · no size, weight or spacing difference of any kind between the two
+       kinds — including the founder's, which carries the human object
+       unchanged and at the same size as everyone else's, because the
+       no-exemptions rule only does community work if it is visible.
+   ========================================================================== */
+
+@layer objects {
+  /* The object. --t-micro is the rail's size (§A), --font-ui its face: this
+     is metadata about an assertion, and it must not compete with the
+     assertion. The 3px left edge is painted into a transparent border, so
+     the box model is a real 3px border — same width, same position, same
+     text offset for both kinds — while the fill stays a single property. */
+  .prov {
+    font-family: var(--font-ui);
+    font-size: var(--t-micro);
+    line-height: var(--lh-lede);
+    color: var(--ink-2);
+    border-left: 3px solid transparent;
+    padding: 0 0 0 var(--s3);
+    background-image: linear-gradient(var(--rule-strong), var(--rule-strong));
+    background-repeat: no-repeat;
+    background-position: left top;
+    background-size: 3px 100%;
+    background-origin: border-box;
+    background-clip: border-box;
+  }
+
+  /* THE SOLE DIFFERENCE. One declaration, same token, same 3px strip, same
+     vertical extent: the edge is hatched at 45 degrees instead of solid. The
+     hatch is reserved to provenance and appears nowhere in the status
+     vocabulary — W2a gives contested a square split by a vertical divider
+     precisely so the two idioms cannot be read as each other. A 3px stripe
+     at a 3px period survives a 300px thumbnail and greyscale, which is the
+     whole reason the difference is visual at all: a difference legible only
+     at full size fails in exactly the contexts where a maintainer meets our
+     work. */
+  /* Deliberately unwrapped past this file's usual column: the review item is
+     that the diff between the two rules is ONE LINE, and a declaration split
+     across two lines makes a reviewer count declarations instead of lines. */
+  .prov--agent {
+    background-image: repeating-linear-gradient(45deg, var(--rule-strong) 0 3px, transparent 3px 6px);
+  }
+
+  /* The kind chip. Same chip grammar as the status vocabulary — no pill, no
+     fill, 2px radius, --t-micro — but its own class: the two chip families
+     name different sorts of fact and must not inherit each other's states.
+     The word is never optional. The mark says which kind at thumbnail size;
+     the word says it in prose, in greyscale, with CSS off, and to a screen
+     reader. Both kinds render it identically, in the same colour, at the
+     same size: symmetric shapes with asymmetric words would reinstate the
+     scarlet letter in the one channel the geometry does not cover. */
+  .prov__kind {
+    display: inline-block;
+    margin: 0;
+    padding: var(--s1) var(--s2);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    color: var(--ink);
+  }
+
+  /* The micro-grid: asserted-by · model · run · asserted · evidence, in that
+     order, five rows for BOTH kinds. A human write reads `none` where an
+     agent write names a model and a run rather than dropping the rows,
+     because a shorter human object would make the agent object the taller,
+     louder one — the salience asymmetry is the scarlet letter arriving by
+     the back door, and absence of a mark may never be the human signal.
+     Label above value rather than beside it: the rail is 187px wide at the
+     17px root, and a two-column form breaks `asserted by` across two lines
+     before a single hash has been printed. */
+  .prov__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    margin: var(--s3) 0 0;
+  }
+  .prov__grid > dt {
+    color: var(--ink-3);
+    margin-top: var(--s2);
+  }
+  .prov__grid > dt:first-of-type { margin-top: 0; }
+  .prov__grid > dd {
+    margin: 0;
+    color: var(--ink-2);
+    overflow-wrap: anywhere;
+  }
+  .prov__grid > dd > code {
+    font-family: var(--font-mono);
+    font-size: 1em;
+  }
+
+  .prov__derivation { margin: var(--s3) 0 0; }
+}
+
+@layer layout {
+  @media (min-width: 60rem) {
+    /* A doc page's <article> is one Markdown blob, h1 included, so the only
+       way its rail item can come after the page's own name in source order
+       is to be written last. Pinning it to the first row puts it back at the
+       top of the left track, where W1a measured the first screen: the
+       desktop layout is byte-for-byte the layout it replaced. This is a
+       placement across tracks, not an `order:` — it reorders nothing within
+       a column, and below 60rem there is no grid, so the collapsed page
+       reads exactly as it is written. */
+    main:has(> .rail:not(:empty)) > .rail--colophon { grid-row: 1; }
+  }
+}
+
+/* ==========================================================================
+   W2c — the ledger table and the figure component.
+   council/socaity-0hb.md §F (numbers) and the ledger half of the resolution's
+   table findings, socaity-7cj.
+
+   Its own block, appended, like every other W2 section: layers accumulate and
+   a rule's layer decides, so nothing here has to be interleaved with anybody
+   else's ticket to win. Two rules from the palette govern everything below:
+   a border that MEANS something takes --rule-strong (3.50:1), and --rule
+   (1.42:1) may only separate. That is why the 3px bar binding an entry to its
+   own detail row is --rule-strong while the hairline that closes the record
+   is --rule — one of them carries a fact, the other is punctuation.
+
+   Not here, deliberately: zebra striping, a hover fill, and sort controls.
+   The table is the audit artifact. A reader copies rows out of it, a screen
+   reader walks it, and a sort control would produce an order that is not the
+   record's order while looking exactly like it.
+
+   `.ledger-figure` in the W1b `surfaces` block above has no call site left on
+   /ledger after this ticket — both figures it styled are now the `figure`
+   component — but the rule stays where it is: this ticket owns its own
+   section, not anybody else's, and a dead rule is cheaper than a merge
+   conflict across three concurrent W2 branches. `.ledger-because` above it is
+   still live and still styles the contributor-count line.
+   ========================================================================== */
+
+@layer objects {
+  /* --- the figure component (§F) ---------------------------------------
+     One ruled block, three lines, in this order: fraction, percentage,
+     derivation. THE DENOMINATOR OUT-MASSES THE PERCENTAGE — --t-display
+     (50.83px) against --t-h2 (29.41px) — because the fraction is the fact
+     that makes the percentage mean anything. The site shipped the inverse
+     until this ticket: the percentage at 30.4px in the UI sans, the fact
+     explaining it at 18.4px, the one number on the page set in the dashboard
+     font.
+
+     Serif throughout, with lining tabular numerals: §A puts all meaningful
+     numbers in --font-text, and a sans numeral set larger than the serif
+     prose around it is what makes a page read as a dashboard rather than a
+     record. */
+  .figure {
+    margin: var(--s7) 0;
+    padding: var(--s4) 0 var(--s3);
+    border-top: 1px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .figure__frac {
+    font-family: var(--font-text);
+    font-size: var(--t-display);
+    line-height: var(--lh-display);
+    font-variant-numeric: lining-nums tabular-nums;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  /* The leading "=" is markup-side (the template writes it), and it is
+     load-bearing rather than decorative: it makes this line grammatically
+     dependent on the line above, so a 600x315 crop that takes the percentage
+     without its denominator reads as a fragment with something missing above
+     it rather than as a quotable figure. */
+  .figure__pct {
+    font-family: var(--font-text);
+    font-size: var(--t-h2);
+    line-height: var(--lh-heading);
+    font-variant-numeric: lining-nums tabular-nums;
+    color: var(--ink);
+    margin: var(--s1) 0 0;
+  }
+
+  /* Within ONE LINE-HEIGHT of the percentage and inside the same ruled
+     block: 4px of margin under a 35px line box, against the 23px line-height
+     of this size. The derivation is not a footnote to the figure; it is part
+     of it, and a reader who can crop the block cannot crop them apart. */
+  .figure__derivation {
+    font-family: var(--font-text);
+    font-size: var(--t-micro);
+    line-height: var(--lh-body);
+    font-variant-numeric: lining-nums tabular-nums;
+    color: var(--ink-2);
+    margin: var(--s1) 0 0;
+    max-width: var(--measure);
+  }
+}
+
+@layer surfaces {
+  /* --- the ledger tables -----------------------------------------------
+     Scoped to `.ledger-scroll`, which only /ledger emits, so the node and
+     roadmap tables keep the `base` defaults until their own ticket arrives.
+
+     It stays a real <table>: it is the audit artifact, so it has to survive
+     being copied into an issue and being walked by a screen reader. */
+  .ledger-scroll table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: var(--t-body);
+  }
+
+  /* Headers are metadata about the column, not content: --t-micro, --font-ui,
+     --ink-2, and a single 1px --ink rule under the row. That rule is the one
+     border in the table that separates two KINDS of thing rather than two
+     instances of one, which is why it is the darkest. */
+  .ledger-scroll thead th {
+    font-family: var(--font-ui);
+    font-size: var(--t-micro);
+    font-weight: 600;
+    line-height: var(--lh-lede);
+    color: var(--ink-2);
+    text-align: left;
+    vertical-align: bottom;
+    border-bottom: 1px solid var(--ink);
+    padding: 0 var(--s3) var(--s2) 0;
+  }
+
+  /* Cells at full --t-body in the text face — up from 15.3px, which was
+     0.9rem of a stylesheet written against a 16px root. A record set smaller
+     than the prose that describes it reads as an appendix. */
+  .ledger-scroll td {
+    font-family: var(--font-text);
+    font-size: var(--t-body);
+    line-height: var(--lh-body);
+    color: var(--ink);
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 0;
+    padding: var(--s2) var(--s3) var(--s2) 0;
+  }
+
+  /* Numeric columns: right-aligned, tabular, and SERIF. Tabular figures are
+     what make a column of shares scan as a column; right alignment is what
+     makes 5 and 20 comparable at a glance. */
+  /* The gutter moves to the LEFT of a numeric column: the right edge of the
+     last column is the edge of the table, and a right-aligned column needs
+     its air on the side the previous column is on, or 12 h x 1 vu/h and the
+     12 vu beside it read as one number. */
+  .ledger-scroll .ledger-num {
+    text-align: right;
+    padding-right: 0;
+    padding-left: var(--s5);
+  }
+  /* The face stays on the cell, not on the header: a column header is
+     metadata and keeps --font-ui with every other header, while the value
+     under it is a meaningful number and takes the text face (§A). */
+  .ledger-scroll td.ledger-num {
+    font-family: var(--font-text);
+    font-variant-numeric: lining-nums tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* THE ENTRY PAIR. `tr.ledger-entry` and `tr.ledger-meta` are one record in
+     two rows, and before this ticket they were two rows that did not look
+     related: an identical hairline ran under each of them, so the boundary
+     between an entry and its own status, challenge window and recompute
+     block was drawn exactly as heavily as the boundary between two entries.
+
+     Three moves, all structural: one 3px --rule-strong bar down the left of
+     BOTH rows, ties them together; the hairline between them is removed; the
+     record's closing hairline is drawn under the meta row only. Borders on a
+     `tr` paint under `border-collapse: collapse`, which is why the pair can
+     share one bar rather than faking it with a border on a first cell. */
+  .ledger-scroll tr.ledger-entry,
+  .ledger-scroll tr.ledger-meta {
+    border-left: 3px solid var(--rule-strong);
+  }
+  .ledger-scroll tr.ledger-entry > td,
+  .ledger-scroll tr.ledger-meta > td { border-bottom: 0; }
+  .ledger-scroll tr.ledger-entry > td:first-child,
+  .ledger-scroll tr.ledger-meta > td:first-child { padding-left: var(--s3); }
+  .ledger-scroll tr.ledger-entry > td { padding-bottom: var(--s1); }
+  .ledger-scroll tr.ledger-meta > td { padding-top: 0; padding-bottom: var(--s5); }
+  /* The only hairline inside the body, and it closes a whole record. */
+  .ledger-scroll tr.ledger-meta { border-bottom: 1px solid var(--rule); }
+
+  /* The rate card and the precomputed calculator grid are single-row records,
+     so their rows keep a plain hairline and no binding bar. */
+  .ledger-scroll tbody tr:not(.ledger-entry):not(.ledger-meta) > td {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* --- stacked records under 40rem --------------------------------------
+     MEASURED before this ticket at 375px: `.ledger-scroll` is 343px wide and
+     its table is 528px (`min-width: 33rem`), so 185px of the record — the
+     hours, the vu and the share, i.e. the arithmetic — lived inside a
+     horizontal scroller nested in a vertically scrolling page. A phone reader
+     who never found that scroller read a ledger with no numbers in it.
+
+     Below 40rem the same markup restyles into one stacked record per entry.
+     Each cell prints its own column name from `data-label`, so no value is
+     ever orphaned from the word that names it; the header row leaves the
+     flow, because it would otherwise repeat that word a second time. The
+     ARIA roles the template writes are what keep the table a table here:
+     `display: block` on a row or a cell drops the implicit table semantics,
+     and this is the viewport where the reader can least afford that. */
+  @media (max-width: 40rem) {
+    .ledger-scroll { overflow-x: visible; }
+    .ledger-scroll > table:has(td[data-label]) { min-width: 0; }
+
+    .ledger-scroll table:has(td[data-label]) thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    /* The table box goes with them. A `display: table` box is sized to its
+       own max-content even when its rows and cells are blocks, so one
+       unbreakable line inside a record — the recompute command, 62
+       characters of monospace — was still setting a 536px table inside a
+       341px column and pushing the whole PAGE sideways. As a block it takes
+       the width it is given and each record's own overflow is that record's
+       problem, which is where it belongs. The ARIA roles in the markup are
+       what make this a restyling rather than an untabling. */
+    .ledger-scroll table:has(td[data-label]),
+    .ledger-scroll table:has(td[data-label]) tbody,
+    .ledger-scroll table:has(td[data-label]) tr,
+    .ledger-scroll table:has(td[data-label]) td { display: block; width: auto; }
+
+    .ledger-scroll table:has(td[data-label]) td[data-label] {
+      padding: 0 0 var(--s2) var(--s3);
+      text-align: left;
+      white-space: normal;
+    }
+    .ledger-scroll table:has(td[data-label]) td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-family: var(--font-ui);
+      font-size: var(--t-micro);
+      line-height: var(--lh-lede);
+      color: var(--ink-2);
+    }
+
+    /* A 64-character entry id has nowhere to go in a 341px record. While the
+       table was a horizontal scroller the hash escaped into the scroller;
+       with the scroller gone it would escape onto the page, and a page that
+       scrolls sideways on a phone is exactly what the stacked layout is for
+       removing. Hashes are read by eye a chunk at a time and copied whole, so
+       breaking one across lines costs nothing and the alternative is a
+       385px-wide document. (`pre.ledger-cmd` keeps its own scroller: a
+       command line broken across lines would be a command that does not run
+       when pasted.) */
+    .ledger-scroll td code { overflow-wrap: anywhere; }
+
+    /* One record, one left bar, one closing hairline — the same binding the
+       wide layout draws, redrawn for a stack: the bar runs down the whole
+       record because the two rows are display blocks stacked directly on
+       each other, and nothing separates them. */
+    .ledger-scroll tr.ledger-entry { padding-top: var(--s3); }
+    .ledger-scroll tr.ledger-meta { padding-bottom: var(--s4); }
+    .ledger-scroll tbody tr:not(.ledger-entry):not(.ledger-meta) {
+      border-left: 3px solid var(--rule-strong);
+      padding: var(--s3) 0 var(--s2);
+    }
+    .ledger-scroll tbody tr:not(.ledger-entry):not(.ledger-meta) > td {
+      border-bottom: 0;
+    }
+    .ledger-scroll table:has(td[data-label]) tr.ledger-meta > td { padding-bottom: 0; }
+  }
+
+  /* The figure sits inside `.ledger-block`, whose own border boxes the
+     section; the figure's rules are its own and run the width of the block. */
+  .ledger-block > .figure { margin-left: 0; margin-right: 0; }
 }

@@ -592,5 +592,232 @@ class HtmlGateFontStacks(unittest.TestCase):
                          ["FONT-STACK-UNRESOLVABLE"])
 
 
+class HtmlGateProvenance(unittest.TestCase):
+    """Check P — a .prov object always names its kind (0hb §E).
+
+    The check is what keeps the provenance mark honest in the one direction
+    the CSS cannot: the fill on the rule says which kind at thumbnail size,
+    and the word says it everywhere else. A .prov with no word would make
+    absence-of-a-mark the human signal, which is the thing the whole design
+    refuses; a word outside the closed pair is how `unverified` or a badge
+    grammar would arrive; a word that contradicts its own fill is the two
+    channels drifting apart.
+    """
+
+    HUMAN = ('<div class="prov"><p class="prov__kind">written by a person</p>'
+             '<dl class="prov__grid"><dt>asserted by</dt><dd>founder</dd></dl></div>')
+    AGENT = ('<div class="prov prov--agent">'
+             '<p class="prov__kind">written by a program</p>'
+             '<dl class="prov__grid"><dt>asserted by</dt><dd>a</dd></dl></div>')
+
+    def rules(self, body):
+        root = tempfile.mkdtemp()
+        os.makedirs(os.path.join(root, "site"))
+        with open(os.path.join(root, "site", "index.html"), "w",
+                  encoding="utf-8") as handle:
+            handle.write(body)
+        pages, sheets = html_gate.load(os.path.join(root, "site"))
+        return [rule for _rel, _line, rule, _why
+                in html_gate.check_prov_kind(pages, sheets, root)]
+
+    def test_both_kinds_pass(self):
+        self.assertEqual(self.rules(self.HUMAN + self.AGENT), [])
+
+    def test_the_two_kinds_are_a_closed_set_of_two(self):
+        self.assertEqual(sorted(html_gate.PROV_KINDS),
+                         ["written by a person", "written by a program"])
+
+    def test_a_prov_with_no_kind_is_flagged(self):
+        self.assertEqual(self.rules('<div class="prov"><dl><dt>asserted by</dt>'
+                                    '<dd>founder</dd></dl></div>'),
+                         ["PROV-KIND"])
+
+    def test_verification_grammar_is_flagged(self):
+        for word in ("unverified", "AI-generated", "automated", "verified"):
+            self.assertEqual(
+                self.rules('<div class="prov"><p class="prov__kind">%s</p></div>' % word),
+                ["PROV-KIND"], word)
+
+    def test_a_word_that_contradicts_its_own_fill_is_flagged(self):
+        self.assertEqual(
+            self.rules('<div class="prov prov--agent">'
+                       '<p class="prov__kind">written by a person</p></div>'),
+            ["PROV-KIND-DISAGREES"])
+        self.assertEqual(
+            self.rules('<div class="prov">'
+                       '<p class="prov__kind">written by a program</p></div>'),
+            ["PROV-KIND-DISAGREES"])
+
+    def test_the_kind_may_be_nested_and_wrapped(self):
+        self.assertEqual(
+            self.rules('<div class="prov"><p class="prov__kind">\n  written by\n'
+                       '  <span>a person</span>\n</p></div>'), [])
+
+    def test_a_modifier_without_the_object_class_is_not_a_prov(self):
+        # `.prov--agent` alone carries no rule of its own: the object is
+        # `.prov`, and a page that wrote only the modifier would render an
+        # unmarked block. The gate sees nothing here, and the CSS renders
+        # nothing either, so the two agree.
+        self.assertEqual(self.rules('<div class="prov--agent">x</div>'), [])
+
+
+class HtmlGateFigures(unittest.TestCase):
+    """Checks B and G: a figure without its working, and a percentage set at
+    heading size without its denominator (0hb §F, §J·b and §J·f).
+
+    The case that matters most here is the one that PASSES B and FAILS G: a
+    figure whose derivation is real — it names the rule and the chain the
+    number was computed over — but states no denominator. That is the shape
+    /ledger shipped at line 129, and a gate that only asked "is there a
+    derivation?" would have certified it.
+    """
+
+    SHEET = (""":root { --t-display: 2.99rem; --t-h2: 1.73rem; }
+               html { font-size: 17px }
+               .figure__frac { font-size: var(--t-display) }
+               .figure__pct { font-size: var(--t-h2) }
+               .big { font-size: 2.2rem }""")
+
+    def rules(self, body, css=None):
+        root = tempfile.mkdtemp()
+        os.makedirs(os.path.join(root, "site"))
+        with open(os.path.join(root, "site", "index.html"), "w",
+                  encoding="utf-8") as handle:
+            handle.write(body)
+        with open(os.path.join(root, "site", "style.css"), "w",
+                  encoding="utf-8") as handle:
+            handle.write(self.SHEET if css is None else css)
+        pages, sheets = html_gate.load(os.path.join(root, "site"))
+        found = html_gate.check_figure_derivation(pages, sheets, root)
+        found += html_gate.check_percent_size(pages, sheets, root)
+        return sorted(rule for _rel, _line, rule, _why in found)
+
+    FIGURE = ('<figure class="figure">'
+              '<p class="figure__frac">%s</p>'
+              '<p class="figure__pct">= 100%% founder share of epoch 0</p>'
+              '%s</figure>')
+    DERIVATION = ('<figcaption class="figure__derivation">because the '
+                  'denominator D is 50 vu and all of it is his.</figcaption>')
+
+    def test_the_shipped_figure_is_clean(self):
+        self.assertEqual(self.rules(self.FIGURE % ("50 of 50 vu", self.DERIVATION)), [])
+
+    def test_a_figure_without_a_derivation(self):
+        self.assertEqual(self.rules(self.FIGURE % ("50 of 50 vu", "")),
+                         ["FIGURE-WITHOUT-DERIVATION", "PERCENT-WITHOUT-DENOMINATOR"])
+
+    def test_a_derivation_that_names_provenance_but_no_denominator(self):
+        # Passes B. Fails G. This is the whole point of G existing.
+        provenance = ('<figcaption class="figure__derivation">Computed by the '
+                      'published rule over the example chain.</figcaption>')
+        self.assertEqual(self.rules(self.FIGURE % ("Your epoch", provenance)),
+                         ["PERCENT-WITHOUT-DENOMINATOR"])
+        self.assertEqual(self.rules(self.FIGURE % ("0 of 1 vu", provenance)), [])
+
+    def test_a_display_percentage_outside_any_figure(self):
+        self.assertEqual(self.rules('<p class="big">Epoch 0: 100% founder</p>'),
+                         ["PERCENT-WITHOUT-DENOMINATOR"])
+
+    def test_a_percentage_in_a_heading(self):
+        self.assertEqual(self.rules("<h2>Epoch 0: 100% founder</h2>"),
+                         ["PERCENT-WITHOUT-DENOMINATOR"])
+
+    def test_a_percentage_in_prose_is_not_this_check(self):
+        # The prose inventory (§J·h) is where a body-size percentage is
+        # answered; G is about the size a crop takes.
+        self.assertEqual(self.rules("<p>the founder share is 100% of the "
+                                    "epoch</p>"), [])
+
+    def test_the_size_is_read_from_the_stylesheet_not_the_tag(self):
+        # Same markup, one rem smaller: below the heading rung, so not G's.
+        small = self.SHEET.replace(".big { font-size: 2.2rem }",
+                                   ".big { font-size: 1.2rem }")
+        self.assertEqual(self.rules('<p class="big">100% founder</p>', small), [])
+
+
+# ---------------------------------------------------------------------------
+# html gate — check C (W2a)
+# ---------------------------------------------------------------------------
+class HtmlGateChipText(unittest.TestCase):
+    """Check C: no `.chip` without a text node.
+
+    The chip's marker is a CSS `::before` and its state is a colour token, so
+    the WORD is the only channel that survives images-off, a text browser, a
+    feed reader that strips styles, and a greyscale capture. Every case below
+    is a way of shipping a wordless chip that a naive `>...<` test would wave
+    through — and the mirror cases, where the word is present but nested or
+    entity-escaped, which must NOT be flagged.
+    """
+
+    def rules(self, body):
+        root = tempfile.mkdtemp()
+        os.makedirs(os.path.join(root, "site"))
+        with open(os.path.join(root, "site", "index.html"), "w",
+                  encoding="utf-8") as handle:
+            handle.write(body)
+        pages, sheets = html_gate.load(os.path.join(root, "site"))
+        return [rule for _rel, _line, rule, _why
+                in html_gate.check_chip_text(pages, sheets, root)]
+
+    def test_a_chip_with_a_word_is_clean(self):
+        self.assertEqual(self.rules('<span class="chip chip-open">Open</span>'), [])
+
+    def test_an_empty_chip_is_flagged(self):
+        self.assertEqual(self.rules('<span class="chip chip-open"></span>'),
+                         ["CHIP-WITHOUT-TEXT"])
+
+    def test_whitespace_is_not_a_word(self):
+        self.assertEqual(self.rules('<span class="chip">\n   \t </span>'),
+                         ["CHIP-WITHOUT-TEXT"])
+
+    def test_a_marker_only_chip_is_flagged(self):
+        # The exact regression this check exists for: the state moved into a
+        # class and the word was dropped, so the chip says nothing without CSS.
+        self.assertEqual(self.rules('<span class="chip chip-contested">'
+                                    '<span class="marker"></span></span>'),
+                         ["CHIP-WITHOUT-TEXT"])
+
+    def test_nested_text_counts(self):
+        self.assertEqual(self.rules('<span class="chip">ticket '
+                                    '<code>open</code></span>'), [])
+
+    def test_an_entity_counts(self):
+        self.assertEqual(self.rules('<span class="chip">&#79;pen</span>'), [])
+
+    def test_script_inside_a_chip_is_not_text(self):
+        self.assertEqual(self.rules('<span class="chip">'
+                                    '<script>var x = "Open";</script></span>'),
+                         ["CHIP-WITHOUT-TEXT"])
+
+    def test_a_void_element_carrying_the_class_is_flagged(self):
+        # No end tag, so no text can ever arrive; alt text is not a text node.
+        self.assertEqual(self.rules('<img class="chip" alt="Open">'),
+                         ["CHIP-WITHOUT-TEXT"])
+
+    def test_the_container_is_not_a_chip(self):
+        self.assertEqual(self.rules('<p class="chips"></p>'), [])
+
+    def test_a_class_that_merely_starts_with_chip_is_not_a_chip(self):
+        self.assertEqual(self.rules('<span class="chipmunk"></span>'), [])
+
+    def test_text_after_the_chip_closes_does_not_rescue_it(self):
+        self.assertEqual(self.rules('<span class="chip"></span> Open'),
+                         ["CHIP-WITHOUT-TEXT"])
+
+    def test_two_chips_on_one_line_are_judged_separately(self):
+        self.assertEqual(self.rules('<span class="chip">Open</span>'
+                                    '<span class="chip"></span>'),
+                         ["CHIP-WITHOUT-TEXT"])
+
+    def test_unbalanced_markup_still_attributes_the_text(self):
+        # An end tag closes the nearest match and everything open inside it,
+        # which is what the browser does too.
+        self.assertEqual(self.rules('<div><span class="chip">Open</div>'), [])
+
+    def test_a_chip_nested_in_a_chip(self):
+        self.assertEqual(self.rules('<span class="chip"><span class="chip">'
+                                    'Open</span></span>'), [])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

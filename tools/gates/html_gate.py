@@ -43,11 +43,69 @@ Checks that run:
       target — so an unreachable page cannot buy an exemption with one
       `<meta refresh>` to the homepage.
 
+  C   **No `.chip` without a text node.**  A chip's marker is a CSS `::before`
+      and its colour is a token; both are gone with images off, in a text
+      browser, in a feed reader that strips styles, and in any greyscale
+      capture where the ink family collapses.  What survives all of those is
+      the WORD, so the word is mandatory and this gate is what makes it so.
+      The council's phrasing: three redundant channels — marker shape, word,
+      value — and a chip that lost its text would be shape-only signalling,
+      which is colour-only signalling with a different alibi (§D).
+
+      The text may be nested (`<span class="chip">ticket <code>x</code></span>`
+      counts) and whitespace does not count.  An element that carries the
+      class and is written self-closing can never have text and is reported
+      at its start tag.
+
+  B   **No `figure` without a `figure__derivation`** (§F, §J·b).  The
+      component is three lines — fraction, percentage, derivation — and the
+      third is the only one a reader can check.  A figure with it removed is
+      an assertion wearing a figure's clothes.
+
+  G   **No `%` at heading or display size without its denominator** (§F's
+      paramount, §J·f).  The size is resolved out of the stylesheets the page
+      loads rather than guessed from the tag, because what makes a percentage
+      dangerous is how big it is set: a 50px number is what a screenshot
+      crops and a timeline reposts.  At or above the `--t-h2` rung — or
+      inside an `<h1>`/`<h2>` at any size — a percentage must sit in a
+      `figure` that carries BOTH a derivation and a `.figure__frac` stating
+      the fraction it came from.
+
+      The second requirement is the check, and B is not a substitute for it.
+      /ledger shipped a second display figure whose derivation named the rule
+      and the chain the number was computed over — real provenance, no
+      denominator — which would pass "is there a derivation?" while breaking
+      the paramount that question exists to serve.  A derivation that names
+      where a number came from is not a statement of what it is a fraction
+      OF.
+
+  P   **Every `.prov` object names its kind**, from a closed set of exactly
+      two strings — `written by a person` / `written by a program` (§E).
+      Two failures, one check.  A `.prov` with no kind cannot ship, so
+      *absence of a mark can never become the human signal* and "the founder
+      carries the identical object" is enforced rather than promised.  And a
+      kind whose word disagrees with the fill on the rule — `.prov--agent`
+      saying `written by a person`, or the reverse — is the one way the mark
+      and the word could drift apart, after which the pattern would be
+      encoding something nobody wrote down.  The set is closed on purpose:
+      `unverified`, `AI-generated`, `automated` and every badge or
+      verification grammar are forbidden, and a closed set is how a gate
+      forbids a word it has not been told to expect.
+
   F1  **Every `font-family` declaration ends in a generic family** (§A, the
       greppable half).  The stack is tuned against its *last resolvable*
       entry, so a stack with no generic end has no defined last entry.  A
       `font-family: var(--x)` is resolved against the custom properties
       declared in the same file before it is judged.
+
+  S1  **The positional style couplings still hold** (§H).  The manifesto's
+      first screen and the /faq register strip are styled by ordinal —
+      `.doc--manifesto > p:nth-of-type(1..4)`, `.doc--faq > blockquote` —
+      because the Markdown subset has no attribute syntax and the alternative
+      was presentation logic in `render.py`.  This asserts that the paragraph
+      standing in each styled position still opens with the sentence the rule
+      was written for, so inserting a paragraph at the top of doc/manifesto.md
+      fails the build instead of silently restyling the first screen.
 
 Deferred, by the rule platform-engineer generalised in round 3 — "a check may
 not land in a commit where it is red", because "a gate that ships failing gets
@@ -55,10 +113,7 @@ commented out within a week, and then we have neither the check nor the
 honesty of not claiming one".  Each lands in the ticket that ships the markup
 satisfying it, as a new entry in CHECKS:
 
-  B   `figure` without a `figure__derivation`.
-  C   `.chip` with no text.
   D   freshness stamp without `<time>`.
-  G   any `%` at heading or display size outside a `figure` with a derivation.
   H   the prose-percentage inventory diffed against
       `tools/gates/percent_inventory.txt` — an inventory, never a verdict.
   I   `blog_card.html` palette drift: every colour literal also in `:root`.
@@ -134,6 +189,22 @@ STRUCTURE_TAGS = {"h1", "h2", "h3", "h4", "h5", "h6", "img", "table", "figure",
                   "blockquote", "pre", "details", "video", "audio", "svg",
                   "iframe", "main", "header", "footer"}
 
+# Elements with no end tag. One of these carrying `class="chip"` can never
+# hold a text node, so it fails check C at its start tag rather than waiting
+# for a close that is not coming.
+VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input",
+             "link", "meta", "param", "source", "track", "wbr"}
+
+# The closed set of provenance kinds (§E), and the fill each one is drawn
+# with.  Exactly two strings, named symmetrically: they differ in one noun and
+# rank neither.  The set is closed rather than open because that is how a gate
+# forbids a word nobody told it about — `unverified` above all, which names an
+# absence and invites the reader to supply the positive term.
+PROV_KINDS = {
+    "written by a person": "human",
+    "written by a program": "agent",
+}
+
 PAGE_EXT = (".html", ".htm")
 CSS_EXT = (".css",)
 
@@ -163,11 +234,13 @@ CSS_VAR = re.compile(r"var\(\s*(--[A-Za-z0-9_-]+)\s*(?:,\s*(.*?)\s*)?\)$",
 # document model
 # --------------------------------------------------------------------------
 class _Doc(html.parser.HTMLParser):
-    """What the two live checks need out of a page, with source lines.
+    """What the live checks need out of a page, with source lines.
 
-    Deliberately shallow: a list of references and a list of CSS fragments.
-    The deferred checks need element nesting, so they will grow a tree here
-    rather than reparse — the parse stays single-pass either way.
+    Deliberately shallow: lists of references and CSS fragments, plus the one
+    piece of nesting check C actually needs — an open-element stack, so the
+    text inside a `.chip` can be attributed to it however deeply it is
+    wrapped. The remaining deferred checks grow this stack into a tree rather
+    than reparse; the parse stays single-pass either way.
     """
 
     def __init__(self):
@@ -178,8 +251,17 @@ class _Doc(html.parser.HTMLParser):
         self.refresh = None      # meta http-equiv=refresh target, if any
         self.text_len = 0        # visible text, less <style>/<script>
         self.structure = 0       # elements a redirect stub never carries
+        self.chips = []          # (line, text) — one per element carrying .chip
         self._style = None
         self._quiet = 0          # inside <script>: text is not page text
+        self._open = []          # (tag, chip_frame or None) — open elements
+        self._chips = []         # the frames of the chips currently open
+        # The element tree checks B and G need (W2c). It grows out of the
+        # same single pass and the same open-element stack check C keeps:
+        # `self._nodes` is pushed and popped in lockstep with `self._open`,
+        # so unbalanced markup closes both the same way the browser does.
+        self.root = _element(None, {}, 0, None)
+        self._nodes = []
 
     def handle_starttag(self, tag, attrs):
         line = self.getpos()[0]
@@ -187,6 +269,22 @@ class _Doc(html.parser.HTMLParser):
         for name, value in attrs:
             # A repeated attribute: the browser keeps the first. So do we.
             attr.setdefault(name.lower(), value or "")
+
+        chip = None
+        if "chip" in attr.get("class", "").split():
+            chip = [line, []]
+            self.chips.append(chip)
+        parent = self._nodes[-1] if self._nodes else self.root
+        node = _element(tag, attr, line, parent)
+        parent["children"].append(node)
+
+        if tag in VOID_TAGS:
+            chip = None          # no end tag, so no text can ever arrive
+        else:
+            self._open.append((tag, chip))
+            self._nodes.append(node)
+            if chip is not None:
+                self._chips.append(chip)
 
         if tag == "style":
             self._style = (line, [])
@@ -252,12 +350,32 @@ class _Doc(html.parser.HTMLParser):
 
     def handle_startendtag(self, tag, attrs):
         self.handle_starttag(tag, attrs)
+        self._pop(tag)
         if tag == "script":
             self._quiet = max(0, self._quiet - 1)
         if tag == "style":
             self._style = None
 
+    def _pop(self, tag):
+        """Close `tag` and every element left open inside it.
+
+        Unbalanced markup is the browser's problem too, and it resolves it the
+        same way: an end tag closes the nearest matching open element and
+        whatever was still open below it. An end tag matching nothing is
+        ignored.
+        """
+        for depth in range(len(self._open) - 1, -1, -1):
+            if self._open[depth][0] == tag:
+                del self._open[depth:]
+                del self._nodes[depth:]
+                # Rebuilt rather than spliced: two chips opened on the same
+                # line hold equal-valued frames, and removing "an equal one"
+                # is not the same as removing this one.
+                self._chips = [c for _name, c in self._open if c is not None]
+                return
+
     def handle_endtag(self, tag):
+        self._pop(tag)
         if tag == "script":
             self._quiet = max(0, self._quiet - 1)
         if tag == "style" and self._style is not None:
@@ -270,6 +388,9 @@ class _Doc(html.parser.HTMLParser):
             self._style[1].append(data)
         elif not self._quiet:
             self.text_len += len(data.strip())
+            for chip in self._chips:
+                chip[1].append(data)
+            (self._nodes[-1] if self._nodes else self.root)["text"].append(data)
 
     def close(self):
         super().close()
@@ -277,6 +398,46 @@ class _Doc(html.parser.HTMLParser):
             line, chunks = self._style
             self.css.append((line, "".join(chunks)))
             self._style = None
+
+
+def _element(tag, attr, line, parent):
+    """One node of the page tree: what a selector can be matched against."""
+    return {"tag": tag,
+            "classes": frozenset(attr.get("class", "").split()),
+            "id": attr.get("id", ""),
+            "attrs": attr,
+            "line": line,
+            "parent": parent,
+            "children": [],
+            "text": []}
+
+
+def walk(node):
+    """Every element under `node`, document order, `node` excluded."""
+    for child in node["children"]:
+        yield child
+        for deeper in walk(child):
+            yield deeper
+
+
+def node_text(node):
+    """All text in the subtree, whitespace collapsed."""
+    parts = list(node["text"])
+    for child in walk(node):
+        parts.extend(child["text"])
+    return re.sub(r"\s+", " ", "".join(parts)).strip()
+
+
+def has_class(node, name):
+    return name in node["classes"]
+
+
+def find_class(node, name):
+    """The first descendant carrying `name`, or None."""
+    for child in walk(node):
+        if has_class(child, name):
+            return child
+    return None
 
 
 def split_srcset(value):
@@ -637,6 +798,70 @@ def check_orphans(pages, _sheets, _site_root):
     return failures
 
 
+def check_chip_text(pages, _sheets, _site_root):
+    """C — no `.chip` without a text node (§D, §J·c).
+
+    The marker is a `::before` and the state is a colour token; strip the
+    stylesheet and only the word is left. So the word is the load-bearing
+    channel, not the decoration, and a chip without one is not a quieter chip
+    — it is an unreadable one.
+    """
+    failures = []
+    for rel, doc in sorted(pages.items()):
+        for line, parts in doc.chips:
+            if not "".join(parts).strip():
+                failures.append((rel, line, "CHIP-WITHOUT-TEXT",
+                                 "a .chip with no text node — the marker is a "
+                                 "CSS ::before and the state is a colour "
+                                 "token, so with the stylesheet gone this "
+                                 "chip says nothing at all; every chip carries "
+                                 "its own word (0hb \u00a7D/\u00a7J\u00b7c)"))
+    return failures
+
+
+def check_prov_kind(pages, _sheets, _site_root):
+    """P — every .prov names its kind, from the closed two-string set (§E).
+
+    Read off the page tree rather than the class attribute alone, because the
+    property being checked is what a reader is told, and a reader is told by
+    the words.  Three ways to fail:
+
+      · a `.prov` with no `.prov__kind` at all.  This is the failure the
+        check exists for: it is what makes "absence of a mark is never the
+        human signal" and "the founder's entries carry the same object as
+        everyone else's" enforceable rather than promised.
+      · a kind outside the closed set.  `unverified`, `AI-generated`,
+        `automated` and every badge or verification grammar land here, along
+        with any well-meant rewording that reintroduces a ranking.
+      · a kind whose word contradicts the fill on its rule.  The mark and
+        the word are two channels for one fact; if they can drift apart, the
+        hatch starts meaning something nobody wrote down.
+    """
+    failures = []
+    for rel, doc in sorted(pages.items()):
+        for node in walk(doc.root):
+            if not has_class(node, "prov"):
+                continue
+            kind_node = find_class(node, "prov__kind")
+            kind = node_text(kind_node) if kind_node is not None else ""
+            drawn = "agent" if has_class(node, "prov--agent") else "human"
+            if kind not in PROV_KINDS:
+                failures.append((
+                    rel, node["line"], "PROV-KIND",
+                    ".prov carries %s, which is not one of %s — a provenance "
+                    "object always names its kind, in words, in one of "
+                    "exactly two strings (0hb §E)"
+                    % ("no .prov__kind" if kind_node is None else repr(kind),
+                       sorted(PROV_KINDS))))
+            elif PROV_KINDS[kind] != drawn:
+                failures.append((
+                    rel, node["line"], "PROV-KIND-DISAGREES",
+                    ".prov is drawn as the %s kind and reads %r — the fill "
+                    "and the word carry one fact between them and may not "
+                    "say different things (0hb §E)" % (drawn, kind)))
+    return failures
+
+
 def check_font_generic(pages, sheets, _site_root):
     """F1 — every font-family declaration ends in a generic family (§A)."""
     failures = []
@@ -676,13 +901,482 @@ def check_font_generic(pages, sheets, _site_root):
     return failures
 
 
+# --------------------------------------------------------------------------
+# type size — what the reader actually sees (checks B and G, W2c)
+# --------------------------------------------------------------------------
+# A percentage's danger is a function of how big it is set, not of which tag
+# it is in: a 50px number is what a screenshot crops and a timeline reposts.
+# So check G resolves the font size the page actually renders, out of the
+# stylesheets the page loads, rather than trusting a tag name.
+#
+# The resolution is deliberately partial and deliberately conservative:
+#   · only selectors this file can evaluate exactly are honoured — tag,
+#     class, id, attribute presence, and the structural pseudo-classes
+#     (`:nth-of-type`, `:first-child` …). A selector with `:has()`, `:not()`
+#     or a sibling combinator is IGNORED, because a wrong match here would
+#     be a wrong verdict;
+#   · every matching declaration counts, `@media` context included, and the
+#     LARGEST wins. A rule that only applies on a phone is still a size this
+#     page renders somewhere, and the check would rather ask about a figure
+#     that turned out to be small than miss one that was not.
+CSS_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
+CSS_RULE = re.compile(r"(?P<sel>[^{}]+)\{(?P<body>[^{}]*)\}", re.DOTALL)
+CSS_FONT_SIZE = re.compile(r"(?<![-\w])font-size\s*:\s*([^;}]+)", re.IGNORECASE)
+CSS_LENGTH = re.compile(r"(-?[\d.]+)\s*(px|rem|em|pt|%)", re.IGNORECASE)
+# The compound-selector reader. Anything it cannot name, it refuses.
+SEL_TOKEN = re.compile(r"""
+    (?P<tag>^[A-Za-z][\w-]*|^\*)
+  | \.(?P<cls>[\w-]+)
+  | \#(?P<id>[\w-]+)
+  | \[(?P<attr>[^\]]*)\]
+  | ::?(?P<pseudo>[\w-]+)(?P<args>\([^)]*\))?
+""", re.VERBOSE)
+STRUCTURAL_PSEUDO = {"first-child", "last-child", "only-child", "only-of-type",
+                     "first-of-type", "last-of-type", "nth-child",
+                     "nth-of-type"}
+#: The rung the resolution calls a heading (--t-h2, 29.41px at a 17px root),
+#: less a hair for rounding. At or above this a number is a headline.
+HEADING_PX = 29.0
+#: …and these tags are headings whatever the stylesheet sets them to.
+HEADING_TAGS = {"h1", "h2"}
+PERCENT = re.compile(r"\d\s*%")
+#: A denominator, stated: two numbers with a division word between them.
+DENOMINATOR = re.compile(r"\d[\d.,]*\s*(?:of|/|÷|out of|per)\s+\d", re.IGNORECASE)
+
+
+def parse_compound(text):
+    """A compound selector as {tag, classes, ids, ok}. `ok` is False if this
+    file cannot evaluate it exactly, in which case the whole rule is dropped."""
+    out = {"tag": None, "classes": set(), "ids": set(), "pseudo": [], "ok": True}
+    pos = 0
+    while pos < len(text):
+        found = SEL_TOKEN.match(text, pos)
+        if not found or found.end() == pos:
+            return {"ok": False}
+        if found.group("tag"):
+            out["tag"] = found.group("tag").lower()
+        elif found.group("cls"):
+            out["classes"].add(found.group("cls"))
+        elif found.group("id"):
+            out["ids"].add(found.group("id"))
+        elif found.group("attr") is not None:
+            name = re.split(r"[~|^$*]?=", found.group("attr"), maxsplit=1)[0].strip()
+            out["pseudo"].append(("attr", name.lower(), None))
+        elif found.group("pseudo"):
+            name = found.group("pseudo").lower()
+            if text[found.start():found.start() + 2] == "::":
+                return {"ok": False}       # a pseudo-element, not this element
+            if name not in STRUCTURAL_PSEUDO:
+                return {"ok": False}
+            args = (found.group("args") or "()")[1:-1].strip().lower()
+            out["pseudo"].append(("pseudo", name, args))
+        pos = found.end()
+    return out
+
+
+def nth_matches(index, spec):
+    """`index` is 1-based. Only literal integers, `odd` and `even`."""
+    if spec == "odd":
+        return index % 2 == 1
+    if spec == "even":
+        return index % 2 == 0
+    try:
+        return index == int(spec)
+    except ValueError:
+        return False
+
+
+def compound_matches(node, compound):
+    if node["tag"] is None:
+        return False
+    if compound.get("tag") not in (None, "*", node["tag"]):
+        return False
+    if not compound["classes"] <= node["classes"]:
+        return False
+    if compound["ids"] and node["id"] not in compound["ids"]:
+        return False
+    for kind, name, args in compound["pseudo"]:
+        if kind == "attr":
+            if name not in node["attrs"]:
+                return False
+            continue
+        siblings = node["parent"]["children"] if node["parent"] else [node]
+        same_type = [s for s in siblings if s["tag"] == node["tag"]]
+        if name == "first-child" and siblings.index(node) != 0:
+            return False
+        if name == "last-child" and siblings.index(node) != len(siblings) - 1:
+            return False
+        if name == "only-child" and len(siblings) != 1:
+            return False
+        if name == "first-of-type" and same_type.index(node) != 0:
+            return False
+        if name == "last-of-type" and same_type.index(node) != len(same_type) - 1:
+            return False
+        if name == "only-of-type" and len(same_type) != 1:
+            return False
+        if name == "nth-child" and not nth_matches(siblings.index(node) + 1, args):
+            return False
+        if name == "nth-of-type" and not nth_matches(same_type.index(node) + 1, args):
+            return False
+    return True
+
+
+def parse_selector(text):
+    """A selector as a right-to-left list of (combinator, compound), or None
+    if any part of it is one this file will not claim to understand."""
+    parts = re.split(r"\s*([>])\s*|\s+", text.strip())
+    parts = [p for p in parts if p]
+    if not parts or any(p in ("+", "~") for p in parts):
+        return None
+    chain = []
+    combinator = " "
+    for part in reversed(parts):
+        if part == ">":
+            combinator = ">"
+            continue
+        compound = parse_compound(part)
+        if not compound.get("ok"):
+            return None
+        chain.append((combinator, compound))
+        combinator = " "
+    return chain
+
+
+def selector_matches(node, chain):
+    if not compound_matches(node, chain[0][1]):
+        return False
+    current = node
+    for combinator, compound in chain[1:]:
+        if combinator == ">":
+            current = current["parent"]
+            if current is None or not compound_matches(current, compound):
+                return False
+        else:
+            current = current["parent"]
+            while current is not None and not compound_matches(current, compound):
+                current = current["parent"]
+            if current is None:
+                return False
+    return True
+
+
+def font_size_rules(sheets):
+    """[(chain, value)] for every font-size this file can place, plus the root
+    size the page's `rem` are counted in."""
+    rules, root_px = [], 16.0
+    for text in sheets.values():
+        clean = CSS_COMMENT.sub(" ", text)
+        props = custom_properties(text)
+        for block in CSS_RULE.finditer(clean):
+            values = CSS_FONT_SIZE.findall(block.group("body"))
+            for shorthand in CSS_FONT_SHORTHAND.findall(block.group("body")):
+                found = CSS_LENGTH.search(shorthand.split("/")[0])
+                if found:
+                    values.append(found.group(0))
+            if not values:
+                continue
+            for raw in values:
+                value = raw.strip()
+                var = CSS_VAR.search(value)
+                if var:
+                    value = props.get(var.group(1), var.group(2) or "").strip()
+                for selector in block.group("sel").split(","):
+                    chain = parse_selector(selector)
+                    if chain is None:
+                        continue
+                    if (selector.strip() == "html"
+                            and value.lower().endswith("px")):
+                        root_px = float(CSS_LENGTH.match(value).group(1))
+                    rules.append((chain, value))
+    return rules, root_px
+
+
+def length_px(value, root_px, parent_px):
+    found = CSS_LENGTH.match(value.strip())
+    if not found:
+        return None
+    number, unit = float(found.group(1)), found.group(2).lower()
+    if unit == "px":
+        return number
+    if unit == "pt":
+        return number * 4.0 / 3.0
+    if unit == "rem":
+        return number * root_px
+    if unit == "em":
+        return number * parent_px
+    return parent_px * number / 100.0
+
+
+def font_size_of(node, rules, root_px, cache):
+    """The largest size any honoured rule sets on this element, else the
+    size it inherits."""
+    key = id(node)
+    if key in cache:
+        return cache[key]
+    parent_px = (root_px if node["parent"] is None
+                 else font_size_of(node["parent"], rules, root_px, cache))
+    size = parent_px
+    best = None
+    for chain, value in rules:
+        if selector_matches(node, chain):
+            resolved = length_px(value, root_px, parent_px)
+            if resolved is not None and (best is None or resolved > best):
+                best = resolved
+    if best is not None:
+        size = best
+    cache[key] = size
+    return size
+
+
+def ancestors(node):
+    current = node["parent"]
+    while current is not None:
+        yield current
+        current = current["parent"]
+
+
+def enclosing_figure(node):
+    for parent in ancestors(node):
+        if parent["tag"] == "figure":
+            return parent
+    return None
+
+
+def check_figure_derivation(pages, _sheets, _site_root):
+    """B — no `figure` without a `figure__derivation` (§F, §J·b).
+
+    The component is three lines and the third one is not optional: a figure
+    is a number plus the working that produced it, and a number with the
+    working removed is an assertion wearing a figure's clothes.
+    """
+    failures = []
+    for rel, doc in sorted(pages.items()):
+        for node in walk(doc.root):
+            if node["tag"] != "figure":
+                continue
+            if find_class(node, "figure__derivation") is None:
+                failures.append((rel, node["line"], "FIGURE-WITHOUT-DERIVATION",
+                                 "a <figure> with no .figure__derivation in it "
+                                 "— the derivation is the third line of the "
+                                 "component and the only part of it a reader "
+                                 "can check (0hb §F/§J·b)"))
+    return failures
+
+
+def check_percent_size(pages, sheets, _site_root):
+    """G — no `%` at heading or display size without its denominator beside it
+    (§F paramount, §J·f).
+
+    The check that a derivation EXISTS (B) is not the check the paramount
+    needs, and the ledger's second display figure is why: its derivation names
+    the rule and the chain it was computed over — real provenance, no
+    denominator — so it would pass B while breaking the rule B exists to
+    serve.  So G asks the harder question: is the fraction stated, in this
+    figure, in a `.figure__frac`?  A percentage set at 50px travels alone —
+    into a screenshot, a slide, a quote-tweet — and 100% with nothing else in
+    the crop is a different claim from `50 of 50 vu`.
+    """
+    rules, root_px = font_size_rules(sheets)
+    failures = []
+    for rel, doc in sorted(pages.items()):
+        cache = {}
+        for node in walk(doc.root):
+            own_text = re.sub(r"\s+", " ", "".join(node["text"]))
+            if not PERCENT.search(own_text):
+                continue
+            size = font_size_of(node, rules, root_px, cache)
+            heading = (node["tag"] in HEADING_TAGS
+                       or any(a["tag"] in HEADING_TAGS for a in ancestors(node)))
+            if size < HEADING_PX and not heading:
+                continue
+            how = ("%.1fpx" % size) if size >= HEADING_PX else "a heading"
+            figure = enclosing_figure(node)
+            if figure is None:
+                failures.append((rel, node["line"], "PERCENT-WITHOUT-DENOMINATOR",
+                                 "%r set at %s and not inside a <figure> — a "
+                                 "percentage this size is what a crop takes, "
+                                 "and it may not appear on any surface without "
+                                 "its denominator in the same visual object "
+                                 "(0hb §F paramount / §J·f)"
+                                 % (own_text.strip()[:60], how)))
+                continue
+            if find_class(figure, "figure__derivation") is None:
+                failures.append((rel, figure["line"], "PERCENT-WITHOUT-DENOMINATOR",
+                                 "%r set at %s in a <figure> with no "
+                                 "derivation (0hb §F/§J·f)"
+                                 % (own_text.strip()[:60], how)))
+                continue
+            frac = find_class(figure, "figure__frac")
+            if frac is None or not DENOMINATOR.search(node_text(frac)):
+                failures.append((rel, figure["line"], "PERCENT-WITHOUT-DENOMINATOR",
+                                 "%r set at %s in a <figure> whose "
+                                 ".figure__frac does not state a fraction%s — a "
+                                 "derivation that names provenance is not a "
+                                 "denominator, and this is the check that "
+                                 "difference is for (0hb §F paramount / "
+                                 "§J·f)"
+                                 % (own_text.strip()[:60], how,
+                                    "" if frac is not None else " (there is none)"))) 
+    return failures
+
+
+# --------------------------------------------------------------------------
+# S1 — the positional style couplings still hold (W2d, for §H)
+# --------------------------------------------------------------------------
+# style.css styles the manifesto's first screen BY POSITION —
+# `.doc--manifesto > p:nth-of-type(1..4)` are the kicker, the thesis, the
+# register strip and the standing line — and it reaches the /faq copy of the
+# register sentence the same way, as that page's first blockquote.  It has to:
+# doc/*.md is the only copy of that copy, and tools/markdown_subset.py has no
+# attribute syntax to hang a class on a paragraph with.  The alternative was
+# presentation logic in render.py, which the resolution forbids.
+#
+# Until this check the coupling was documented in the stylesheet and enforced
+# by nothing.  Insert one paragraph at the top of doc/manifesto.md and the
+# thesis renders as the kicker, the register strip renders as the standing
+# line, the first screen §H specifies is gone, and every check on this site
+# stays green.  So: the stylesheet says which position, and the table below
+# says what has to be standing in it.
+#
+# Deliberately DATA, not appearance.  The gate never judges the sentence and
+# never looks at a computed style; it asserts only that the known opening is
+# still where the rule aims.  Rewording the manifesto is a copy change under
+# the wordlist gate, and if it touches one of these openings it touches this
+# table in the same commit — which is the review the coupling never got.
+POSITIONAL_STYLE_COUPLINGS = (
+    ("index.html", "doc--manifesto", "p", 1,
+     "The place where society self-develops",
+     "the kicker — --t-lede, italic, --ink-2"),
+    ("index.html", "doc--manifesto", "p", 2,
+     "The system never assigns work. It prices it.",
+     "the thesis — one of exactly two --t-display uses on the site"),
+    ("index.html", "doc--manifesto", "p", 3,
+     "No token. Nothing to trade.",
+     "the register strip — the one shared .register object"),
+    ("index.html", "doc--manifesto", "p", 4,
+     "Status:",
+     "the standing line — --font-ui at the --t-micro floor"),
+    ("faq/index.html", "doc--faq", "blockquote", 1,
+     "A public record of contributions. No token. Nothing to trade.",
+     "the register strip — the one shared .register object"),
+)
+
+
+class _Children(html.parser.HTMLParser):
+    """The direct children of the element carrying `class`, with their text.
+
+    Shallow on purpose, like `_Doc`: `nth-of-type` counts among siblings of
+    one type under one parent, so (tag, line, text) for the direct children of
+    the container is exactly and only what the check needs.
+    """
+
+    def __init__(self, container_class):
+        super().__init__(convert_charrefs=True)
+        self.want = container_class
+        self.children = []          # (tag, line, [text chunks])
+        self._depth = None          # None until the container opens
+        self._open = None           # the child currently collecting text
+
+    def handle_starttag(self, tag, attrs):
+        attr = {}
+        for name, value in attrs:
+            attr.setdefault(name.lower(), value or "")
+        if self._depth is None:
+            if self.want in attr.get("class", "").split():
+                self._depth = 0
+            return
+        self._depth += 1
+        if self._depth == 1:
+            self.children.append((tag, self.getpos()[0], []))
+            self._open = self.children[-1][2]
+
+    def handle_startendtag(self, tag, attrs):
+        if self._depth is None:
+            return                      # a void element cannot be the container
+        if self._depth == 0:
+            self.children.append((tag, self.getpos()[0], []))
+
+    def handle_endtag(self, tag):
+        if self._depth is None:
+            return
+        if self._depth == 0:
+            self._depth = None          # the container closed
+            self._open = None
+            return
+        self._depth -= 1
+        if self._depth == 0:
+            self._open = None
+
+    def handle_data(self, data):
+        if self._open is not None:
+            self._open.append(data)
+
+
+def visible_text(chunks):
+    """The child's text as a reader meets it: tags gone, whitespace collapsed."""
+    return re.sub(r"\s+", " ", "".join(chunks)).strip()
+
+
+def check_positional(pages, _sheets, site_root):
+    """S1 — every position style.css styles by ordinal still holds its text."""
+    failures = []
+    wanted = {}
+    for rel, container, tag, nth, opening, what in POSITIONAL_STYLE_COUPLINGS:
+        wanted.setdefault((rel, container), []).append((tag, nth, opening, what))
+
+    for (rel, container), rows in sorted(wanted.items()):
+        if rel not in pages:
+            failures.append((rel, 0, "POSITIONAL-PAGE-MISSING",
+                             "style.css styles this page by position and the "
+                             "render does not emit it (0hb §H)"))
+            continue
+        parser = _Children(container)
+        parser.feed(read(os.path.join(site_root, rel)))
+        parser.close()
+        if not parser.children:
+            failures.append((rel, 0, "POSITIONAL-CONTAINER-MISSING",
+                             "no .%s element with children on this page — the "
+                             "first-screen rules in style.css select through it "
+                             "(0hb §H)" % container))
+            continue
+        for tag, nth, opening, what in rows:
+            same = [child for child in parser.children if child[0] == tag]
+            if len(same) < nth:
+                failures.append((rel, 0, "POSITIONAL-STYLE-COUPLING",
+                                 ".%s > %s:nth-of-type(%d) is %s, and this page "
+                                 "has %d <%s> child(ren) — the rule now styles "
+                                 "nothing (0hb §H)"
+                                 % (container, tag, nth, what, len(same), tag)))
+                continue
+            _tag, line, chunks = same[nth - 1]
+            text = visible_text(chunks)
+            if not text.startswith(opening):
+                failures.append((rel, line, "POSITIONAL-STYLE-COUPLING",
+                                 ".%s > %s:nth-of-type(%d) is styled as %s, so "
+                                 "it must still open %r — it opens %r. Either "
+                                 "the source moved under the rule or the rule "
+                                 "moved under the source, and the stylesheet has "
+                                 "no class to fall back on (0hb §H)"
+                                 % (container, tag, nth, what, opening,
+                                    text[:60])))
+    return failures
+
+
 # The registry the deferred checks slot into: one entry per §J check, in the
 # order the resolution lists them.  Adding (b)–(f), the percent inventory and
 # the palette drift check is a new line here plus its function — no rework.
+# S1 is not a §J check: it is the machine half of §H's first screen, and it
+# lives here rather than in a gate of its own because the property it holds
+# is a property of the RENDER, which is what this gate is over.
 CHECKS = (
     ("A", "no off-origin subresource", check_off_origin),
+    ("B", "no figure without a derivation", check_figure_derivation),
+    ("C", "no .chip without a text node", check_chip_text),
     ("E", "no orphan page", check_orphans),
+    ("G", "no % at heading size without its denominator", check_percent_size),
     ("F1", "every font-family ends in a generic family", check_font_generic),
+    ("P", "every .prov names its kind", check_prov_kind),
+    ("S1", "positional style couplings still hold", check_positional),
 )
 
 

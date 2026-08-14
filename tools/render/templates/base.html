@@ -33,13 +33,22 @@
 {% block main %}{% endblock %}
 </main>
 <footer>
-<h2 id="legend">Status legend</h2>
+{# The legend is a GLOSSARY, not a decoder (council/socaity-0hb.md §D). It is
+   collapsed because every chip carries its own word — a page whose legend has
+   to be open has under-specified its chips. It keeps the `legend` id so the
+   in-body links still land on it, it stays in the DOM for search and for
+   screen readers, it is forced open in `@media print`, and it sits BELOW the
+   contest section in source order: that section is in <main>, this is the
+   footer. What is collapsed here is the vocabulary, never the contest. #}
+<details id="legend" class="legend-marks">
+<summary>what these marks mean</summary>
 <p>Every chip is derived from the files in <code>graph/</code>. Nothing here is hand-maintained.</p>
 <dl class="legend">
 {% for label, meaning in legend %}
 <dt>{{ label }}</dt><dd>{{ meaning }}</dd>
 {% endfor %}
 </dl>
+</details>
 <p class="muted">Freshness is measured against the graph clock ({{ clock }}), the newest assertion in the merged tree — not against the time of the build, so every build of the same tree is identical.</p>
 </footer>
 </body>

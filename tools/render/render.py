@@ -47,12 +47,33 @@ EDGE_CHIPS = {
     "settled": ("Settled", "settled"),
 }
 LEGEND = [
+    # The two provenance kinds, named symmetrically (council/socaity-0hb.md
+    # §E). The pair is a closed set of exactly two strings and the html gate
+    # holds every .prov object to it. The wording is load-bearing: `written
+    # by a person` / `written by a program` differ in one noun and rank
+    # neither. `unverified`, `AI-generated`, `automated` and every badge or
+    # verification grammar are forbidden here — `unverified` worst of all,
+    # because it names an absence and invites the reader to supply the
+    # positive term. A human write always carries its mark too: absence of a
+    # mark is never the human signal.
+    ("written by a person", "provenance kind: a person wrote this assertion"),
+    ("written by a program", "provenance kind: a program wrote this assertion"),
     ("Open", "node status open"),
     ("Done", "node status resolved"),
     ("Withdrawn", "node status withdrawn; the page stays reachable"),
     ("Merged into →", "node status merged; links the surviving node"),
-    ("(no badge)", "edge status asserted"),
-    ("Contested", "edge status disputed; links the dispute"),
+    # The legend is the published glossary and it is now the only place on the
+    # site that still spoke the pre-§D vocabulary. Two words had to go. `badge`
+    # is the object §D removed — there are no badges here, there are chips with
+    # a marker, a word and a value — and §E forbids badge grammar anywhere near
+    # the provenance kinds two rows above. `dispute` is the microcopy §D
+    # replaces with `read the contest`, applied everywhere in node.html and
+    # missed here, which left the glossary teaching a word no surface uses.
+    ("(no chip)", "edge status asserted"),
+    # `disputed` stays: it is the edge's value in the schema, and this table is
+    # the published 1:1 mapping from a chip to the graph state behind it. What
+    # changes is the reader-facing half of the sentence.
+    ("Contested", "edge status disputed; links the contest"),
     ("Settled", "edge status settled; links the resolving record"),
 ]
 ISSUE_URL = "https://github.com/socaity/socaity.dev/issues/new"
@@ -152,16 +173,50 @@ def day(stamp):
 
 
 def provenance_line(prov):
-    """The provenance line as a designed object; agent content always labelled."""
+    """One line of provenance, for the places a .prov object does not reach.
+
+    Same two words as the object and the legend (council/socaity-0hb.md §E),
+    because a second vocabulary is a second claim. What it used to say was
+    `human-authored` against `agent-drafted, human-accountable`: asymmetric,
+    and rankable in the one channel the geometry cannot cover — a reader
+    orders authored above drafted without being told to, and `accountable`
+    is the liability grammar the resolution refuses. `written by a person` /
+    `written by a program` differ in one noun and rank neither.
+    """
     by = (prov or {}).get("asserted_by") or {}
     who = by.get("actor_id", "unknown")
     if by.get("actor_kind") == "agent":
-        who = "%s (agent, on behalf of %s)" % (who, by.get("on_behalf_of", "unknown"))
-        label = "agent-drafted, human-accountable"
+        who = "%s, on behalf of %s" % (who, by.get("on_behalf_of", "unknown"))
+        kind = "written by a program"
     else:
-        who = "%s (human)" % who
-        label = "human-authored"
-    return "Asserted by %s · %s · %s" % (who, label, day(prov.get("asserted_at")))
+        kind = "written by a person"
+    return "Asserted by %s · %s · %s" % (who, kind, day(prov.get("asserted_at")))
+
+
+def provenance_fields(prov):
+    """The provenance record as FIELDS, for the .prov object (0hb §E).
+
+    Data in, appearance out: this returns what the record says and nothing
+    about how it looks. Which words name a kind, which class carries the
+    fill pattern and what a missing model reads as are template decisions,
+    because a class picked per value in Python is the presentation logic the
+    resolution forbids.
+
+    `kind` is the raw schema value, not a label — the validator already
+    constrains actor_kind to human|agent, and a page that guessed would be
+    asserting authorship it does not know.
+    """
+    prov = prov or {}
+    by = prov.get("asserted_by") or {}
+    return {
+        "kind": "agent" if by.get("actor_kind") == "agent" else "human",
+        "actor_id": by.get("actor_id") or "unknown",
+        "on_behalf_of": by.get("on_behalf_of"),
+        "model": by.get("model"),
+        "run_id": by.get("run_id"),
+        "asserted_at": day(prov.get("asserted_at")),
+        "evidence": list(prov.get("evidence") or []),
+    }
 
 
 def estimate_view(rec, clock):
@@ -276,6 +331,7 @@ def node_view(node, idx, tickets_by_node, clock):
         "merged_into": {"id": merged_into["id"], "title": merged_into["title"]} if merged_into else None,
         "external_ref": node.get("external_ref"),
         "provenance": provenance_line(node.get("provenance")),
+        "prov": provenance_fields(node.get("provenance")),
         "crumbs": crumbs, "requires": requires, "approaches": approaches,
         "refined_by": refined_by, "see_also": see_also, "estimates": estimates,
         "contested_count": len(contested),

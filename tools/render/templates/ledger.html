@@ -17,7 +17,10 @@
 {% set root = '../' * depth %}
 
 <h1>Ledger</h1>
-<p class="ledger-register">A public record of contributions. No token. Nothing to trade. This is a database.</p>
+{# The one shared register object (§H). Was `.ledger-register`, a
+   generator-scoped system-ui strip with a 3px bar; the class is dropped and
+   the sentence now wears the same object it wears on home, /claim and /faq. #}
+<p class="register">A public record of contributions. No token. Nothing to trade. This is a database.</p>
 
 <p class="ledger-fixture"><strong>This is an example chain, not the real record.</strong> The real record cannot be opened until the rule's parameter values are final, so every figure below is computed by the published rule over <a href="{{ view.chain.url }}"><code>{{ view.chain.path }}</code></a> — real arithmetic, example entries, and no number typed in by hand.</p>
 
@@ -54,20 +57,37 @@
 <section aria-labelledby="epoch-{{ epoch.index }}" id="epoch-{{ epoch.index }}">
 <h2>Epoch {{ epoch.index }} — {% if epoch.final %}closed and audited{% elif epoch.open %}open{% else %}closed, audit not completed{% endif %}</h2>
 <p class="muted">Denominator D<sub>{{ epoch.index }}</sub> = {{ epoch.denominator }} vu, the sum of every included entry in this epoch — computed by <a href="{{ view.rule.url }}"><code>rule/distribute.py</code></a>. Epoch weight P<sub>{{ epoch.index }}</sub> = {{ epoch.pie }}. Contributors: {{ epoch.contributors }}.</p>
-<div class="ledger-scroll"><table>
-<thead><tr><th scope="col">Entry</th><th scope="col">Contributor</th><th scope="col">What</th><th scope="col">Hours × rate</th><th scope="col">vu</th><th scope="col">{% if epoch.final %}Share of epoch {{ epoch.index }}{% else %}Status{% endif %}</th></tr></thead>
-<tbody>
+{# W2c: the entry pair. Every cell carries `data-label` and an explicit ARIA
+   role. The label is what the stacked-record layout under 40rem prints as a
+   td::before, so the header row can leave the flow on a phone without the
+   value losing the word that names it; the roles are what keep this a table
+   to a screen reader when that layout sets `display: block` on the rows and
+   cells, which otherwise drops the table semantics exactly where the reader
+   most needs them. The header text and the label are one string, set once. #}
+{% set last_col = "Share of epoch %s"|format(epoch.index) if epoch.final else "Status" %}
+<div class="ledger-scroll"><table role="table">
+<thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Entry</th><th role="columnheader" scope="col">Contributor</th><th role="columnheader" scope="col">What</th><th role="columnheader" scope="col" class="ledger-num">Hours × rate</th><th role="columnheader" scope="col" class="ledger-num">vu</th><th role="columnheader" scope="col"{% if epoch.final %} class="ledger-num"{% endif %}>{{ last_col }}</th></tr></thead>
+<tbody role="rowgroup">
 {% for row in epoch.rows %}
-<tr class="ledger-entry" id="{{ row.anchor }}">
-<td><a href="#{{ row.anchor }}" title="{{ row.id }}"><code>{{ row.short }}</code></a></td>
-<td><code>{{ row.contributor_short }}</code>{% if row.is_founder %} <span class="muted">founder</span>{% endif %}</td>
-<td>{{ row.words }} · {{ row.category }}<br><span class="ledger-derivation">week {{ row.week_ref }} · mode {{ row.mode }} · evidence <code>{{ row.evidence[0][:12] }}</code></span></td>
-<td>{{ row.hours }} h × {{ row.rate }} vu/h</td>
-<td>{{ row.vu }}</td>
-<td>{% if epoch.final %}{{ row.share }}{% else %}<span class="chip chip-open">{{ row.status }}</span>{% endif %}</td>
+<tr class="ledger-entry" id="{{ row.anchor }}" role="row">
+<td role="cell" data-label="Entry"><a href="#{{ row.anchor }}" title="{{ row.id }}"><code>{{ row.short }}</code></a></td>
+<td role="cell" data-label="Contributor"><code>{{ row.contributor_short }}</code>{% if row.is_founder %} <span class="muted">founder</span>{% endif %}</td>
+<td role="cell" data-label="What">{{ row.words }} · {{ row.category }}<br><span class="ledger-derivation">week {{ row.week_ref }} · mode {{ row.mode }} · evidence <code>{{ row.evidence[0][:12] }}</code></span></td>
+<td role="cell" data-label="Hours × rate" class="ledger-num">{{ row.hours }} h × {{ row.rate }} vu/h</td>
+<td role="cell" data-label="vu" class="ledger-num">{{ row.vu }}</td>
+{# One chip per fact per row (council/socaity-0hb.md §D). This row used to
+   carry the entry's status TWICE — once in the Status column and once in the
+   detail row below it — and the two disagreed: the column hard-coded
+   `chip-open` while printing the word `confirmed`, so a confirmed entry in an
+   open epoch showed a live marker beside a resolved word. The status is now
+   rendered exactly once, in whichever of the two places is not already
+   spoken for: the column when it is the Status column, the detail row when
+   the column has been given over to the closed epoch's share. #}
+{% set status_chip = 'done' if row.status == 'confirmed' else 'open' %}
+<td role="cell" data-label="{{ last_col }}"{% if epoch.final %} class="ledger-num"{% endif %}>{% if epoch.final %}{{ row.share }}{% else %}<span class="chip chip-{{ status_chip }}">{{ row.status }}</span>{% endif %}</td>
 </tr>
-<tr><td colspan="6">
-<span class="chip chip-{{ 'done' if row.status == 'confirmed' else 'open' }}">{{ row.status }}</span>
+<tr class="ledger-meta" role="row"><td role="cell" colspan="6">
+{% if epoch.final %}<span class="chip chip-{{ status_chip }}">{{ row.status }}</span>{% endif %}
 <span class="chip chip-weight">{% if row.window_open %}challenge window open until epoch {{ epoch.index }} closes and its audit completes{% else %}challenge window closed at the epoch {{ epoch.index }} audit{% endif %} · {{ row.challenges }} challenges</span>
 {% if not epoch.final %}<span class="ledger-derivation">If epoch {{ epoch.index }} closed on this record: {{ row.share_if_closed }} of it — an upper bound, it can only fall.</span>{% endif %}
 <details><summary>Recompute this entry</summary>
@@ -89,21 +109,56 @@
 <h2 id="concentration-h">Concentration</h2>
 <p class="muted">Figures below are the published rule run over <a href="{{ view.chain.url }}">the example chain</a>, not the real record, which has not opened.</p>
 <p class="ledger-because">Contributors on this record: <strong>{{ view.contributors }}</strong>.</p>
+{# W2c, the figure component (council/socaity-0hb.md §F). Three lines, one
+   ruled block, in this order and no other: the FRACTION at display size, the
+   percentage beneath it at --t-h2 and opening with "=", the derivation within
+   one line-height under that. Two properties are structural rather than
+   explained:
+     · the denominator out-masses the percentage — it is the bigger of the
+       two lines, because it is the fact that makes the percentage mean
+       anything, and a page that sets the percentage larger has said the
+       opposite whatever its prose says;
+     · the leading "=" makes the second line grammatically dependent on the
+       first, so a crop that takes "= 100% of epoch 0" without "50 of 50 vu"
+       above it is visibly a fragment rather than a quotable figure.
+   Nothing here is written by hand: every number is the same rule output the
+   table above prints. #}
 {% for epoch in view.closed_epochs %}
-<p class="ledger-figure">Epoch {{ epoch.index }}: {{ epoch.founder_share }} founder</p>
-<p class="muted">because the denominator D<sub>{{ epoch.index }}</sub> = {{ epoch.denominator }} vu is made of {{ epoch.rows|length }} entries and all of them are his. <a href="#epoch-{{ epoch.index }}">Every one of them is listed above</a> with its hours, its rate and its evidence digest.</p>
+<figure class="figure">
+<p class="figure__frac">{{ epoch.founder_vu }} of {{ epoch.denominator }} vu</p>
+<p class="figure__pct">= {{ epoch.founder_share }} founder share of epoch {{ epoch.index }}</p>
+<figcaption class="figure__derivation">because the denominator D<sub>{{ epoch.index }}</sub> = {{ epoch.denominator }} vu is made of {{ epoch.rows|length }} entries and all of them are his. <a href="#epoch-{{ epoch.index }}">Every one of them is listed above</a> with its hours, its rate and its evidence digest.</figcaption>
+</figure>
 {% endfor %}
 
 <h3>Tripwire</h3>
+{# The paramount of council/socaity-0hb.md §F, in the one place on this page
+   where no `figure` component can reach: this share is inline prose, so its
+   denominator travels inside the sentence rather than in a neighbouring
+   object. §F names this line — the old `ledger.html:123` — as one of the two
+   violations in scope, measured at 234px from the nearest denominator; the
+   fraction is now in the same clause as the percentage, and both halves are
+   rule output rather than copy. #}
 {% if view.tripwire.escalated %}
-<p><strong>State: escalated.</strong> The tripwire adopted in socaity-19p escalates entries once the founder share of an epoch rises above a published threshold. No threshold value is published in <a href="{{ view.rule.params_url }}">the parameter set</a> yet — and the founder share is {{ view.tripwire.share }} of the epoch, which is above any threshold a value could be set to. So the state is escalated by construction, and it stays escalated until the number falls, which requires somebody else's entry.</p>
+<p><strong>State: escalated.</strong> The tripwire adopted in socaity-19p escalates entries once the founder share of an epoch rises above a published threshold. No threshold value is published in <a href="{{ view.rule.params_url }}">the parameter set</a> yet — and the founder share is {{ view.tripwire.founder_vu }} of the {{ view.tripwire.denominator }} vu in epoch {{ view.tripwire.epoch }}, or {{ view.tripwire.share }} of it, which is above any threshold a value could be set to. So the state is escalated by construction, and it stays escalated until the number falls, which requires somebody else's entry.</p>
 {% else %}
-<p><strong>State: not determinable.</strong> The tripwire adopted in socaity-19p escalates entries once the founder share of an epoch rises above a published threshold. No threshold value is published in <a href="{{ view.rule.params_url }}">the parameter set</a> yet, and the founder share{% if view.tripwire.share %} — {{ view.tripwire.share }} —{% endif %} is no longer the whole epoch, so this page cannot say which side of an unpublished threshold it falls on. It says so rather than guessing.</p>
+<p><strong>State: not determinable.</strong> The tripwire adopted in socaity-19p escalates entries once the founder share of an epoch rises above a published threshold. No threshold value is published in <a href="{{ view.rule.params_url }}">the parameter set</a> yet, and the founder share{% if view.tripwire.share %} — {{ view.tripwire.founder_vu }} of the {{ view.tripwire.denominator }} vu in epoch {{ view.tripwire.epoch }}, or {{ view.tripwire.share }} of it —{% endif %} is no longer the whole epoch, so this page cannot say which side of an unpublished threshold it falls on. It says so rather than guessing.</p>
 {% endif %}
 
 <h3 id="your-epoch">Your epoch</h3>
-<p class="ledger-figure">Epoch {{ view.exhibit.epoch }}: {{ view.exhibit.founder_share }} founder</p>
-<p class="muted">Computed by the published rule over <a href="{{ view.chain.url }}">the example chain</a>; the real record has not opened.</p>
+{# The second display figure on this page. Its derivation names provenance —
+   which rule, over which chain — and no denominator, and a figure check that
+   only asked "is there a derivation?" would have certified it while it broke
+   the paramount the check exists to enforce (§F names this exact line). The
+   denominator is therefore on the FRACTION line, where the component puts it
+   for every figure: 0 of the 1 vu that a one-hour entry would put in epoch
+   {{ view.exhibit.epoch }}. Check G reads that line, not the derivation. The
+   prose below is untouched; its wording is socaity-9x0's. #}
+<figure class="figure">
+<p class="figure__frac">{{ view.exhibit.founder_vu }} of {{ view.exhibit.denominator }} vu</p>
+<p class="figure__pct">= {{ view.exhibit.founder_share }} founder share of epoch {{ view.exhibit.epoch }}</p>
+<figcaption class="figure__derivation">Computed by the published rule over <a href="{{ view.chain.url }}">the example chain</a>; the real record has not opened. The denominator is one hypothetical hour, priced at the published rate — nothing is recorded in epoch {{ view.exhibit.epoch }}.</figcaption>
+</figure>
 <p>Epoch {{ view.exhibit.epoch }} has not opened. Founder hours recorded in it: {{ view.exhibit.founder_vu }} vu. Epochs are separate pools — an epoch's denominator sums that epoch's entries and no others — so a hypothetical entry run through <a href="{{ view.rule.url }}">the published rule</a> in epoch {{ view.exhibit.epoch }} returns a founder share of {{ view.exhibit.founder_share }}. {% if view.closed_epochs %}Epoch {{ view.closed_epochs[0].index }}'s concentration{% else %}An earlier epoch's concentration{% endif %} is arithmetically incapable of reaching it. The founder's share of the epoch you contribute to starts at {{ view.exhibit.founder_share }} and rises only if he logs work in that epoch too, on the same rate table, with the same evidence bar.</p>
 <p class="ledger-derivation">Computed the same way as the calculator below: one hypothetical entry, the published rule, nothing recorded. Recompute: <code>python3 {{ view.chain.self }} your-epoch</code></p>
 </section>
@@ -111,11 +166,11 @@
 <section class="ledger-block" id="rule" aria-labelledby="rule-h">
 <h2 id="rule-h">The rule that converts a contribution into a share</h2>
 <p>One screen, whole. The conversion schedule V is a table keyed by category and native unit; a contributor does not declare a rate and cannot propose one.</p>
-<div class="ledger-scroll"><table>
-<thead><tr><th scope="col">Category</th><th scope="col">Native unit</th><th scope="col">Rate</th></tr></thead>
-<tbody>
+<div class="ledger-scroll"><table role="table">
+<thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Category</th><th role="columnheader" scope="col">Native unit</th><th role="columnheader" scope="col" class="ledger-num">Rate</th></tr></thead>
+<tbody role="rowgroup">
 {% for rate in view.rate_card %}
-<tr><td>{{ rate.category }}</td><td>{{ rate.unit }}</td><td>{{ rate.rate }} vu per hour</td></tr>
+<tr role="row"><td role="cell" data-label="Category">{{ rate.category }}</td><td role="cell" data-label="Native unit">{{ rate.unit }}</td><td role="cell" data-label="Rate" class="ledger-num">{{ rate.rate }} vu per hour</td></tr>
 {% endfor %}
 </tbody>
 </table></div>
@@ -160,11 +215,11 @@ python3 {{ view.chain.self }}</pre>
 <p class="ledger-derivation">How this works, exactly: the page is static, so there is no rule engine running in your browser and this page does not contain a second implementation of the rule. All {{ view.calc.cells }} combinations below were computed when the page was built, by calling <a href="{{ view.rule.url }}">rule/distribute.py</a> and <a href="{{ view.rule.valuation_url }}">rule/valuation.py</a> — once per combination, over the chain, with one hypothetical entry appended and the epoch flipped to closed. The script on the page does a table lookup and no arithmetic. Recompute any cell yourself: <code>python3 {{ view.chain.self }} hypothetical {{ view.calc.default.category }} {{ view.calc.default.hours }}</code></p>
 <details>
 <summary>Every precomputed combination ({{ view.calc.cells }})</summary>
-<div class="ledger-scroll"><table>
-<thead><tr><th scope="col">Category</th><th scope="col">Hours</th><th scope="col">Rate</th><th scope="col">vu</th><th scope="col">D<sub>{{ view.calc.epoch }}</sub> would be</th><th scope="col">If epoch {{ view.calc.epoch }} closed on this record</th></tr></thead>
-<tbody>
+<div class="ledger-scroll"><table role="table">
+<thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Category</th><th role="columnheader" scope="col" class="ledger-num">Hours</th><th role="columnheader" scope="col" class="ledger-num">Rate</th><th role="columnheader" scope="col" class="ledger-num">vu</th><th role="columnheader" scope="col" class="ledger-num">D<sub>{{ view.calc.epoch }}</sub> would be</th><th role="columnheader" scope="col" class="ledger-num">If epoch {{ view.calc.epoch }} closed on this record</th></tr></thead>
+<tbody role="rowgroup">
 {% for cell in view.calc.rows %}
-<tr><td>{{ cell.category }}</td><td>{{ cell.hours }}</td><td>{{ cell.rate }} vu/h</td><td>{{ cell.vu }}</td><td>{{ cell.denominator }} vu</td><td>{{ cell.share }}</td></tr>
+<tr role="row"><td role="cell" data-label="Category">{{ cell.category }}</td><td role="cell" data-label="Hours" class="ledger-num">{{ cell.hours }}</td><td role="cell" data-label="Rate" class="ledger-num">{{ cell.rate }} vu/h</td><td role="cell" data-label="vu" class="ledger-num">{{ cell.vu }}</td><td role="cell" data-label="D{{ view.calc.epoch }} would be" class="ledger-num">{{ cell.denominator }} vu</td><td role="cell" data-label="If epoch {{ view.calc.epoch }} closed on this record" class="ledger-num">{{ cell.share }}</td></tr>
 {% endfor %}
 </tbody>
 </table></div>

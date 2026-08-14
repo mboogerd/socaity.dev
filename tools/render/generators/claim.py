@@ -47,8 +47,13 @@ STEPS = [
             'mkdir -p ~/.socaity && ssh-keygen -t ed25519 -f %s -C "socaity claim"'
             % KEY_PATH,
         ],
+        # The `why` of every step is rendered ABOVE its command block, never
+        # under it (council/socaity-0hb.md §C: a reassurance sentence is never
+        # smaller, greyer or LOWER than the command it accompanies).  The
+        # tenses below are written for that order and only for it.
         "why": (
-            "This writes two files. <code>claim-key</code> is the private half: it "
+            "The command below writes two files. <code>claim-key</code> is the "
+            "private half: it "
             "stays on your machine, and nothing on this site, in this repository, or "
             "in the record ever asks you for it. <code>claim-key.pub</code> is the "
             "public half — that half becomes your name on the record. ssh-keygen "
@@ -69,10 +74,11 @@ STEPS = [
             % (NAMESPACE, KEY_PATH),
         ],
         "why": (
-            "The line you just wrote says: this account and this key are the same "
-            "person. Signing it proves one direction of that — only the private key "
-            "you made a moment ago can produce this signature, and it can only be "
-            "used for a socaity claim, never as a login or a commit signature."),
+            "The line the first command writes says: this account and this key are "
+            "the same person. Signing it proves one direction of that — only the "
+            "private key you made a moment ago can produce that signature, and it "
+            "can only be used for a socaity claim, never as a login or a commit "
+            "signature."),
     },
     {
         "n": 3,
@@ -81,7 +87,8 @@ STEPS = [
             "cat ~/.socaity/claim.txt ~/.socaity/claim.txt.sig",
         ],
         "why": (
-            "Paste everything it printed as a comment on your merged pull request. "
+            "The command below prints the two files you just made. Paste everything "
+            "it prints as a comment on your merged pull request. "
             "Publishing it there proves the other direction — only your account can "
             "post as your account. Neither half is worth anything alone; together "
             "they are the whole claim, and nobody else can produce both."),

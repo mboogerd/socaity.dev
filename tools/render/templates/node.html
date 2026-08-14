@@ -2,7 +2,15 @@
 {% block title %}{{ node.title }}{% endblock %}
 {% block main %}
 {% set root = '../' * depth %}
-<article>
+{# The node's name comes FIRST, before anything about the build of the page.
+   Breadcrumbs, title and chip row are direct children of <main> rather than
+   contents of the <article>, so the rail can sit between them and the record
+   itself. At >=60rem the grid puts the rail in the left track on the row it
+   appears in, so the provenance object sits beside the statement it annotates
+   (0hb §C); below 60rem there is no grid and no `order:`, so the page reads —
+   by eye and by screen reader alike — name, chips, provenance, record. Rail
+   content first in <main> would open every node page on a phone with metadata
+   about the page instead of the page's own name. #}
 {% if node.crumbs %}
 <nav aria-label="Breadcrumb"><ol class="crumbs">
 {% for crumb in node.crumbs %}
@@ -13,19 +21,59 @@
 
 <h1{% if node.status == 'resolved' %} class="done"{% endif %}>{{ node.title }}</h1>
 <p class="chips">
-{% if node.chip %}<span class="chip chip-{{ node.chip[1] }}">{{ node.chip[0] }}</span>{% endif %}
+{% if node.chip %} <span class="chip chip-{{ node.chip[1] }}">{{ node.chip[0] }}</span> {% endif %}
 {% if node.merged_into %}<a href="{{ root }}n/{{ node.merged_into.id }}/">{{ node.merged_into.title }}</a>{% endif %}
 <span class="muted">{{ node.type }}</span>
 {% if node.contested_count %}
 <span class="chip chip-contested">{{ node.contested_count }} contested edge(s)</span>
-{% for url in node.contested_links %}<a href="{{ url }}">dispute</a> {% endfor %}
+{% for url in node.contested_links %}<a href="{{ url }}">read the contest</a> {% endfor %}
 {% endif %}
-{% if node.ticket %}<span class="chip chip-ticket">ticket {{ node.ticket.status }}{% if node.ticket.claimed_by %} · {{ node.ticket.claimed_by }}{% endif %}</span>{% endif %}
+{% if node.ticket %} <span class="chip chip-ticket">ticket {{ node.ticket.status }}{% if node.ticket.claimed_by %} · {{ node.ticket.claimed_by }}{% endif %}</span> {% endif %}
 </p>
-<p class="provenance">{{ node.provenance }} · <a href="{{ root }}graph.json">derivation</a></p>
+{# The provenance object (0hb §E). `.prov` and `.prov--agent` are the same
+   object: same width, same position, same colour token, same rule. The only
+   thing that differs is the fill of the 3px left edge — solid for a person,
+   45-degree hatch for a program — and one declaration of CSS says so. The
+   words differ too, and must: a visual difference may encode a fact about who
+   or what, never a judgement about quality, so anything a reader could rank
+   is carried in text. Both kinds carry the same five fields, in the same
+   order, at the same size, including the founder's; a human write reads
+   `none` where an agent write names a model and a run, because absence of a
+   mark may never be the human signal and a shorter object would make the
+   agent one louder. The annotated content is never striped: the mark is on
+   the statement about the work, not on the work. #}
+<aside class="rail">
+{% set p = node.prov %}
+<div class="prov{% if p.kind == 'agent' %} prov--agent{% endif %}">
+<p class="prov__kind">{% if p.kind == 'agent' %}written by a program{% else %}written by a person{% endif %}</p>
+<dl class="prov__grid">
+<dt>asserted by</dt><dd>{{ p.actor_id }}{% if p.on_behalf_of %}, on behalf of {{ p.on_behalf_of }}{% endif %}</dd>
+<dt>model</dt><dd>{{ p.model or 'none' }}</dd>
+<dt>run</dt><dd>{{ p.run_id or 'none' }}</dd>
+<dt>asserted</dt><dd>{{ p.asserted_at }}</dd>
+<dt>evidence</dt><dd>{% if p.evidence %}{% for digest in p.evidence %}<code>{{ digest[:19] }}…</code>{% if not loop.last %} {% endif %}{% endfor %}{% else %}none recorded{% endif %}</dd>
+</dl>
+<p class="prov__derivation"><a href="{{ root }}graph.json">derivation</a></p>
+</div>
+</aside>
+
+<article>
 {% if node.external_ref %}<p><a href="{{ node.external_ref }}">{{ node.external_ref }}</a></p>{% endif %}
 
 <section aria-label="Statement"><p>{{ node.body }}</p></section>
+
+{# The contest section (council/socaity-0hb.md §D). It sits HERE, directly
+   under the claim it contests, and carries exactly the weight of "Requires"
+   and "Competing approaches" below it — same <section>, same <h2>, no
+   modifier class, no box, nothing that could shrink later. It is NEVER
+   inside a <details>: the legend collapses, contestation does not. It used
+   to sit at the very bottom of the page, after "See also", which put the
+   affordance for disagreeing several screens away from the sentence a reader
+   disagrees with. #}
+<section aria-labelledby="contest"><h2 id="contest">Disagree with this?</h2>
+<p><a href="{{ node.issue_url }}">Contest this</a> · <a href="https://github.com/socaity/socaity.dev/edit/main/graph/nodes/{{ node.id }}.yaml">Propose a change</a> · <a href="#legend">what these marks mean</a></p>
+<p class="muted">Permanent address: <code>{{ node.id }}</code> (the name <code>{{ node.slug }}</code> may change).</p>
+</section>
 
 {% if node.requires %}
 <section aria-labelledby="requires"><h2 id="requires">Requires</h2>
@@ -33,9 +81,9 @@
 {% for row in node.requires %}
 <li{% if row.done %} class="done"{% endif %}>
   <a href="{{ root }}n/{{ row.id }}/">{{ row.title }}</a>
-  {% if row.chip %}<span class="chip chip-{{ row.chip[1] }}">{{ row.chip[0] }}</span>{% endif %}
-  {% if row.edge_chip %}<span class="chip chip-{{ row.edge_chip[1] }}">{{ row.edge_chip[0] }}</span>{% if row.dispute_url %} <a href="{{ row.dispute_url }}">see dispute</a>{% endif %}{% endif %}
-  {% if row.estimate %}<span class="estimate">{{ row.estimate.text }}<span class="muted"> · estimated {{ row.estimate.asserted_at }}{% if row.estimate.stale %} · stale{% endif %}</span></span>{% endif %}
+  {% if row.chip %} <span class="chip chip-{{ row.chip[1] }}">{{ row.chip[0] }}</span> {% endif %}
+  {% if row.edge_chip %} <span class="chip chip-{{ row.edge_chip[1] }}">{{ row.edge_chip[0] }}</span> {% if row.dispute_url %} <a href="{{ row.dispute_url }}">read the contest</a>{% endif %}{% endif %}
+  {% if row.estimate %} <span class="estimate">{{ row.estimate.text }}<span class="muted"> · estimated {{ row.estimate.asserted_at }}{% if row.estimate.stale %} · stale{% endif %}</span></span> {% endif %}
 </li>
 {% endfor %}
 </ul>
@@ -48,9 +96,9 @@
 <article class="card">
   <h3><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a></h3>
   <p class="chips">
-  {% if card.chip %}<span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span>{% endif %}
-  {% if card.edge_chip %}<span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span>{% if card.dispute_url %} <a href="{{ card.dispute_url }}">see dispute</a>{% endif %}{% endif %}
-  {% if card.weight_label %}<span class="chip chip-weight">{{ card.weight_label }}</span>{% endif %}
+  {% if card.chip %} <span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span> {% endif %}
+  {% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">read the contest</a>{% endif %}{% endif %}
+  {% if card.weight_label %} <span class="chip chip-weight">{{ card.weight_label }}</span> {% endif %}
   </p>
   {% if card.weight_label %}<p class="provenance">{{ card.weight_provenance }} · estimated {{ card.weight_stamp }}</p>{% endif %}
   <p>{{ card.body }}</p>
@@ -64,7 +112,7 @@
 <section aria-labelledby="refined"><h2 id="refined">Narrower problems</h2>
 <ul>
 {% for card in node.refined_by %}
-<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a>{% if card.chip %} <span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span>{% endif %}{% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span>{% if card.dispute_url %} <a href="{{ card.dispute_url }}">see dispute</a>{% endif %}{% endif %}</li>
+<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a>{% if card.chip %} <span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span> {% endif %}{% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">read the contest</a>{% endif %}{% endif %}</li>
 {% endfor %}
 </ul>
 </section>
@@ -93,15 +141,11 @@
 <section aria-labelledby="seealso"><h2 id="seealso">See also</h2>
 <ul>
 {% for card in node.see_also %}
-<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a> <span class="muted">equivalent</span>{% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span>{% if card.dispute_url %} <a href="{{ card.dispute_url }}">see dispute</a>{% endif %}{% endif %}</li>
+<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a> <span class="muted">equivalent</span> {% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">read the contest</a>{% endif %}{% endif %}</li>
 {% endfor %}
 </ul>
 </section>
 {% endif %}
 
-<section aria-labelledby="contest"><h2 id="contest">Disagree with this?</h2>
-<p><a href="{{ node.issue_url }}">Contest this</a> · <a href="https://github.com/socaity/socaity.dev/edit/main/graph/nodes/{{ node.id }}.yaml">Propose a change</a> · <a href="#legend">what the chips mean</a></p>
-<p class="muted">Permanent address: <code>{{ node.id }}</code> (the name <code>{{ node.slug }}</code> may change).</p>
-</section>
 </article>
 {% endblock %}

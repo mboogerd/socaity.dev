@@ -358,6 +358,12 @@ def build(root, clock):
             "rows": rows,
             "denominator": micro(run["denominator"]),
             "denominator_micro": run["denominator"],
+            # The numerator of the founder share, in the same unit as the
+            # denominator beside it.  W2c's figure component states the
+            # fraction before it states the percentage, so both halves of it
+            # have to be rule output; a percentage whose numerator was not
+            # computed here would be a number typed in by hand (V5).
+            "founder_vu": micro(founder_weight),
             "pie": ratio_text(run["pie"]),
             "contributors": len(contributors),
             "founder_share": percent(founder_share) if founder_share is not None else None,
@@ -481,13 +487,29 @@ def build(root, clock):
         "tripwire": {
             "threshold_published": "founder_share_tripwire" in params,
             "share": closed[0]["founder_share"] if closed else None,
+            # The paramount of 0hb §F: no percentage appears on any surface
+            # without its denominator in the SAME SENTENCE or the same visual
+            # object.  The tripwire share is prose — no `figure` component
+            # reaches it — so the fraction it is computed from has to travel
+            # with it, in the sentence, as rule output rather than as a number
+            # typed into the copy.  This is the `ledger.html:123` case §F names
+            # as in scope; the figure component fixed `ledger.html:129`.
+            "founder_vu": closed[0]["founder_vu"] if closed else None,
+            "denominator": closed[0]["denominator"] if closed else None,
+            "epoch": closed[0]["index"] if closed else None,
             "escalated": bool(closed) and closed[0]["founder_share_exact"] == 1,
         },
         "closed_epochs": closed,
         "open_epoch": open_epoch,
+        # `denominator` is D of the exhibit run: the epoch has no entries, so
+        # it is exactly the one hypothetical hour the run appended.  It is
+        # here because the figure component states a fraction before it
+        # states a percentage, and this figure's derivation names provenance
+        # rather than a denominator (0hb §F, the ledger.html:129 case).
         "exhibit": {"epoch": next_index,
                     "founder_share": percent(exhibit_founder),
-                    "founder_vu": micro(0)},
+                    "founder_vu": micro(0),
+                    "denominator": micro(exhibit["denominator"])},
         "og": og_card(closed, exhibit_founder),
         "attestation": attestation,
         "attestation_hash": attestation_hash,

@@ -6,10 +6,15 @@
 
 <h1>Claim your entry</h1>
 
-<p class="lede"><strong>No token. Nothing to trade. This is a database.</strong>
-Your change was merged. An entry for it was written to the record the same day,
-against the week the work actually happened — you did not have to be here for
-that, and none of it was waiting on you.</p>
+{# The one shared register object (§H). The same sentence, in the same shape,
+   as on home, /ledger and /faq — a reader who meets it in two shapes reads two
+   assertions rather than one commitment. #}
+<p class="register"><strong>No token. Nothing to trade. This is a
+database.</strong></p>
+
+<p class="lede">Your change was merged. An entry for it was written to the
+record the same day, against the week the work actually happened — you did not
+have to be here for that, and none of it was waiting on you.</p>
 
 <p>What the entry does not have yet is a name. It reads
 <strong>attribution reserved</strong>, and it is bound to whoever holds the
@@ -18,25 +23,49 @@ below attach it to a key only you hold —
 <a href="{{ root }}claim/reserved/">this is what the entry looks like now, and
 after</a>.</p>
 
-<p class="provenance">The three commands run in well under a second; the rest
-is reading, pasting, and typing your passphrase — twice when you choose it in
-step 1, once more when you sign in step 2. Under three minutes
-is the target, and as of the graph clock {{ stamp }} it has been walked end to
-end by the people who wrote it and not yet timed with contributors —
+{# The consent object, on the first screen and at full size: the reason for the
+   ceremony, at the point of ceremony, rather than prose inside step 1. §C
+   forbids putting any of this in the rail, and the floor forbids setting it
+   under --t-body or under --ink. #}
+<p class="reassure reassure--consent">There is no account here, and there is
+nothing to sign up for: this site stores no password, sends no email, and has
+nothing to log in to. That is why the steps below are ssh commands — the key
+they make on your own machine <em>is</em> the name, and you keep it. Nothing is
+required of you. You may decline all of it and close this page: the entry is
+already written, it is already valued, and it stays bound to you, reading
+<strong>attribution reserved</strong>, until you claim it or never do.</p>
+
+<p class="reassure">Your entry never expires: after about
+{{ horizon.months }} months, claiming it takes one extra verification step and
+nothing else, and there is nothing here to be early for.
+<a href="#horizon">How that figure is computed.</a> The three commands run in
+well under a second; the rest is reading, pasting, and typing your passphrase —
+twice when you choose it in step 1, once more when you sign in step 2. Under
+three minutes is the target.</p>
+
+{# Publication status, not reassurance: what the sentence above claims has not
+   been measured with contributors yet, and saying so is the honesty half, not
+   the consent half. It stays at .provenance size for that reason and for no
+   other. #}
+<p class="provenance">As of the graph clock {{ stamp }} that target has been
+walked end to end by the people who wrote it and not yet timed with
+contributors —
 <a href="{{ repo_blob }}doc/research/m0-claim-flow-test/PROTOCOL.md">the test
-that will time it</a> is written and has not been run. Your entry never
-expires: after about {{ horizon.months }} months, claiming it takes one extra
-verification step and nothing else, and there is nothing here to be early for.
-<a href="#horizon">How that figure is computed.</a></p>
+that will time it</a> is written and has not been run.</p>
 
 <ol class="steps">
 {% for step in steps %}
+{# Order inside a step: what it does and what it does not do, THEN the command.
+   "Never smaller, greyer or lower than the command it accompanies" — the
+   sentence that says nothing here ever asks you for your private key cannot
+   sit underneath the block that makes it. The edit instruction stays adjacent
+   to the block it edits. #}
 <li>
 <h2>{{ step.n }}. {{ step.title }}</h2>
-{% if step.edit %}<p>{{ step.edit|safe }}</p>{% endif %}
+<p class="reassure">{{ step.why|safe }}</p>
+{% if step.edit %}<p class="reassure">{{ step.edit|safe }}</p>{% endif %}
 <pre><code>{% for line in step.commands %}{{ line }}
 {% endfor %}</code></pre>
-<p>{{ step.why|safe }}</p>
 </li>
 {% endfor %}
 </ol>
