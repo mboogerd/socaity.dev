@@ -76,6 +76,17 @@
 
 <section aria-label="Statement"><p>{{ node.body }}</p></section>
 
+{# The claim affordance (council/socaity-0hb.md §I). `Claim` is not in the
+   global navigation, so this is one of the five places the surface is
+   reached from — and unlike a nav entry, it is a link FROM A REASON TO
+   CLAIM: it appears only where the record itself says the work is open,
+   unblocked and nobody's. The chip above states the ticket's status because
+   that is the graph's fact; this states what a reader can do about it,
+   at --t-body in --ink (A6), which a chip could never be. #}
+{% if node.ticket and node.ticket.status == 'open' and not node.ticket.claimed_by %}
+<p class="act"><a href="{{ root }}claim/">Nobody has claimed this ticket — this is how you take it</a></p>
+{% endif %}
+
 {# The contest section (council/socaity-0hb.md §D). It sits HERE, directly
    under the claim it contests, and carries exactly the weight of "Requires"
    and "Competing approaches" below it — same <section>, same <h2>, no

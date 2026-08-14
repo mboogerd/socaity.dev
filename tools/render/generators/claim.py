@@ -19,7 +19,14 @@ the published parameter set and the validator's V, not from today's date.
 import os
 import sys
 
-NAV = [{"label": "Claim", "href": "claim/", "order": 40}]
+# No NAV export, on purpose (council/socaity-0hb.md §I, and the note above
+# SURFACES in render.py). This generator emits three pages and claims no nav
+# entry: /claim is reached from the reasons to claim it — the unclaimed-ticket
+# line on a node page, every row of the /roadmap work list, the empty second
+# row of the ledger, the FAQ, and the merge comment on the pull request that
+# earned the entry — not from a table of contents. Adding a NAV entry back
+# would not merely add a link, it would re-publish the surface into the global
+# masthead on every page.
 
 #: The command file the contributor's key lives in.  One directory, three
 #: files, all of it under the contributor's own $HOME.

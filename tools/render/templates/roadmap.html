@@ -39,7 +39,13 @@
 <span class="chip chip-ticket">ticket unclaimed</span>
 <code class="work__ticket">{{ item.ticket }}</code>
 </p>
-<p class="act"><a href="{{ root }}n/{{ item.id }}/">Read the record, then take it</a> · <a href="{{ item.issue_url }}">Say this is the wrong thing to work on</a></p>
+{# Two acts, not one. `Read the record, then take it` named the second half
+   and linked only the first: it went to the node page, and with `Claim` out
+   of the global navigation (council/socaity-0hb.md §I) "take it" pointed at
+   nothing. Every row of this list is a reason to claim — open, unblocked,
+   unclaimed, computed — so every row carries the link, which is what the
+   §I link set means by a link FROM A REASON TO CLAIM. #}
+<p class="act"><a href="{{ root }}n/{{ item.id }}/">Read the record</a> · <a href="{{ root }}claim/">Take this ticket</a> · <a href="{{ item.issue_url }}">Say this is the wrong thing to work on</a></p>
 </li>
 {% endfor %}
 </ol>

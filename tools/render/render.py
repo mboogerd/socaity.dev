@@ -100,6 +100,17 @@ DOC_PAGES = [
 # stub today: it gets a page saying so, because a nav entry that 404s is a
 # worse answer than one that admits the gap. A generator claims a surface by
 # exporting a NAV entry with the same href (see the HOOK block below).
+#
+# `/claim` is deliberately NOT here (council/socaity-0hb.md §I). It is a
+# rendered surface with no nav membership: a nav entry is a routing fact, and
+# the routing fact this site wants is that you arrive at /claim FROM A REASON
+# TO CLAIM — an unclaimed ticket, a roadmap row, the empty second line of the
+# ledger, the comment on your merged pull request — never from a directory
+# listing on all 26 pages, where `Ledger · Claim` reads balance → withdraw.
+# Re-adding it here (or a NAV export in generators/claim.py, which would
+# publish this entry rather than create one) reinstates that reading. The
+# orphan BFS in tools/gates/html_gate.py (check E) is what keeps the page
+# reachable without it, and it goes red if the in-body link set is broken.
 SURFACES = [
     {"label": "Home", "href": "", "order": 10, "published": True},
     {"label": "Roadmap", "href": "roadmap/", "order": 20, "published": True},
@@ -107,10 +118,6 @@ SURFACES = [
      "summary": "the contribution record itself — every entry with its evidence, "
                 "and every displayed number computed from a published artifact.",
      "path": "ledger/index.html"},
-    {"label": "Claim", "href": "claim/", "order": 40, "published": False,
-     "summary": "how a contributor claims an open ticket and gets their work "
-                "recorded, end to end.",
-     "path": "claim/index.html"},
     {"label": "FAQ", "href": "faq/", "order": 50, "published": True},
     {"label": "All nodes", "href": "all/", "order": 60, "published": True},
 ]
