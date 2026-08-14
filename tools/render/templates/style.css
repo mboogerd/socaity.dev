@@ -148,7 +148,12 @@
    them. --ink and --rule are deliberately absent: see the note above.
    -------------------------------------------------------------------------- */
 @layer tokens {
-  :root { --muted: #575757; --bg: #fdfdfc; }
+  /* Retired. These two legacy tokens were the last places the pre-design
+     stylesheet still decided a colour: --muted shadowed --ink-3 at ten call
+     sites and --bg shadowed --paper as the page ground, so the measured
+     palette never actually rendered. Aliased rather than deleted, because the
+     call sites belong to surfaces owned by other tickets. */
+  :root { --muted: var(--ink-3); --bg: var(--paper); }
 }
 
 /* --------------------------------------------------------------------------
@@ -169,11 +174,11 @@
      stays put, because a 44rem column is already 70-ish characters. */
   @media (min-width: 60rem) { body { padding: 3rem 1rem 5rem; } h2 { margin-top: 3rem; } }
   footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding-top: 1rem; color: var(--muted); }
-  h1 { font-size: 1.6rem; line-height: 1.3; }
-  h2 { font-size: 1.15rem; margin-top: 2rem; }
-  h3 { font-size: 1.05rem; margin: 0 0 0.3rem; }
-  a { color: #14487a; }
-  a:focus-visible, summary:focus-visible { outline: 3px solid #14487a; outline-offset: 2px; }
+  h1 { font-size: var(--t-h1); line-height: var(--lh-heading); letter-spacing: -0.005em; }
+  h2 { font-size: var(--t-h2); line-height: var(--lh-heading); margin-top: var(--s8); }
+  h3 { font-size: var(--t-h3); line-height: var(--lh-heading); margin: 0 0 var(--s2); }
+  a { color: var(--accent); }
+  a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
   th, td { border-bottom: 1px solid var(--rule); text-align: left; padding: 0.35rem 0.4rem;
            vertical-align: top; }
