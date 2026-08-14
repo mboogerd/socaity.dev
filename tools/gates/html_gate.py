@@ -107,6 +107,34 @@ Checks that run:
       was written for, so inserting a paragraph at the top of doc/manifesto.md
       fails the build instead of silently restyling the first screen.
 
+  T   **No `:root` token with zero `var()` references** (Amendment 1, A2).
+      The first ASSERTION check on this site: every check above it tests for
+      the presence of a defect, and that is exactly why a design that was
+      declared and never applied passed all nine of them.  `--paper`,
+      `--accent` and `--accent-wash` sat at zero uses through three waves
+      while the page went on painting the legacy ground.  A token nothing
+      reads is a decision that never reached a pixel, and this is five lines
+      that would have said so the day W0 merged.
+
+      Liveness is REACHABILITY, not a reference count: it starts at the
+      var() calls in ordinary declarations — the ones that paint something —
+      and follows var() through custom-property values from there.  So
+      `--muted` and `--bg`, which are aliases the stylesheet still ships and
+      real rules still read, are live and keep what they alias live; but a
+      token referenced only by a token nothing reaches is dead, and both are
+      reported.  `RESERVED_TOKENS` waives the handful the resolution itself
+      declares unused, each with its reason and the ticket that retires it,
+      and a waiver for a token that no longer exists is itself a failure.
+
+  R   **No heading below 1.4x the body size** (Amendment 1, A2).  Sizes are
+      resolved out of the stylesheets — the same machinery check G uses —
+      because the tag said `h2` the whole time.  What shipped was 19.55px
+      against 17px body: a ratio of 1.15, under the threshold at which the
+      eye registers a size change at all, which is why an `<h2>` and a bold
+      lead-in sentence were the same object on the page.  1.4 is `--t-h3`,
+      the smallest rung §A's 1.2 scale can put above body copy, less a hair
+      for rounding.
+
 Deferred, by the rule platform-engineer generalised in round 3 — "a check may
 not land in a commit where it is red", because "a gate that ships failing gets
 commented out within a week, and then we have neither the check nor the
@@ -114,6 +142,13 @@ honesty of not claiming one".  Each lands in the ticket that ships the markup
 satisfying it, as a new entry in CHECKS:
 
   D   freshness stamp without `<time>`.
+  W   `<pre>` exceeding its container — written, tested, and not registered:
+      four of six commands on /claim overflow today.  Lands with socaity-0tc
+      (A7: the commands wrap rather than clip).
+  M   every declared surface carrying the identity object — same treatment.
+      A3's masthead (socaity-0tc) took this from 19 red surfaces to 3 while
+      the check was being written; the three that remain are the blog OG
+      cards, which do not inherit `base.html`.
   H   the prose-percentage inventory diffed against
       `tools/gates/percent_inventory.txt` — an inventory, never a verdict.
   I   `blog_card.html` palette drift: every colour literal also in `:root`.
@@ -1362,6 +1397,527 @@ def check_positional(pages, _sheets, site_root):
     return failures
 
 
+# --------------------------------------------------------------------------
+# The assertion gates (0hb Amendment 1, A2)
+# --------------------------------------------------------------------------
+# Everything above this line tests for the PRESENCE OF A DEFECT.  That is the
+# whole of what §J originally shipped, and it is why a design that was
+# declared and never applied passed all nine of them: `h2` rendered at
+# 19.55px against 17px body text, `--paper`/`--accent`/`--accent-wash` had
+# zero uses, and not one gate could have noticed, because no gate here asked
+# whether anything was WELL MADE (socaity-s0n, finding 5).
+#
+# A2 adds four checks that fail when something the resolution asserts is
+# ABSENT rather than when something it forbids is present.  Two of them are
+# green today and are registered in CHECKS below.  Two are red today and are
+# written but NOT registered, per §J's "no check may land in a commit where
+# it is red" — each names the ticket that lands it.
+CSS_DECL = re.compile(r"""
+    (?P<name>--[A-Za-z0-9_-]+ | [-A-Za-z][-A-Za-z0-9]*)
+    \s*:\s*
+    (?P<value>[^;{}]*)
+""", re.VERBOSE)
+#: Every `var()` call in a value, fallbacks included — a fallback names a
+#: token too, and a token used only as somebody's fallback is still used.
+VAR_REF = re.compile(r"var\(\s*(--[A-Za-z0-9_-]+)", re.IGNORECASE)
+ROOT_SELECTOR = re.compile(r"(?<![-\w]):root(?![-\w])", re.IGNORECASE)
+
+
+def blank_comments(css_text):
+    """Comments blanked out, line numbers preserved.
+
+    Line-preserving because this gate reports a token at the line it was
+    declared on, and because a comment in this stylesheet routinely QUOTES a
+    token it is explaining — the prose above the palette names `--paper` and
+    `--t-micro` a dozen times.  A gate that read comments would count those
+    as uses and could never go red.
+    """
+    return CSS_COMMENT.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), css_text)
+
+
+def css_blocks(css_text):
+    """[(selector, body, body_offset)] for a stylesheet or a `style=` value.
+
+    A `style=""` attribute is a declaration list with no selector and no
+    braces, so it is handed back as one anonymous block rather than skipped.
+    """
+    if "{" in css_text:
+        return [(m.group("sel"), m.group("body"), m.start("body"))
+                for m in CSS_RULE.finditer(css_text)]
+    return [("", css_text, 0)]
+
+
+def token_usage(pages, sheets):
+    """(declared, live) — `:root` custom properties, and the ones reached.
+
+    `declared` is {name: (file, line)} for every custom property declared on
+    `:root`; `live` is the set of tokens reachable from a var() reference in
+    a NORMAL declaration, following var() through custom-property values.
+
+    Reachability, not a reference count, is the point.  `--muted` and `--bg`
+    are aliases — `:root { --muted: var(--ink-3) }` — and they are referenced
+    by real rules, so they are live and they keep `--ink-3` live through the
+    alias.  But a token referenced only by a token that is itself never
+    reached is not used by anything the browser paints, and a plain
+    "does the string appear in a var()?" test would call the whole dead
+    cluster live.  So liveness starts at the declarations that actually
+    render something and is propagated inward from there.
+    """
+    declared, edges, seeds = {}, {}, set()
+
+    def scan(rel, css_text, base_line):
+        clean = blank_comments(css_text)
+        for selector, body, start in css_blocks(clean):
+            is_root = bool(ROOT_SELECTOR.search(selector))
+            for decl in CSS_DECL.finditer(body):
+                name = decl.group("name")
+                refs = set(VAR_REF.findall(decl.group("value")))
+                if name.startswith("--"):
+                    edges.setdefault(name, set()).update(refs)
+                    if is_root:
+                        line = base_line + clean[:start + decl.start()].count("\n")
+                        declared.setdefault(name, (rel, line))
+                else:
+                    seeds.update(refs)
+
+    for rel, text in sorted(sheets.items()):
+        scan(rel, text, 1)
+    for rel, doc in sorted(pages.items()):
+        for line, chunk in doc.css:            # <style> blocks and style=""
+            scan(rel, chunk, line)
+
+    live, queue = set(), list(seeds)
+    while queue:
+        name = queue.pop()
+        if name in live:
+            continue
+        live.add(name)
+        queue.extend(edges.get(name, ()))
+    return declared, live
+
+
+#: The ONLY tokens allowed to be declared and unread, each with the reason
+#: and the thing that retires it.  A waiver is a deliberate, reviewable edit
+#: to this file naming a clause or a ticket — which is precisely the review
+#: the palette never got when three of its colours quietly reached zero uses.
+#:
+#: Two rules keep the table from becoming the escape hatch that turns this
+#: gate off one line at a time:
+#:   · a waiver for a token that is no longer declared anywhere FAILS, so the
+#:     table cannot outlive the stylesheet it describes;
+#:   · a waiver whose token has since been wired up is simply spent, never a
+#:     failure — landing a call site must never turn the build red for the
+#:     person who landed it. Spent entries are deleted on sight.
+RESERVED_TOKENS = {
+    # §B, in the resolution's own words: "reserved exclusively for genuine
+    # defects (stale estimates, CI drift)" and explicitly NOT part of the
+    # status vocabulary. Declared unused is the specified state; a call site
+    # would mean the status system had grown a hue, which §B forbids.
+    "--flag-contested": "0hb §B — reserved for genuine defects, not for status",
+    "--flag-settled":   "0hb §B — reserved for genuine defects, not for status",
+    # §A specifies eight steps at ratio 1.2 and names seven of them. The
+    # eighth rung exists so the ladder stays geometric; the stylesheet says
+    # "Unused at M0" at the point of declaration.
+    "--t-h0": "0hb §A — the eighth rung of an eight-step scale, unused at M0",
+    # The one entry here that is a DEBT rather than a decision. --accent-wash
+    # was measured for "one emphasis surface per page, maximum" and no page
+    # has an emphasis surface, which is the same zero-use state the critique
+    # round named as evidence the design was never applied. It is waived only
+    # because the redesign owns every stylesheet in tools/render/templates/
+    # right now. socaity-3vh either gives it its surface or deletes it, and
+    # this entry goes with it.
+    "--accent-wash": "socaity-3vh — give it its emphasis surface, or delete it",
+}
+
+
+def check_dead_tokens(pages, sheets, _site_root):
+    """T — no `:root` token with zero `var()` references (A2, first clause).
+
+    The five-line check that would have caught the entire delivery failure
+    the day W0 merged.  A token is a DECISION; a token nothing reads is a
+    decision that was written down and never taken, and the difference
+    between the two is invisible in every other gate here, in review, and in
+    the rendered page — which is exactly how `--paper`, `--accent` and
+    `--accent-wash` sat at zero uses through three waves of work while the
+    page kept painting the legacy ground.
+
+    Deleting the token and wiring it up are both legal answers.  Leaving it
+    declared and unread is not, because that is the state that reads as a
+    design from the stylesheet and as no design from the browser.
+    """
+    declared, live = token_usage(pages, sheets)
+    failures = []
+    for name in sorted(declared):
+        if name in live or name in RESERVED_TOKENS:
+            continue
+        rel, line = declared[name]
+        failures.append((rel, line, "DEAD-TOKEN",
+                         "%s is declared on :root and no var() anywhere in the "
+                         "render reaches it — a token nothing reads is a design "
+                         "decision that never reached a pixel, which is the "
+                         "failure this gate exists for. Wire it up, delete it, "
+                         "or waive it in RESERVED_TOKENS with a reason and the "
+                         "ticket that retires the waiver (0hb A2)" % name))
+    for name in sorted(RESERVED_TOKENS):
+        if name in declared:
+            continue
+        failures.append(("style.css", 1, "STALE-TOKEN-WAIVER",
+                         "%s is waived in RESERVED_TOKENS (%s) and is not "
+                         "declared on :root anywhere in the render — delete the "
+                         "waiver, or the table stops describing this site and "
+                         "starts hiding it (0hb A2)"
+                         % (name, RESERVED_TOKENS[name])))
+    return failures
+
+
+#: §A's scale is a ratio of 1.2 per rung, so the smallest heading the
+#: resolution can produce against `--t-body` is `--t-h3` at 1.44x.  1.4 is
+#: that rung less a hair for rounding, and it is also roughly where the eye
+#: stops registering a size change at all: the shipped `h2` was 19.55px on
+#: 17px body — 1.15x — and the critique's verdict on it was that an `h2` and
+#: a bolded lead-in sentence were "visually the same object".
+HEADING_RATIO = 1.4
+HEADING_ELEMENTS = {"h1", "h2", "h3", "h4", "h5", "h6"}
+
+
+def body_font_size(doc, rules, root_px, cache):
+    """The size body copy renders at on this page."""
+    for node in walk(doc.root):
+        if node["tag"] == "body":
+            return font_size_of(node, rules, root_px, cache)
+    return root_px
+
+
+def check_heading_ratio(pages, sheets, _site_root):
+    """R — no heading renders below 1.4x the body size (A2, second clause).
+
+    Sizes are RESOLVED out of the stylesheets, the same way check G resolves
+    them, and not read off the tag.  That is the whole point: the tag said
+    `h2` the entire time.  The scale existed, in `@layer tokens`, correct to
+    two decimal places, and the `base` layer's legacy rule won the cascade
+    and set it to 1.15x body — so a gate that trusted the markup, or the
+    token table, or the review, would have gone green on all three.
+    """
+    rules, root_px = font_size_rules(sheets)
+    failures = []
+    for rel, doc in sorted(pages.items()):
+        cache = {}
+        body_px = body_font_size(doc, rules, root_px, cache)
+        floor = body_px * HEADING_RATIO
+        for node in walk(doc.root):
+            if node["tag"] not in HEADING_ELEMENTS:
+                continue
+            if not node_text(node):
+                continue                       # nothing rendered, nothing to size
+            size = font_size_of(node, rules, root_px, cache)
+            if size + 0.01 >= floor:
+                continue
+            failures.append((rel, node["line"], "HEADING-BELOW-RATIO",
+                             "<%s> %r renders at %.2fpx against %.2fpx body "
+                             "text — %.2fx, under the %.2fx floor. A heading "
+                             "the eye cannot tell from a bold sentence is not "
+                             "a heading; wire it to the scale in @layer tokens "
+                             "(0hb §A/A2)"
+                             % (node["tag"], node_text(node)[:40], size,
+                                body_px, size / body_px if body_px else 0.0,
+                                HEADING_RATIO)))
+    return failures
+
+
+# --------------------------------------------------------------------------
+# WRITTEN AND NOT REGISTERED — both of these are RED against the current
+# render, and §J says a check may not land in a commit where it is red ("a
+# gate that ships failing gets commented out within a week, and then we have
+# neither the check nor the honesty of not claiming one").  They are here,
+# finished and runnable, so that the tickets that fix the markup have a
+# machine-checkable target rather than a paragraph of prose:
+#
+#   W  clipped <pre>  — lands with socaity-0tc (A7: /claim commands wrap
+#      rather than clip). Four of six commands on /claim overflow today.
+#      Run it: python3 tools/gates/html_gate.py --only W   (after adding
+#      ("W", "no <pre> exceeds its container", check_clipped_pre) to CHECKS)
+#
+#   M  identity object — lands with socaity-0tc (A3: the masthead component
+#      on all surfaces). A3 landed the masthead on every templated surface
+#      while this gate was being written, which took M from 19 red surfaces
+#      to 3: the blog OG cards, which are rendered from blog_card.html and
+#      do not inherit base.html. Those three are the surface where identity
+#      matters MOST — an unfurl is seen by people who have never been here —
+#      so M stays written and unregistered until the card carries it too
+#      (socaity-bdl owns card.html).
+#      Run it: python3 tools/gates/html_gate.py --only M   (same, with
+#      ("M", "every surface carries the identity object", check_identity))
+#
+# Turning either on is one line in CHECKS plus deleting the note above it.
+# Neither is reachable from CHECKS, so neither can fail the build today, and
+# neither is dead-lettered either: both are exercised by tools/gates/
+# test_gates.py against fixtures, so they cannot rot between now and the
+# ticket that lands them.
+# --------------------------------------------------------------------------
+
+#: The advance width of one character, in ems, in a monospace face.  Every
+#: face in `--font-mono` is 0.6 or within a whisker of it (SF Mono 0.6,
+#: Menlo 0.602, DejaVu Sans Mono 0.602, Liberation Mono 0.6), which is what
+#: makes a `<pre>` measurable without a browser at all: a monospace line is
+#: exactly `characters x advance x font-size` wide, so the gate can compute
+#: what the browser would compute, deterministically, from the render.
+MONO_ADVANCE = 0.6
+#: `white-space` values under which a long line WRAPS instead of leaving the
+#: box.  A wrapped command is not clipped, and A7 asks for exactly this.
+WRAPPING_WHITE_SPACE = {"normal", "pre-wrap", "pre-line", "break-spaces"}
+CSS_SHORTHAND_SPLIT = re.compile(r"\s+")
+
+
+def property_rules(sheets, prop):
+    """[(chain, value)] for every declaration of `prop` these sheets place.
+
+    The generalisation of `font_size_rules` to any single property, so the
+    box measurements below come out of the same selector machinery — and
+    therefore the same cascade approximation — as the sizes check G resolves.
+    """
+    pattern = re.compile(r"(?<![-\w])%s\s*:\s*([^;}]+)" % re.escape(prop),
+                         re.IGNORECASE)
+    rules = []
+    for text in sheets.values():
+        clean = CSS_COMMENT.sub(" ", text)
+        props = custom_properties(text)
+        for block in CSS_RULE.finditer(clean):
+            for raw in pattern.findall(block.group("body")):
+                value = raw.strip()
+                var = CSS_VAR.search(value)
+                # Only a value that IS a var() is resolved through it.
+                # `border: 1px solid var(--rule)` names a colour at the end
+                # and a WIDTH at the front, and substituting the colour for
+                # the whole declaration loses the 1px this check is reading.
+                if var and value.lower().startswith("var("):
+                    value = props.get(var.group(1), var.group(2) or "").strip()
+                for selector in block.group("sel").split(","):
+                    chain = parse_selector(selector)
+                    if chain is not None:
+                        rules.append((chain, value))
+    return rules
+
+
+def matching_values(node, rules):
+    """Every value a rule places on this element, in source order."""
+    return [value for chain, value in rules if selector_matches(node, chain)]
+
+
+def side_padding(node, rules_by_prop, root_px, font_px):
+    """Left + right padding on this element, in px.
+
+    `padding` shorthand is read positionally (1/2/3/4 values, the CSS order),
+    and the longhands win over it when both are present, which is what the
+    cascade does with them in this stylesheet.
+    """
+    left = right = 0.0
+    for value in matching_values(node, rules_by_prop["padding"]):
+        parts = [p for p in CSS_SHORTHAND_SPLIT.split(value.strip()) if p]
+        if not parts or any("(" in p for p in parts):
+            continue                           # calc() and friends: unmeasured
+        if len(parts) == 1:
+            sides = (parts[0], parts[0])       # all four sides
+        elif len(parts) in (2, 3):
+            sides = (parts[1], parts[1])       # vertical, HORIZONTAL[, bottom]
+        elif len(parts) == 4:
+            sides = (parts[1], parts[3])       # top, right, bottom, left
+        else:
+            continue
+        a, b = (length_px(sides[0], root_px, font_px),
+                length_px(sides[1], root_px, font_px))
+        if a is not None and b is not None:
+            right, left = a, b
+    for prop, set_left in (("padding-left", True), ("padding-right", False)):
+        for value in matching_values(node, rules_by_prop[prop]):
+            resolved = length_px(value, root_px, font_px)
+            if resolved is None:
+                continue
+            if set_left:
+                left = resolved
+            else:
+                right = resolved
+    return left + right
+
+
+def side_border(node, rules_by_prop, root_px, font_px):
+    """Left + right border width in px, shorthand and longhands.
+
+    `.claim details` draws its 3px rule with `border-left` alone, and that
+    3px is 3px the command inside it does not have — which is how the
+    narrowest of /claim's overflowing boxes gets to be narrower than the
+    other three.
+    """
+    def px(value):
+        found = CSS_LENGTH.search(value)
+        if found and found.group(2).lower() == "px":
+            return float(found.group(1))
+        return 0.0
+
+    left = right = 0.0
+    for value in matching_values(node, rules_by_prop["border"]):
+        left = right = px(value)
+    for value in matching_values(node, rules_by_prop["border-left"]):
+        left = px(value)
+    for value in matching_values(node, rules_by_prop["border-right"]):
+        right = px(value)
+    return left + right
+
+
+def container_width(node, rules_by_prop, root_px, cache_font):
+    """The narrowest content width any ancestor imposes on this element, px.
+
+    `max-width` on an ancestor caps the content box, and every box between
+    that ancestor and this one is a full-width block in this stylesheet, so
+    the cap propagates down unchanged.  Values this reader cannot turn into
+    a fixed length — `calc()`, percentages, `min()` — are skipped rather
+    than guessed, which can only make the check MORE permissive.
+    """
+    best, inset = None, 0.0
+    chain = [node] + list(ancestors(node))
+    for depth, ancestor in enumerate(chain):
+        # Every box STRICTLY BETWEEN the element that carries the width and
+        # this `<pre>` spends some of that width on its own padding and
+        # rules. The `<pre>`'s own padding is not counted here — the caller
+        # subtracts it — and neither is the width holder's, because in
+        # content-box sizing a `max-width` IS the content box.
+        if depth >= 2:
+            previous = chain[depth - 1]
+            inset += (side_padding(previous, rules_by_prop, root_px, cache_font)
+                      + side_border(previous, rules_by_prop, root_px, cache_font))
+        for prop in ("max-width", "width"):
+            for value in matching_values(ancestor, rules_by_prop[prop]):
+                resolved = length_px(value, root_px, cache_font)
+                if resolved is None or "%" in value:
+                    continue
+                candidate = resolved - inset
+                best = candidate if best is None else min(best, candidate)
+    return best
+
+
+def check_clipped_pre(pages, sheets, _site_root):
+    """W — no `<pre>` exceeds its container (A2, third clause). NOT REGISTERED.
+
+    Red today: four of six commands on /claim overflow at desktop width and
+    are clipped in silence, because under macOS overlay scrollbars an
+    `overflow-x: auto` box shows no scrollbar until it is scrolled.  What a
+    visitor sees is `ssh-keygen -t ed25519 -f ~/.socaity/claim-key -C` ending
+    in mid-air, on the only surface on this site that asks anybody to DO
+    something.  Lands with the ticket that makes those commands wrap (A7).
+
+    A monospace line is measurable without a browser — characters x advance
+    x font-size — so this is a real measurement, not a heuristic on line
+    length: it is the same arithmetic the layout engine does, at the one
+    width that matters, with the box's own padding and border subtracted.
+    """
+    rules, root_px = font_size_rules(sheets)
+    rules_by_prop = {prop: property_rules(sheets, prop)
+                     for prop in ("padding", "padding-left", "padding-right",
+                                  "border", "border-left", "border-right",
+                                  "max-width", "width", "white-space")}
+    failures = []
+    for rel, doc in sorted(pages.items()):
+        cache = {}
+        for node in walk(doc.root):
+            if node["tag"] != "pre":
+                continue
+            white_space = matching_values(node, rules_by_prop["white-space"])
+            if white_space and white_space[-1].strip().lower() in WRAPPING_WHITE_SPACE:
+                continue                       # it wraps; nothing to clip
+            text = node_text_raw(node)
+            longest = max((len(line.rstrip()) for line in text.split("\n")),
+                          default=0)
+            if not longest:
+                continue
+            font_px = font_size_of(node, rules, root_px, cache)
+            outer = container_width(node, rules_by_prop, root_px, font_px)
+            if outer is None:
+                continue                       # no measurable container
+            inner = (outer
+                     - side_padding(node, rules_by_prop, root_px, font_px)
+                     - side_border(node, rules_by_prop, root_px, font_px))
+            needed = longest * MONO_ADVANCE * font_px
+            if needed <= inner:
+                continue
+            failures.append((rel, node["line"], "PRE-EXCEEDS-CONTAINER",
+                             "a <pre> line of %d characters at %.2fpx needs "
+                             "%.0fpx and has %.0fpx — %.0fpx of it is outside "
+                             "the box, and an overlay scrollbar shows the "
+                             "reader nothing. Longest line: %r (0hb A2/A7)"
+                             % (longest, font_px, needed, inner, needed - inner,
+                                _longest_line(text).strip()[:120])))
+    return failures
+
+
+def node_text_raw(node):
+    """All text in the subtree with its line breaks intact.
+
+    `node_text` collapses whitespace, which is exactly wrong for a `<pre>`:
+    the newlines ARE the layout, and the longest line is the measurement.
+    """
+    parts = list(node["text"])
+    for child in walk(node):
+        parts.extend(child["text"])
+    return "".join(parts)
+
+
+def _longest_line(text):
+    return max(text.split("\n"), key=lambda line: len(line.rstrip()), default="")
+
+
+#: The identity object, as A3 specifies it: a `.masthead` carrying the
+#: wordmark.  The fallback below also accepts a bare element whose whole text
+#: IS the wordmark, so the one surface that carries it today (the manifesto's
+#: `h1`, which comes out of doc/manifesto.md rather than a template) is
+#: honestly counted as carrying it.
+WORDMARK = "socaity.dev"
+
+
+def check_identity(pages, _sheets, _site_root):
+    """M — every declared surface carries the identity object. NOT REGISTERED.
+
+    Written when the wordmark was an `h1` inside doc/manifesto.md and existed
+    on ONE surface of seven: `base.html`'s `<header>` held a nav and nothing
+    else, so a stranger landing on /ledger saw eight underlined links and the
+    word "Ledger" — "not a styling shortfall, a site with no identity object"
+    (socaity-s0n).  A3's masthead has since fixed every templated surface.
+    Still red on the three blog OG cards, which are rendered from
+    blog_card.html and inherit nothing, so it stays unregistered.
+
+    A redirect stub is not a surface: it carries no content of its own and
+    the reader is gone from it before it paints.  Every other emitted page
+    is one, including every node page — those are the pages a stranger is
+    most likely to arrive on from a link, and least likely to have any other
+    clue what site they are on.
+    """
+    failures = []
+    for rel, doc in sorted(pages.items()):
+        if doc.refresh is not None:
+            continue                           # a redirect stub, not a surface
+        found = False
+        for node in walk(doc.root):
+            if node["tag"] in ("head", "title", "script", "style"):
+                continue
+            if any(a["tag"] == "head" for a in ancestors(node)):
+                continue                       # <title> says it; nothing SHOWS it
+            text = node_text(node)
+            if has_class(node, "masthead") and WORDMARK in text:
+                found = True
+                break
+            if text.strip().lower() == WORDMARK:
+                found = True
+                break
+        if not found:
+            header = next((n for n in walk(doc.root) if n["tag"] == "header"),
+                          None)
+            failures.append((rel, header["line"] if header else 1,
+                             "NO-IDENTITY-OBJECT",
+                             "this surface carries no masthead identity object "
+                             "— nothing on the page says what site it is. A "
+                             "reader arriving here from a link has the nav and "
+                             "the page title and nothing else (0hb A2/A3)"))
+    return failures
+
+
 # The registry the deferred checks slot into: one entry per §J check, in the
 # order the resolution lists them.  Adding (b)–(f), the percent inventory and
 # the palette drift check is a new line here plus its function — no rework.
@@ -1377,6 +1933,12 @@ CHECKS = (
     ("F1", "every font-family ends in a generic family", check_font_generic),
     ("P", "every .prov names its kind", check_prov_kind),
     ("S1", "positional style couplings still hold", check_positional),
+    # The assertion gates (Amendment 1, A2). Every check above this line asks
+    # whether a defect is present; these ask whether something the resolution
+    # asserts was actually made. W (clipped <pre>) and M (identity object) are
+    # written above and deliberately absent here — both are red today.
+    ("T", "no :root token with zero var() references", check_dead_tokens),
+    ("R", "no heading below 1.4x body size", check_heading_ratio),
 )
 
 

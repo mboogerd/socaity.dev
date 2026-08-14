@@ -819,5 +819,205 @@ class HtmlGateChipText(unittest.TestCase):
                                     'Open</span></span>'), [])
 
 
+# ---------------------------------------------------------------------------
+# html gate — the assertion checks (0hb Amendment 1, A2)
+# ---------------------------------------------------------------------------
+class HtmlGateAssertions(unittest.TestCase):
+    """Checks T, R, W and M: the four that fail on ABSENCE.
+
+    W and M are not in `html_gate.CHECKS` — both are red against the current
+    render and §J forbids landing a red check — so these tests are the only
+    thing exercising them until socaity-0tc lands the markup. That is on
+    purpose: a check nobody runs is a check that rots, and the point of
+    writing them early is that the redesign has a machine-checkable target.
+    """
+
+    def build(self, body, css):
+        root = tempfile.mkdtemp()
+        os.makedirs(os.path.join(root, "site"))
+        with open(os.path.join(root, "site", "index.html"), "w",
+                  encoding="utf-8") as handle:
+            handle.write(body)
+        with open(os.path.join(root, "site", "style.css"), "w",
+                  encoding="utf-8") as handle:
+            handle.write(css)
+        pages, sheets = html_gate.load(os.path.join(root, "site"))
+        return pages, sheets, root
+
+    def tokens(self, css, body="<html><body><p>x</p></body></html>"):
+        pages, sheets, root = self.build(body, css)
+        return sorted(why.split(" ")[0] for _rel, _line, rule, why
+                      in html_gate.check_dead_tokens(pages, sheets, root)
+                      if rule == "DEAD-TOKEN")
+
+    # -- T ---------------------------------------------------------------
+    def test_a_token_nothing_reads_is_dead(self):
+        self.assertEqual(self.tokens(":root { --paper: #fff } body { color: red }"),
+                         ["--paper"])
+
+    def test_a_token_a_rule_reads_is_live(self):
+        self.assertEqual(self.tokens(":root { --paper: #fff } "
+                                     "body { background: var(--paper) }"), [])
+
+    def test_an_alias_keeps_what_it_aliases_live(self):
+        # `:root { --bg: var(--paper) }` with `body { background: var(--bg) }`
+        # is the shape the stylesheet actually ships. Both are live.
+        self.assertEqual(self.tokens(":root { --paper: #fff; --bg: var(--paper) }"
+                                     " body { background: var(--bg) }"), [])
+
+    def test_a_token_only_a_dead_token_reads_is_still_dead(self):
+        # The case a reference COUNT gets wrong: --paper is referenced, but
+        # only by a token that nothing reaches, so nothing paints either.
+        self.assertEqual(self.tokens(":root { --paper: #fff; --wash: var(--paper) }"
+                                     " body { color: red }"),
+                         ["--paper", "--wash"])
+
+    def test_a_fallback_is_a_reference(self):
+        self.assertEqual(self.tokens(":root { --paper: #fff } "
+                                     "body { background: var(--x, var(--paper)) }"),
+                         [])
+
+    def test_a_comment_naming_a_token_is_not_a_use(self):
+        # The stylesheet's prose names --paper a dozen times. If comments
+        # counted, this gate could never go red.
+        self.assertEqual(self.tokens(":root { --paper: #fff } "
+                                     "/* var(--paper) is the ground */ "
+                                     "body { color: red }"),
+                         ["--paper"])
+
+    def test_a_style_attribute_counts_as_a_use(self):
+        self.assertEqual(self.tokens(":root { --paper: #fff }",
+                                     '<p style="color: var(--paper)">x</p>'),
+                         [])
+
+    def test_a_token_declared_off_root_is_not_this_gates_business(self):
+        # A component-scoped custom property is a local, not a design token.
+        self.assertEqual(self.tokens(".card { --pad: 4px } body { color: red }"),
+                         [])
+
+    def test_a_waiver_for_a_token_that_no_longer_exists_fails(self):
+        pages, sheets, root = self.build("<p>x</p>", ":root { --ink: #000 } "
+                                                    "body { color: var(--ink) }")
+        rules = [rule for _rel, _line, rule, _why
+                 in html_gate.check_dead_tokens(pages, sheets, root)]
+        # Every RESERVED_TOKENS entry is stale against this fixture stylesheet.
+        self.assertEqual(set(rules), {"STALE-TOKEN-WAIVER"})
+        self.assertEqual(len(rules), len(html_gate.RESERVED_TOKENS))
+
+    # -- R ---------------------------------------------------------------
+    SCALE = ("html { font-size: 17px } "
+             ":root { --t-body: 1rem; --t-h2: 1.73rem } "
+             "body { font-size: var(--t-body) } ")
+
+    def ratios(self, body, css=None):
+        pages, sheets, root = self.build("<html><body>%s</body></html>" % body,
+                                         self.SCALE if css is None else css)
+        return [rule for _rel, _line, rule, _why
+                in html_gate.check_heading_ratio(pages, sheets, root)]
+
+    def test_the_shipped_h2_would_have_failed(self):
+        # 1.15rem against a 1rem body is 1.15x — the ratio that shipped, and
+        # the one the critique round called "visually the same object".
+        self.assertEqual(self.ratios("<h2>Contest</h2>",
+                                     self.SCALE + "h2 { font-size: 1.15rem }"),
+                         ["HEADING-BELOW-RATIO"])
+
+    def test_a_heading_on_the_scale_passes(self):
+        self.assertEqual(self.ratios("<h2>Contest</h2>",
+                                     self.SCALE + "h2 { font-size: var(--t-h2) }"),
+                         [])
+
+    def test_the_ratio_is_against_body_copy_not_the_root(self):
+        # A page whose body sets 30px does not get to call a 30px h2 a
+        # heading just because the root is 17px.
+        css = ("html { font-size: 17px } body { font-size: 30px } "
+               "h2 { font-size: 30px }")
+        self.assertEqual(self.ratios("<h2>Contest</h2>", css),
+                         ["HEADING-BELOW-RATIO"])
+
+    def test_every_rung_h1_to_h6_is_judged(self):
+        css = self.SCALE + "h1,h2,h3,h4,h5,h6 { font-size: 1.1rem }"
+        self.assertEqual(self.ratios("<h1>a</h1><h2>b</h2><h3>c</h3>"
+                                     "<h4>d</h4><h5>e</h5><h6>f</h6>", css),
+                         ["HEADING-BELOW-RATIO"] * 6)
+
+    def test_an_empty_heading_renders_nothing_and_is_not_sized(self):
+        self.assertEqual(self.ratios("<h2></h2>",
+                                     self.SCALE + "h2 { font-size: 1.1rem }"), [])
+
+    # -- W (written, not registered) --------------------------------------
+    CLAIM = ("html { font-size: 17px } "
+             ":root { --t-body: 1rem } "
+             "body { max-width: 44rem } "
+             ".claim pre { font-size: var(--t-body); padding: 0.7rem 0.8rem; "
+             "border: 1px solid #ccc }")
+
+    def pre(self, body, css=None):
+        pages, sheets, root = self.build(
+            "<html><body><div class=\"claim\">%s</div></body></html>" % body,
+            self.CLAIM if css is None else css)
+        return [rule for _rel, _line, rule, _why
+                in html_gate.check_clipped_pre(pages, sheets, root)]
+
+    def test_a_command_wider_than_its_box_is_clipped(self):
+        self.assertEqual(self.pre("<pre>%s</pre>" % ("x" * 90)),
+                         ["PRE-EXCEEDS-CONTAINER"])
+
+    def test_a_command_that_fits_is_clean(self):
+        self.assertEqual(self.pre("<pre>%s</pre>" % ("x" * 40)), [])
+
+    def test_only_the_longest_line_decides(self):
+        self.assertEqual(self.pre("<pre>%s\n%s</pre>" % ("x" * 10, "x" * 90)),
+                         ["PRE-EXCEEDS-CONTAINER"])
+
+    def test_a_wrapping_pre_cannot_clip(self):
+        # A7's answer: wrap rather than clip. white-space says so and the
+        # gate believes it.
+        css = self.CLAIM + " .claim pre { white-space: pre-wrap }"
+        self.assertEqual(self.pre("<pre>%s</pre>" % ("x" * 200), css), [])
+
+    def test_a_bordered_ancestor_narrows_the_box(self):
+        # 3px of border-left and 1rem of padding-left on an ancestor are
+        # width the command inside no longer has.
+        wide = "x" * 69
+        self.assertEqual(self.pre("<pre>%s</pre>" % wide), [])
+        css = self.CLAIM + " .claim details { padding-left: 1rem; border-left: 3px solid #ccc }"
+        self.assertEqual(self.pre("<details><pre>%s</pre></details>" % wide, css),
+                         ["PRE-EXCEEDS-CONTAINER"])
+
+    # -- M (written, not registered) --------------------------------------
+    def identity(self, body):
+        pages, sheets, root = self.build(body, "body { color: #000 }")
+        return [rule for _rel, _line, rule, _why
+                in html_gate.check_identity(pages, sheets, root)]
+
+    def test_a_surface_with_no_wordmark_fails(self):
+        self.assertEqual(self.identity("<header><nav><a href='/'>Home</a>"
+                                       "</nav></header><h1>Ledger</h1>"),
+                         ["NO-IDENTITY-OBJECT"])
+
+    def test_the_masthead_component_satisfies_it(self):
+        self.assertEqual(self.identity('<header><div class="masthead">'
+                                       '<a href="/">socaity.dev</a></div>'
+                                       '</header><h1>Ledger</h1>'), [])
+
+    def test_the_bare_wordmark_the_manifesto_carries_today_counts(self):
+        # doc/manifesto.md's own `h1`. One surface out of seven, honestly
+        # counted as carrying it.
+        self.assertEqual(self.identity('<h1 id="socaity-dev">socaity.dev</h1>'),
+                         [])
+
+    def test_the_title_element_is_not_an_identity_object(self):
+        # Every page already says it in <title>; none of them SHOW it.
+        self.assertEqual(self.identity("<html><head><title>socaity.dev</title>"
+                                       "</head><body><h1>Ledger</h1></body></html>"),
+                         ["NO-IDENTITY-OBJECT"])
+
+    def test_a_redirect_stub_is_not_a_surface(self):
+        self.assertEqual(self.identity('<meta http-equiv="refresh" '
+                                       'content="0; url=/n/x/"><p>Moved.</p>'),
+                         [])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
