@@ -2,21 +2,6 @@
 {% block title %}Claim your entry{% endblock %}
 {% block main %}
 {% set root = '../' * depth %}
-<style>
-/* Scoped to this generator's pages: the shared stylesheet has no code-block
-   rules, and an unwrapped command line overflows the column at 390px. */
-.claim pre { background: #f4f3f1; border: 1px solid var(--rule); padding: 0.7rem 0.8rem;
-             overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.8rem 0; }
-.claim ol.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
-.claim ol.steps > li { border-top: 1px solid var(--rule); padding: 1.4rem 0 0.6rem;
-                       margin-top: 1.4rem; }
-.claim ol.steps > li > h2 { margin-top: 0; }
-.claim details { border-left: 3px solid var(--rule); padding-left: 1rem; margin: 1.2rem 0; }
-.claim details > summary { cursor: pointer; font-family: system-ui, sans-serif;
-                           font-size: 0.95rem; }
-.claim details > *:not(summary) { margin-top: 0.7rem; }
-.claim .lede { font-size: 1.05rem; }
-</style>
 <div class="claim">
 
 <h1>Claim your entry</h1>

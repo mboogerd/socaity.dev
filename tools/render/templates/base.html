@@ -19,6 +19,17 @@
 </ul></nav>
 </header>
 <main id="content">
+{# The left rail of the two-track grid (council/socaity-0hb.md §C). Its
+   contents are a CLOSED LIST: provenance, freshness, permalinks, breadcrumbs,
+   chip rows, publication-status. Consent, refusal and reassurance are
+   text-column objects on every surface — a two-track grid creates a default
+   sink for anything that looks like metadata, and consent copy pattern-matches
+   to metadata. The default is EMPTY on purpose: a generator that fills only
+   `title` and `main` — including a fork's — still renders a correct page,
+   because an empty rail is hidden and its surface stays one column.
+   The rail is FIRST in source order, so the small-viewport collapse needs no
+   `order:` trick and the screen-reader sequence equals the visual one. #}
+<aside class="rail">{% block rail %}{% endblock %}</aside>
 {% block main %}{% endblock %}
 </main>
 <footer>

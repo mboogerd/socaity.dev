@@ -2,15 +2,21 @@
 
 *The place where society self-develops.*
 
+**The system never assigns work. It prices it.**
+
 **No token. Nothing to trade. The ledger is a database, not a blockchain.** <!-- vocab-ok: the mandatory first-screen asset adopted verbatim in socaity-1ux and carried in m0-standing-commitment.md Part I; "blockchain" appears only inside the negation -->
+
+Status: [mechanism designed](vision.md) · [record running](../ledger/) · [rule unwritten](#what-we-do-not-know) · [network of one](#is-this-a-crypto-thing). <!-- vocab-ok: a same-page fragment identifier, slugged from the heading two sections down whose own waiver covers it; the reader-visible words on this line are the four standing clauses, and the section it points at is where "there is currently one contributor" is evidenced -->
+
+
+---
+
 The long answer is the second section of this page.
 
 > **Publication status.** This is the M0 launch text. It publishes together
 > with [the Standing Commitment](m0-standing-commitment.md) and not before —
 > that instrument goes to a licensed Dutch practitioner first, and the three
 > components publish together or not at all.
-
----
 
 ## Society knows how to want things. It is bad at building the things everyone wants and nobody will pay for.
 

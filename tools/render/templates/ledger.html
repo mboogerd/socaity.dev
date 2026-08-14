@@ -15,30 +15,6 @@
 {% endblock %}
 {% block main %}
 {% set root = '../' * depth %}
-<style>
-/* Scoped to this surface. The shared stylesheet is not edited by a generator;
-   these rules add only what the ledger's own objects need (V1 spacing, chips
-   the table reuses, and the two exhibits). Nothing here is color-only. */
-.ledger-block { border: 1px solid var(--rule); padding: 1.2rem 1.2rem 1.4rem; margin: 2rem 0; }
-.ledger-fixture { font-family: system-ui, sans-serif; font-size: 0.95rem; border: 1px solid var(--rule); padding: 0.8rem 1rem; }
-.ledger-register { font-family: system-ui, sans-serif; font-size: 1.05rem; border-left: 3px solid var(--ink); padding-left: 0.9rem; }
-.ledger-headline { font-size: 1.05rem; }
-.ledger-figure { font-size: 1.9rem; line-height: 1.2; margin: 0.2rem 0; font-family: system-ui, sans-serif; }
-.ledger-because { font-size: 1.15rem; font-family: system-ui, sans-serif; margin: 0 0 0.6rem; }
-.ledger-scroll { overflow-x: auto; }
-.ledger-scroll > table { min-width: 33rem; }
-.ledger-entry td { vertical-align: top; }
-.ledger-derivation { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted); }
-.ledger-empty { border: 2px dashed var(--ink); padding: 1rem 1.2rem; margin: 1rem 0; }
-.ledger-timeline { list-style: none; padding-left: 0; border-left: 2px solid var(--rule); margin-left: 0.4rem; }
-.ledger-timeline li { padding: 0.35rem 0 0.35rem 1rem; }
-.ledger-calc label { display: inline-block; font-family: system-ui, sans-serif; font-size: 0.9rem; margin-right: 1rem; }
-.ledger-calc select { font: inherit; font-size: 0.95rem; padding: 0.2rem; }
-.ledger-out { font-family: system-ui, sans-serif; }
-.ledger-out strong { font-size: 1.25rem; }
-pre.ledger-cmd { overflow-x: auto; background: #f3f3f1; padding: 0.5rem 0.6rem; font-size: 0.8rem; }
-pre.ledger-statement { white-space: pre-wrap; font: 0.9rem/1.6 Georgia, "Times New Roman", serif; }
-</style>
 
 <h1>Ledger</h1>
 <p class="ledger-register">A public record of contributions. No token. Nothing to trade. This is a database.</p>

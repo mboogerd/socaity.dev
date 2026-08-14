@@ -11,11 +11,18 @@
      objects   named components (chip, prov, figure, card, register, legend)
      surfaces  per-page overrides (ledger, claim, manifesto, blog card)
 
-   This ticket introduces the names and paints nothing. The legacy block at the
-   bottom of this file is left OUTSIDE the layers on purpose: unlayered rules
-   beat every layer, so the site renders byte-for-byte as it did before, and
-   the per-template <style> blocks (also unlayered) keep the precedence they
-   have today. W1b moves both into `base`/`objects` in one step. */
+   W1b consolidated the pre-existing stylesheet and the per-template <style>
+   blocks into these layers. Nothing on this site is unlayered any more, so a
+   rule's position in this file no longer decides anything: its layer does.
+   Two consequences worth stating, because both change what the page looks
+   like and both are intended:
+     · the legacy `:root` re-declarations of --ink (#1a1a1a) and --rule
+       (#cfcfcf) are DELETED, not relocated. Relocating them into `base`
+       would have kept them winning over `tokens` and the palette above
+       would have half-applied in silence;
+     · `html { font-size: 17px }` now lands in `base`, which is what the
+       type scale above was measured at. Below it --t-micro computes to
+       13.12px, under its own 13.9px floor. */
 @layer tokens, base, layout, objects, surfaces;
 
 @layer tokens {
@@ -52,11 +59,9 @@
 
     /* Root 17px, ratio 1.2, eight steps. px values are the computed size at
        root 17px and are here so the 13.9px floor can be checked by eye.
-       DEPENDENCY: nothing in this file sets the root size — this ticket paints
-       nothing, so the document root is still the UA's 16px and --t-micro
-       currently computes to 13.12px, under the floor. The floor only holds
-       once W1b lands `html { font-size: 17px }` in the `base` layer. Until
-       then no rule consumes --t-micro, so nothing ships under the floor. */
+       The root size is set in the `base` layer below (W1b); at the UA's 16px
+       --t-micro would compute to 13.12px, under the floor, so the two are a
+       pair and neither may be changed without the other. */
     --t-micro:   0.82rem; /* 13.94px — floor; nothing ships below this, legend
                              and OG card included. provenance, chips,
                              freshness, permalinks, derivations */
@@ -135,71 +140,339 @@
   }
 }
 
-/* ---------------------------------------------------------------------------
-   Everything below this line is the pre-existing stylesheet, unchanged and
-   unlayered. It still wins the cascade, which is why this commit renders
-   identically; W1b consolidates it (and the per-template <style> blocks) into
-   the layers above. Note that its :root re-declares --ink and --rule with the
-   old values — that shadowing is the mechanism keeping this a no-op.
-   --------------------------------------------------------------------------- */
-/* One column, document aesthetic. No color-only status: every chip has a text
-   label and a distinct border style, so it survives greyscale and color blindness. */
-:root { --ink: #1a1a1a; --muted: #575757; --rule: #cfcfcf; --bg: #fdfdfc; }
-body { max-width: 44rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; background: var(--bg);
-       color: var(--ink); font: 1rem/1.6 Georgia, "Times New Roman", serif; }
-header nav, footer { font-family: system-ui, sans-serif; font-size: 0.9rem; }
-header { border-bottom: 1px solid var(--rule); padding-bottom: 0.5rem; margin-bottom: 2rem; }
-/* Wider viewports get the standard's breathing room (V1); the measure itself
-   stays put, because a 44rem column is already 70-ish characters. */
-@media (min-width: 60rem) { body { padding: 3rem 1rem 5rem; } h2 { margin-top: 3rem; } }
-.skip { position: absolute; left: -9999px; }
-.skip:focus { position: static; display: inline-block; margin-bottom: 1rem; }
-.sitenav { list-style: none; padding: 0; margin: 0; }
-.sitenav li { display: inline; }
-.sitenav li::after { content: " · "; color: var(--muted); }
-.sitenav li:last-child::after { content: ""; }
-/* Not color-only: the entry carries the words "(not yet published)" beside it. */
-.unpublished { color: var(--muted); text-decoration-style: dotted; }
-.doc > * + * { margin-top: 1rem; }
-.doc h2 { margin-top: 3.2rem; }
-.doc h3 { margin: 2.4rem 0 0.3rem; }
-.doc blockquote { border-left: 3px solid var(--rule); margin: 1.6rem 0; padding: 0.2rem 0 0.2rem 1.2rem; }
-.doc hr { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0; }
-.doc li { margin-bottom: 0.5rem; }
-.doc table { margin: 1.6rem 0; }
-footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding-top: 1rem; color: var(--muted); }
-h1 { font-size: 1.6rem; line-height: 1.3; }
-h2 { font-size: 1.15rem; margin-top: 2rem; }
-h3 { font-size: 1.05rem; margin: 0 0 0.3rem; }
-a { color: #14487a; }
-a:focus-visible, summary:focus-visible { outline: 3px solid #14487a; outline-offset: 2px; }
-.muted { color: var(--muted); }
-.provenance { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
-.crumbs { list-style: none; padding: 0; margin: 0 0 1rem; font-family: system-ui, sans-serif;
-          font-size: 0.85rem; }
-.crumbs li { display: inline; }
-.crumbs li::after { content: " › "; color: var(--muted); }
-.chips { margin: 0.3rem 0; }
-.chip { display: inline-block; font-family: system-ui, sans-serif; font-size: 0.75rem;
-        padding: 0.1rem 0.5rem; border: 1px solid var(--ink); border-radius: 0.8rem;
-        margin-right: 0.35rem; }
-.chip-open { border-style: solid; }
-.chip-done { border-style: double; }
-.chip-withdrawn { color: var(--muted); border-color: var(--muted); border-style: dotted; }
-.chip-merged { border-style: solid; background: #eeeeee; }
-.chip-contested { border-style: dashed; border-color: #8a5300; color: #8a5300; }
-.chip-settled { border-style: solid; border-color: #1f5c2e; color: #1f5c2e; }
-.chip-weight, .chip-ticket { border-style: solid; border-color: var(--muted); color: var(--muted); }
-.checklist { list-style: none; padding-left: 0; }
-.checklist li { border-bottom: 1px solid var(--rule); padding: 0.4rem 0; }
-.checklist li.done, h1.done { text-decoration: line-through; }
-.card { border: 1px solid var(--rule); padding: 0.8rem 1rem; margin: 0.8rem 0; }
-.estimate-block { border-left: 3px solid var(--rule); padding-left: 0.8rem; margin: 0.8rem 0; }
-.estimate { font-family: system-ui, sans-serif; font-size: 0.85rem; }
-.strip { padding-left: 1.1rem; }
-.legend dt { font-weight: bold; margin-top: 0.4rem; }
-.legend dd { margin: 0 0 0 1rem; }
-table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
-th, td { border-bottom: 1px solid var(--rule); text-align: left; padding: 0.35rem 0.4rem;
-         vertical-align: top; }
-code { font-size: 0.85em; }
+/* --------------------------------------------------------------------------
+   Two custom properties survive from the legacy stylesheet because rules
+   below still consume them and no ticket has retired their call sites yet.
+   They are NOT part of the palette above; --muted is superseded by --ink-3
+   and --bg by --paper, and the W2 tickets that touch each call site retire
+   them. --ink and --rule are deliberately absent: see the note above.
+   -------------------------------------------------------------------------- */
+@layer tokens {
+  :root { --muted: #575757; --bg: #fdfdfc; }
+}
+
+/* --------------------------------------------------------------------------
+   base — element defaults. Source order inside this block is exactly the
+   order these rules had when they were unlayered, so ties between them
+   resolve as they always did.
+   -------------------------------------------------------------------------- */
+@layer base {
+  /* The type scale in `tokens` is sized against this root, not the UA's 16px.
+     Without it --t-micro is 13.12px, under the 13.9px floor the resolution
+     set for the tail face in the stack. */
+  html { font-size: 17px; }
+  body { max-width: 44rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; background: var(--bg);
+         color: var(--ink); font: 1rem/1.6 Georgia, "Times New Roman", serif; }
+  header nav, footer { font-family: system-ui, sans-serif; font-size: 0.9rem; }
+  header { border-bottom: 1px solid var(--rule); padding-bottom: 0.5rem; margin-bottom: 2rem; }
+  /* Wider viewports get the standard's breathing room (V1); the measure itself
+     stays put, because a 44rem column is already 70-ish characters. */
+  @media (min-width: 60rem) { body { padding: 3rem 1rem 5rem; } h2 { margin-top: 3rem; } }
+  footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding-top: 1rem; color: var(--muted); }
+  h1 { font-size: 1.6rem; line-height: 1.3; }
+  h2 { font-size: 1.15rem; margin-top: 2rem; }
+  h3 { font-size: 1.05rem; margin: 0 0 0.3rem; }
+  a { color: #14487a; }
+  a:focus-visible, summary:focus-visible { outline: 3px solid #14487a; outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td { border-bottom: 1px solid var(--rule); text-align: left; padding: 0.35rem 0.4rem;
+           vertical-align: top; }
+  code { font-size: 0.85em; }
+}
+
+/* --------------------------------------------------------------------------
+   objects — named components. No color-only status: every chip has a text
+   label and a distinct border style, so it survives greyscale and colour
+   blindness. Source order preserved, as in `base`.
+   -------------------------------------------------------------------------- */
+@layer objects {
+  .skip { position: absolute; left: -9999px; }
+  .skip:focus { position: static; display: inline-block; margin-bottom: 1rem; }
+  .sitenav { list-style: none; padding: 0; margin: 0; }
+  .sitenav li { display: inline; }
+  .sitenav li::after { content: " · "; color: var(--muted); }
+  .sitenav li:last-child::after { content: ""; }
+  /* Not color-only: the entry carries the words "(not yet published)" beside it. */
+  .unpublished { color: var(--muted); text-decoration-style: dotted; }
+  .doc > * + * { margin-top: 1rem; }
+  .doc h2 { margin-top: 3.2rem; }
+  .doc h3 { margin: 2.4rem 0 0.3rem; }
+  .doc blockquote { border-left: 3px solid var(--rule); margin: 1.6rem 0; padding: 0.2rem 0 0.2rem 1.2rem; }
+  .doc hr { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0; }
+  .doc li { margin-bottom: 0.5rem; }
+  .doc table { margin: 1.6rem 0; }
+  .muted { color: var(--muted); }
+  .provenance { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+  .crumbs { list-style: none; padding: 0; margin: 0 0 1rem; font-family: system-ui, sans-serif;
+            font-size: 0.85rem; }
+  .crumbs li { display: inline; }
+  .crumbs li::after { content: " › "; color: var(--muted); }
+  .chips { margin: 0.3rem 0; }
+  .chip { display: inline-block; font-family: system-ui, sans-serif; font-size: 0.75rem;
+          padding: 0.1rem 0.5rem; border: 1px solid var(--ink); border-radius: 0.8rem;
+          margin-right: 0.35rem; }
+  .chip-open { border-style: solid; }
+  .chip-done { border-style: double; }
+  .chip-withdrawn { color: var(--muted); border-color: var(--muted); border-style: dotted; }
+  .chip-merged { border-style: solid; background: #eeeeee; }
+  .chip-contested { border-style: dashed; border-color: #8a5300; color: #8a5300; }
+  .chip-settled { border-style: solid; border-color: #1f5c2e; color: #1f5c2e; }
+  .chip-weight, .chip-ticket { border-style: solid; border-color: var(--muted); color: var(--muted); }
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li { border-bottom: 1px solid var(--rule); padding: 0.4rem 0; }
+  .checklist li.done, h1.done { text-decoration: line-through; }
+  .card { border: 1px solid var(--rule); padding: 0.8rem 1rem; margin: 0.8rem 0; }
+  .estimate-block { border-left: 3px solid var(--rule); padding-left: 0.8rem; margin: 0.8rem 0; }
+  .estimate { font-family: system-ui, sans-serif; font-size: 0.85rem; }
+  .strip { padding-left: 1.1rem; }
+  .legend dt { font-weight: bold; margin-top: 0.4rem; }
+  .legend dd { margin: 0 0 0 1rem; }
+}
+
+/* --------------------------------------------------------------------------
+   surfaces — per-page overrides, moved verbatim out of the per-template
+   <style> blocks (W1b). Every selector here is already page-scoped by a
+   class the template owns (.ledger-*, .claim), so nothing leaks: the ledger
+   rules match only on /ledger/ and the .claim rules only on the three pages
+   the claim generator emits.
+
+   blog_card.html deliberately keeps its own inline block and its hardcoded
+   palette and is NOT here: it is a fixed-1200x630 capture asset whose crop
+   must not depend on this stylesheet having loaded or on a face having
+   arrived.
+   -------------------------------------------------------------------------- */
+@layer surfaces {
+  /* --- /ledger/ ---------------------------------------------------------
+     The ledger's own objects: V1 spacing, the chips the table reuses, and
+     the two exhibits. Nothing here is color-only. */
+  .ledger-block { border: 1px solid var(--rule); padding: 1.2rem 1.2rem 1.4rem; margin: 2rem 0; }
+  .ledger-fixture { font-family: system-ui, sans-serif; font-size: 0.95rem; border: 1px solid var(--rule); padding: 0.8rem 1rem; }
+  .ledger-register { font-family: system-ui, sans-serif; font-size: 1.05rem; border-left: 3px solid var(--ink); padding-left: 0.9rem; }
+  .ledger-headline { font-size: 1.05rem; }
+  .ledger-figure { font-size: 1.9rem; line-height: 1.2; margin: 0.2rem 0; font-family: system-ui, sans-serif; }
+  .ledger-because { font-size: 1.15rem; font-family: system-ui, sans-serif; margin: 0 0 0.6rem; }
+  .ledger-scroll { overflow-x: auto; }
+  .ledger-scroll > table { min-width: 33rem; }
+  .ledger-entry td { vertical-align: top; }
+  .ledger-derivation { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted); }
+  .ledger-empty { border: 2px dashed var(--ink); padding: 1rem 1.2rem; margin: 1rem 0; }
+  .ledger-timeline { list-style: none; padding-left: 0; border-left: 2px solid var(--rule); margin-left: 0.4rem; }
+  .ledger-timeline li { padding: 0.35rem 0 0.35rem 1rem; }
+  .ledger-calc label { display: inline-block; font-family: system-ui, sans-serif; font-size: 0.9rem; margin-right: 1rem; }
+  .ledger-calc select { font: inherit; font-size: 0.95rem; padding: 0.2rem; }
+  .ledger-out { font-family: system-ui, sans-serif; }
+  .ledger-out strong { font-size: 1.25rem; }
+  pre.ledger-cmd { overflow-x: auto; background: #f3f3f1; padding: 0.5rem 0.6rem; font-size: 0.8rem; }
+  pre.ledger-statement { white-space: pre-wrap; font: 0.9rem/1.6 Georgia, "Times New Roman", serif; }
+
+  /* --- the three claim pages -------------------------------------------
+     The shared stylesheet has no code-block rules, and an unwrapped command
+     line overflows the column at 390px. The three templates carried three
+     near-identical copies of `.claim pre`; the one below is the copy
+     /claim/ and /claim/reserved/ used verbatim. */
+  .claim pre { background: #f4f3f1; border: 1px solid var(--rule); padding: 0.7rem 0.8rem;
+               overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.8rem 0; }
+  /* /claim/merge-comment/ shows one stored file verbatim rather than command
+     lines, so its single <pre> wraps instead of scrolling and is set a step
+     looser. This is the only place the three copies disagreed; the modifier
+     class on that page's wrapper is what keeps the difference addressable
+     now that the rules share a stylesheet. */
+  .claim--verbatim pre { padding: 0.8rem 0.9rem; line-height: 1.55; white-space: pre-wrap; }
+  .claim ol.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+  .claim ol.steps > li { border-top: 1px solid var(--rule); padding: 1.4rem 0 0.6rem;
+                         margin-top: 1.4rem; }
+  .claim ol.steps > li > h2 { margin-top: 0; }
+  .claim details { border-left: 3px solid var(--rule); padding-left: 1rem; margin: 1.2rem 0; }
+  .claim details > summary { cursor: pointer; font-family: system-ui, sans-serif;
+                             font-size: 0.95rem; }
+  .claim details > *:not(summary) { margin-top: 0.7rem; }
+  .claim .lede { font-size: 1.05rem; }
+  /* The entry exhibit on /claim/reserved/. */
+  .claim .entry { border: 1px solid var(--rule); padding: 1rem 1.1rem; margin: 1rem 0; }
+  .claim .entry h3 { font-family: system-ui, sans-serif; font-size: 0.95rem; }
+  .claim .entry dl { margin: 0.6rem 0 0; }
+  .claim .entry dt { font-family: system-ui, sans-serif; font-size: 0.8rem;
+                     color: var(--muted); margin-top: 0.5rem; }
+  .claim .entry dd { margin: 0; }
+  .claim .exhibit { font-family: system-ui, sans-serif; font-size: 0.8rem;
+                    color: var(--muted); border-bottom: 1px solid var(--rule);
+                    padding-bottom: 0.3rem; }
+  .claim code.key { word-break: break-all; }
+}
+
+/* ==========================================================================
+   W1a — the two-track document grid and the manifesto first screen.
+   council/socaity-0hb.md §C (layout) and §H (first screen).
+
+   Appended as its own blocks rather than merged into the ones above: layers
+   accumulate, so a rule's layer decides and its file position does not. Every
+   colour, size and step below is a W0a token; this ticket introduces no
+   literal.
+   ========================================================================== */
+
+@layer layout {
+  :root {
+    /* The left track. 11rem at the 17px root is 187px: enough for a freshness
+       stamp or a two-line provenance note at --t-micro without hyphenation,
+       and narrow enough that rail + gap + measure (187 + 24 + 646 = 857px)
+       fits inside the 60rem breakpoint with the body padding still on. */
+    --rail: 11rem;
+    --rail-gap: var(--s6);
+  }
+
+  /* An unfilled rail is not a column. `{% block rail %}` renders an empty
+     <aside>, so a generator that fills only title/main — including a fork's —
+     gets exactly the page it got before this ticket. The whitespace-free
+     template tag is what keeps :empty true; do not pretty-print it. */
+  .rail:empty { display: none; }
+
+  .rail > * { margin-top: var(--s4); }
+  .rail > :first-child { margin-top: 0; }
+
+  @media (min-width: 60rem) {
+    /* The grid is opt-in per page, not per breakpoint: `:has()` turns it on
+       only where the rail actually carries something, so /ledger, /roadmap,
+       /all and every node page keep their single column and their width
+       until the ticket that fills their rail arrives. Where :has() is not
+       supported the page falls back to the small-viewport layout — rail
+       above the block it annotates — which is the same layout, not a broken
+       one. */
+    body:has(main > .rail:not(:empty)) {
+      max-width: calc(var(--rail) + var(--rail-gap) + var(--measure));
+    }
+    main:has(> .rail:not(:empty)) {
+      display: grid;
+      grid-template-columns: var(--rail) minmax(0, var(--measure));
+      column-gap: var(--rail-gap);
+      align-items: start;
+    }
+    /* Column assignment, not source reordering. Sparse auto-placement puts
+       each rail item in track 1 on the row where it appears in the source,
+       so a rail item sits beside — and above, once the grid collapses — the
+       block that follows it. Below 60rem there is no grid and no `order:`:
+       the document is read in the order it is written, by eye and by screen
+       reader alike. */
+    main:has(> .rail:not(:empty)) > *     { grid-column: 2; }
+    main:has(> .rail:not(:empty)) > .rail { grid-column: 1; }
+  }
+}
+
+@layer objects {
+  /* The one register object, shared by every surface that carries the
+     sentence (§H). A ruled strip: rules above and below, no box, no fill, no
+     left bar — a box reads as a callout and a callout reads as a badge.
+     `.ledger-register` is retired by W2d, which also puts this class on the
+     surfaces whose markup it owns. */
+  .register,
+  .doc--manifesto > p:nth-of-type(3) {
+    font-family: var(--font-text);
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+    color: var(--ink);
+    border-top: 1px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule-strong);
+    padding: var(--s3) 0;
+    margin: var(--s8) 0 0;
+  }
+  /* The sentence is the object; the bold run inside it was the old way of
+     saying so and would now say it twice. */
+  .register > strong,
+  .doc--manifesto > p:nth-of-type(3) > strong { font-weight: inherit; }
+}
+
+@layer surfaces {
+  /* --- the manifesto first screen (§H) ---------------------------------
+     Order: masthead · kicker · thesis · register · standing line · hairline.
+
+     The rules below are POSITIONAL because they have to be. doc/manifesto.md
+     is the only copy of this copy — render.py never restates it — and the
+     Markdown subset in tools/markdown_subset.py has no attribute syntax, so
+     there is no class to hang on the first four paragraphs. The consequence
+     is worth stating plainly rather than discovering: THE FIRST FOUR
+     PARAGRAPHS OF doc/manifesto.md ARE A DESIGNED OBJECT. Reordering them,
+     or inserting a paragraph among them, restyles them. The alternative was
+     presentation logic in render.py, which the resolution forbids. */
+
+  /* Masthead wordmark. Small on purpose: the site name is not the argument.
+     At --t-lede it is the fourth-largest thing on the screen, under the
+     thesis, the register line and the kicker, which is the ranking §H is
+     for. */
+  .doc--manifesto > h1 {
+    font-family: var(--font-text);
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+    margin: 0;
+  }
+
+  /* Kicker. The tagline demoted: it is unfalsifiable, so a reader can only
+     believe it or dismiss it, and in a hostile thread dismissal is free.
+     It stays on the page, at --t-lede, italic, --ink-2 — never larger, more
+     central or more decorated than the register line (R1b). */
+  .doc--manifesto > p:nth-of-type(1) {
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+    color: var(--ink-2);
+    font-style: italic;
+    margin-top: var(--s5);
+  }
+
+  /* Thesis. One of exactly two --t-display uses on the whole site. A
+     mechanism claim can be wrong, so it can be checked, so the honest next
+     thought is "how?" rather than "sure, buddy". */
+  .doc--manifesto > p:nth-of-type(2) {
+    font-family: var(--font-text);
+    font-size: var(--t-display);
+    line-height: var(--lh-display);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-top: var(--s9);
+  }
+  .doc--manifesto > p:nth-of-type(2) > strong { font-weight: inherit; }
+
+  /* Standing line. Four clauses, each linked to where it is evidenced;
+     "network of one" is the least flattering fact on the site and used to
+     live ~4,000px down. Status metadata, so --font-ui at the --t-micro
+     floor: it must not compete with the register strip above it. */
+  .doc--manifesto > p:nth-of-type(4) {
+    font-family: var(--font-ui);
+    font-size: var(--t-micro);
+    line-height: var(--lh-lede);
+    color: var(--ink-2);
+    margin-top: var(--s4);
+  }
+
+  /* The hairline that closes the first screen, and the page-turn under it.
+     MEASURED at 1280x800: hairline at y659, next element at y804 — nothing
+     but masthead, kicker, thesis, register and standing line is above the
+     fold IN THE TEXT COLUMN. The left track is not empty above it: the rail
+     carries the provenance note at y119-258 (six lines at --t-micro beside
+     the masthead and kicker), and at 375, where the grid collapses, that
+     same note reads FIRST, at y118-187, ahead of the masthead at y202 — by
+     eye and by screen reader both, because the collapse keeps source order
+     and uses no `order:` trick. That is the price of §C's closed rail list
+     on a phone, and it is paid out of the space above the masthead, not out
+     of the register line's clearance below.
+     At 375x812 the hairline is at y694 and the publication-status
+     blockquote starts at y824, which is the point: that blockquote measured
+     192px, 2.5x the register line, and was the only bordered object on the
+     screen — it made the first impression "this isn't ready" rather than
+     "this is a serious argument". The one sentence that still peeks in at
+     375 is prose, unbordered, and doubles as the scroll affordance; buying
+     it back would cost 120px of blank phone screen. */
+  .doc--manifesto > hr:first-of-type {
+    margin: var(--s9) 0 calc(var(--s9) + var(--s7));
+  }
+
+  /* At 375 the order and the content are identical and only the thesis
+     steps down a rung (--t-display to --t-h1), so the register line still
+     clears the fold: MEASURED at y525-612 against an 812 fold, 200px of
+     clearance. The pre-ticket baseline was y203-280. */
+  @media (max-width: 30rem) {
+    .doc--manifesto > p:nth-of-type(2) {
+      font-size: var(--t-h1);
+      line-height: var(--lh-heading);
+      margin-top: var(--s5);
+    }
+    .doc--manifesto > hr:first-of-type { margin: var(--s6) 0 var(--s7); }
+  }
+}

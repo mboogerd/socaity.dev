@@ -109,9 +109,22 @@ SURFACES = [
 #   root, out       absolute paths to the repo and the output directory
 #   env             the Jinja environment; templates live in ../templates, so
 #                   {% extends "base.html" %} works and gives you the shared
-#                   nav, footer and stylesheet. base.html defines two blocks,
-#                   {% block title %} and {% block main %}. Pass
-#                   depth=<number of path segments above the file>, e.g.
+#                   nav, footer and stylesheet. base.html defines four blocks,
+#                   all optional except the two you will always want:
+#                     {% block title %}  the <title>, before " · socaity"
+#                     {% block main %}   the page body, inside <main>
+#                     {% block head %}   extra <head> tags — per-surface og
+#                                        tags and the like (ledger.html uses it)
+#                     {% block rail %}   the left rail of the two-track grid.
+#                                        EMPTY BY DEFAULT: fill only title and
+#                                        main and you still get a correct,
+#                                        single-column page. Its contents are a
+#                                        closed list — provenance, freshness,
+#                                        permalinks, breadcrumbs, chip rows,
+#                                        publication-status. Consent, refusal
+#                                        and reassurance stay in the text
+#                                        column (council/socaity-0hb.md §C).
+#                   Pass depth=<number of path segments above the file>, e.g.
 #                   depth=1 for ledger/index.html.
 #   nav             the final nav list, already merged and sorted
 #   nodes           the rendered node views, sorted by id (see node_view)

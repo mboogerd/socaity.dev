@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 {% block title %}{{ page.title }}{% endblock %}
+{# Provenance is on the rail's closed list, so it moves out of the text column
+   and into the left track. Same words, same class, new position. #}
+{% block rail %}<p class="provenance">This page is rendered from <a href="{{ page.source_url }}"><code>{{ page.source }}</code></a> in the repository. The Markdown file is the only copy; the page you are reading is a build product of it.</p>{% endblock %}
 {% block main %}
-<article class="doc">
+{# The modifier is derived from the source filename, not switched on it: every
+   doc page gets `doc--<stem>` and the stylesheet decides whether it has any
+   rules for that stem. Adding doc/x.md to DOC_PAGES needs no template edit. #}
+<article class="doc doc--{{ page.source.rsplit('/', 1)[-1].rsplit('.', 1)[0] }}">
 {{ page.html|safe }}
 </article>
-<p class="provenance">This page is rendered from <a href="{{ page.source_url }}"><code>{{ page.source }}</code></a> in the repository. The Markdown file is the only copy; the page you are reading is a build product of it.</p>
 {% endblock %}
