@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{# Which nav entry is the current one (A3). See base.html. #}
+{% set surface = 'ledger/' %}
 {% block title %}Ledger{% endblock %}
 {# socaity-xuz rail 7: the card is the disclosure, authored by us — the worst
    fact, stated first, in the same figures the page computes. It carries the
@@ -94,7 +96,11 @@
 <pre class="ledger-cmd">python3 {{ view.chain.self }} entry {{ row.short }}</pre>
 <p class="ledger-derivation">{{ row.hours }} h × {{ row.rate }} vu per hour (from <a href="{{ view.rule.params_url }}">the published rate table</a>) = {{ row.vu }} vu; {{ row.vu }} ÷ {{ epoch.denominator }} vu (D<sub>{{ epoch.index }}</sub>, from <a href="{{ view.rule.url }}">the rule</a>) = {% if epoch.final %}{{ row.share }}{% else %}{{ row.share_if_closed }} if the epoch closed here{% endif %}. Full entry id <code>{{ row.id }}</code>; evidence digest <code>{{ row.evidence[0] }}</code>, which resolves to a label string in <a href="{{ view.chain.seed_url }}">the example chain's seed script</a> and not to merged work.</p>
 </details>
-<span class="ledger-derivation"><a href="{{ row.challenge_url }}">Challenge this entry</a> · <a href="#{{ row.anchor }}">permalink</a></span>
+{# A6: no contest affordance may be the smallest text on its page. This one
+   was — 13.6px, under the adopted floor, ~30 instances, on the surface
+   where challenging an entry IS the mechanism. The permalink beside it is
+   an address and stays at the floor, where an address belongs. #}
+<p class="act ledger-challenge"><a href="{{ row.challenge_url }}">Challenge this entry</a> <span class="ledger-derivation">· <a href="#{{ row.anchor }}">permalink</a></span></p>
 </td></tr>
 {% endfor %}
 </tbody>
@@ -161,6 +167,25 @@
 </figure>
 <p>Epoch {{ view.exhibit.epoch }} has not opened. Founder hours recorded in it: {{ view.exhibit.founder_vu }} vu. Epochs are separate pools — an epoch's denominator sums that epoch's entries and no others — so a hypothetical entry run through <a href="{{ view.rule.url }}">the published rule</a> in epoch {{ view.exhibit.epoch }} returns a founder share of {{ view.exhibit.founder_share }}. {% if view.closed_epochs %}Epoch {{ view.closed_epochs[0].index }}'s concentration{% else %}An earlier epoch's concentration{% endif %} is arithmetically incapable of reaching it. The founder's share of the epoch you contribute to starts at {{ view.exhibit.founder_share }} and rises only if he logs work in that epoch too, on the same rate table, with the same evidence bar.</p>
 <p class="ledger-derivation">Computed the same way as the calculator below: one hypothetical entry, the published rule, nothing recorded. Recompute: <code>python3 {{ view.chain.self }} your-epoch</code></p>
+
+{# THE OPEN ROW. It used to be the last object on this page — 94% scroll
+   depth, measured at y7,938 of 8,435 — drawn in a 2px DASHED border, which
+   is the idiom the chip vocabulary spends on `withdrawn` and `reserved`:
+   inert. The one open door on the site was at the bottom of the longest
+   page, in the texture that means nothing is happening here
+   (socaity-s0n, community-builder).
+
+   It now sits at the end of the concentration section, directly under the
+   figure whose denominator it is the answer to — "the concentration figure
+   above stays where it is until someone else does priced, evidenced work"
+   is a sentence that only works next to that figure. Solid border, the
+   emphasis surface, and an act at --t-lede (A6). It keeps its anchor, and
+   the timeline that used to hold it now links to it. #}
+<div class="ledger-unwritten" id="unwritten">
+<h3>This entry is unwritten.</h3>
+<p>The first external entry does not exist yet, and the concentration figure above stays where it is until someone else does priced, evidenced work. Same rate table, same evidence bar, same challenge exposure as every founder row above.</p>
+<p class="act act--lede"><a href="{{ root }}claim/">Claim the first external entry</a></p>
+</div>
 </section>
 
 <section class="ledger-block" id="rule" aria-labelledby="rule-h">
@@ -256,10 +281,6 @@ python3 {{ view.chain.self }}</pre>
 <li>{{ step.words }}{% if step.detail %} <span class="muted">— {{ step.detail }}</span>{% endif %} <code class="ledger-derivation">{{ step.short }}</code></li>
 {% endfor %}
 </ol>
-<div class="ledger-empty">
-<p><strong>This entry is unwritten.</strong></p>
-<p>The first external entry does not exist yet, and the concentration figure above stays where it is until someone else does priced, evidenced work. Same rate table, same evidence bar, same challenge exposure as every founder row above.</p>
-<p><a href="{{ root }}claim/">Claim the first external entry →</a></p>
-</div>
+<p class="ledger-derivation">The next event on this record is <a href="#unwritten">the first entry that is not the founder's</a>.</p>
 </section>
 {% endblock %}

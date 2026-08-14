@@ -10,23 +10,50 @@
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
-<header>
-<nav aria-label="Site"><ul class="sitenav">
+{# The masthead (Amendment 1, A3 in council/socaity-0hb.md). Before this it
+   did not exist: <header> held a nav and nothing else, the wordmark lived in
+   doc/manifesto.md, and the site's identity therefore appeared on ONE of
+   seven surfaces. A stranger landing on /ledger saw eight underlined blue
+   words and then "Ledger".
+
+   Three properties, all from A3, and each is the assertion a refusal used to
+   stand in for (A1):
+     · the wordmark renders at --t-h2 on EVERY surface, as a link home. It is
+       deliberately smaller than any page's own <h1> (--t-h1): the site names
+       itself, the page still wins;
+     · the band is full-bleed on --paper-sunk with an --ink bottom rule, so
+       the identity object is a band rather than a line of text that happens
+       to be first. Full-bleed is bought by taking max-width off <body> and
+       putting it on the centred children (see the `layout` layer), NOT by
+       100vw, which would add the scrollbar's width and a horizontal scroll;
+     · the nav is a table of contents at --t-micro with aria-current on the
+       surface you are on. `surface` is set by each child template with a
+       plain {% raw %}{% set %}{% endraw %}; a template that sets nothing gets no current entry,
+       which is the correct answer for a card or a redirect.
+   The unpublished entry keeps its words — "(not yet published)" — because
+   dotted-underline-plus-grey alone would be colour-and-texture-only. #}
+<header class="masthead">
+<div class="masthead__inner">
+<p class="masthead__mark"><a href="{{ root or './' }}">socaity.dev</a></p>
+<nav class="masthead__nav" aria-label="Site"><ul class="sitenav">
 {% for item in nav %}
-<li>{% if item.published %}<a href="{{ (root ~ item.href) or './' }}">{{ item.label }}</a>{% else %}<a href="{{ (root ~ item.href) or './' }}" class="unpublished">{{ item.label }}</a> <span class="muted">(not yet published)</span>{% endif %}</li>
+<li>{% if item.published %}<a href="{{ (root ~ item.href) or './' }}"{% if surface is defined and surface == item.href %} aria-current="page"{% endif %}>{{ item.label }}</a>{% else %}<a href="{{ (root ~ item.href) or './' }}" class="unpublished"{% if surface is defined and surface == item.href %} aria-current="page"{% endif %}>{{ item.label }}</a> <span class="muted">(not yet published)</span>{% endif %}</li>
 {% endfor %}
 <li><a href="{{ root }}graph.json">graph.json</a></li>
 </ul></nav>
+</div>
 </header>
 <main id="content">
-{# The left rail of the two-track grid (council/socaity-0hb.md §C). Its
-   contents are a CLOSED LIST: provenance, freshness, permalinks, breadcrumbs,
-   chip rows, publication-status. Consent, refusal and reassurance are
-   text-column objects on every surface — a two-track grid creates a default
-   sink for anything that looks like metadata, and consent copy pattern-matches
-   to metadata. The default is EMPTY on purpose: a generator that fills only
-   `title` and `main` — including a fork's — still renders a correct page,
-   because an empty rail is hidden and its surface stays one column.
+{# The left rail of the two-track grid (council/socaity-0hb.md §C, as amended
+   by A4). Its contents are an ORDERED list: provenance, freshness,
+   permalinks, breadcrumbs, chip rows, publication-status. Consent, refusal
+   and reassurance are text-column objects on every surface — a two-track grid
+   creates a default sink for anything that looks like metadata, and consent
+   copy pattern-matches to metadata. A4 adds: nothing that annotates the
+   MASTHEAD may enter the rail, and the colophon belongs in the footer.
+   The default is EMPTY on purpose: a generator that fills only `title` and
+   `main` — including a fork's — still renders a correct page, because an
+   empty rail is hidden and its surface stays one column.
    The rail is FIRST in source order, so the small-viewport collapse needs no
    `order:` trick and the screen-reader sequence equals the visual one. #}
 <aside class="rail">{% block rail %}{% endblock %}</aside>

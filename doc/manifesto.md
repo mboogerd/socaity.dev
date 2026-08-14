@@ -8,6 +8,10 @@
 
 Status: [mechanism designed](vision.md) · [record running](../ledger/) · [rule unwritten](#what-we-do-not-know) · [network of one](#is-this-a-crypto-thing). <!-- vocab-ok: a same-page fragment identifier, slugged from the heading two sections down whose own waiver covers it; the reader-visible words on this line are the four standing clauses, and the section it points at is where "there is currently one contributor" is evidenced -->
 
+- **The record.** [Every entry, with its evidence and its arithmetic.](https://socaity.dev/ledger/)
+- **The rule, as code.** [`rule/`](../rule/), and the [validator that refuses an epoch without it](../ledger/validator.py).
+- **The needs graph.** [Our own roadmap, in the platform's own conventions.](https://socaity.dev/roadmap/)
+- **The build.** [`tools/check.sh`](../tools/check.sh) renders this site twice and fails if the bytes differ.
 
 ---
 
@@ -178,8 +182,8 @@ and who suspect the problem is not laziness but pricing.
 
 There is no queue to join and no position to hold. Two things are worth doing:
 read [vision.md](vision.md) and try to break it — the attack table is a
-challenge, not a boast — and open a challenge against anything in the record
-that you think is wrong.
+challenge, not a boast — and [open a challenge against anything in the record
+that you think is wrong](https://socaity.dev/all/).
 
 The milestone we care about is not an audience. It is the first entry on that
 ledger that was not written by us.

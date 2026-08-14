@@ -1,31 +1,106 @@
 {% extends "base.html" %}
+{# Which nav entry is the current one (A3). See base.html. #}
+{% set surface = 'roadmap/' %}
 {% block title %}Roadmap{% endblock %}
 {% block main %}
 {% set root = '../' * depth %}
+{# /roadmap, designed rather than listed (Amendment 1, A7).
+
+   What was here: an <h1>, one sentence, two <ul> bullets in the top-left
+   corner of an empty screen, and a raw ticket id — `t-mkfutwlnzxuxuqyn2t2zo4cyte`
+   — set as body copy. It is a flagship M0 surface and it read as a stub.
+
+   What is here now, in order:
+     · the lede, which is the page's claim: this is computed, not curated;
+     · WHAT MATTERS NOW as a work list, one record per row, each row's title
+       an act at --t-lede (A6) and its ticket id a mono chip rather than a
+       sentence;
+     · THE GRAPH AS IT STANDS — the one honest diagram A8 permits, drawn
+       from graph/nodes/*.yaml at build time and from nothing else. A site
+       about a needs graph shipped zero pictures of a graph;
+     · the contest line, at --t-body in --ink, because the affordance to
+       disagree with the roadmap is the whole point of publishing one.
+   The "Open root problems" list is gone: it named exactly the nodes the
+   diagram now draws, and two renderings of one fact is not density. #}
 <h1>Roadmap</h1>
-<p>This page is generated from the files in <code>graph/</code>. Fork the repository, run one command, and you get this page back byte for byte.</p>
+<p class="lede">Everything below is computed from the files in <code>graph/</code> — the same files the validator gates on every change. Fork the repository, run one command, and you get this page back byte for byte.</p>
 
 <section aria-labelledby="now"><h2 id="now">What matters now</h2>
-<p class="muted">Open nodes whose requirements are all met and whose ticket is unclaimed — computed from the ticket files, never curated.</p>
+<p class="muted">Open nodes whose requirements are all met and whose ticket is unclaimed — computed from the ticket files, never curated. When this list is empty it says so; it is never padded.</p>
 {% if strip %}
-<ul class="strip">
+<ol class="worklist">
 {% for item in strip %}
-<li><a href="{{ root }}n/{{ item.id }}/">{{ item.title }}</a> <span class="muted">{{ item.type }} · tier {{ item.tier }} · {{ item.ticket }}</span></li>
+<li class="work">
+<p class="work__title"><a href="{{ root }}n/{{ item.id }}/">{{ item.title }}</a></p>
+<p class="work__meta">
+{% if item.chip %}<span class="chip chip-{{ item.chip[1] }}">{{ item.chip[0] }}</span>{% endif %}
+<span class="chip chip-weight">{{ item.type }}</span>
+<span class="chip chip-weight">tier {{ item.tier }}</span>
+<span class="chip chip-ticket">ticket unclaimed</span>
+<code class="work__ticket">{{ item.ticket }}</code>
+</p>
+<p class="act"><a href="{{ root }}n/{{ item.id }}/">Read the record, then take it</a> · <a href="{{ item.issue_url }}">Say this is the wrong thing to work on</a></p>
+</li>
 {% endfor %}
-</ul>
+</ol>
 {% else %}
 <p>Nothing is both unblocked and unclaimed right now.</p>
 {% endif %}
 </section>
 
-<section aria-labelledby="roots"><h2 id="roots">Open root problems</h2>
-<ul>
+<section aria-labelledby="shape"><h2 id="shape">The graph, as it stands</h2>
+<p class="muted">Every root problem still open, with the narrower problems it breaks into and the approaches competing to solve it. One picture, drawn at build time from the node files — no layout is stored, nothing here is arranged by hand, and an edge nobody has asserted cannot appear.</p>
+{# A8 permits one honest diagram drawn from real data. This is it. It is
+   HTML and CSS rather than an image: it reflows at 375, it survives CSS
+   being off as a nested list, a screen reader walks it as the tree it is,
+   and it cannot drift from the graph because it has no separate source. #}
+<figure class="graphmap">
 {% for node in roots %}
-<li><a href="{{ root }}n/{{ node.id }}/">{{ node.title }}</a>
+<div class="graphmap__tree">
+<p class="graphmap__root"><a href="{{ root }}n/{{ node.id }}/">{{ node.title }}</a></p>
+<p class="graphmap__chips">
 {% if node.chip %}<span class="chip chip-{{ node.chip[1] }}">{{ node.chip[0] }}</span>{% endif %}
-{% if node.approaches %}<span class="muted">{{ node.approaches|length }} competing approach(es)</span>{% endif %}
+<span class="chip chip-weight">root problem</span>
+</p>
+{% if node.refined_by or node.approaches %}
+<ul class="graphmap__branch">
+{% for card in node.refined_by %}
+<li class="graphmap__item">
+<p class="graphmap__rel">breaks into a narrower problem</p>
+<div class="graphmap__node graphmap__node--problem">
+<p class="graphmap__name"><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a></p>
+<p class="graphmap__chips">
+{% if card.chip %}<span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span>{% endif %}
+<span class="chip chip-weight">problem</span>
+{% if card.edge_chip %}<span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }} edge</span>{% endif %}
+</p>
+</div>
+</li>
+{% endfor %}
+{% for card in node.approaches %}
+<li class="graphmap__item">
+<p class="graphmap__rel">competing approach</p>
+<div class="graphmap__node graphmap__node--solution">
+<p class="graphmap__name"><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a></p>
+<p class="graphmap__chips">
+{% if card.chip %}<span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span>{% endif %}
+<span class="chip chip-weight">approach</span>
+{% if card.edge_chip %}<span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }} edge</span>{% endif %}
+</p>
+{% if card.dispute_url %}<p class="act"><a href="{{ card.dispute_url }}">Read the contest</a></p>{% endif %}
+</div>
 </li>
 {% endfor %}
 </ul>
+{% endif %}
+</div>
+{% endfor %}
+<figcaption class="figure__derivation">Drawn from <a href="{{ root }}graph.json">graph.json</a>, which is this render's own export of <code>graph/nodes/</code>. A box is a node; an indent is an edge, and the words on it are the edge's type. Nothing is positioned by hand and no layout is stored anywhere, so this picture cannot disagree with the record it is drawn from.</figcaption>
+</figure>
+</section>
+
+<section aria-labelledby="disagree"><h2 id="disagree">Disagree with this roadmap?</h2>
+<p>An edge here is a claim, and a claim can be wrong. Contesting one is the ordinary way to use this page, not an escalation: open a contest against the edge, and the node it lands on renders the contest beside the claim from the next build onward.</p>
+<p class="act act--lede"><a href="{{ root }}all/">Every node on the record, contested or not</a></p>
 </section>
 {% endblock %}

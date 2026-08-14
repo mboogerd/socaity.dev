@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{# Which nav entry is the current one (A3). See base.html. #}
+{% set surface = page.href %}
 {% block title %}{{ page.title }}{% endblock %}
 {% block main %}
 {# The modifier is derived from the source filename, not switched on it: every
@@ -7,25 +9,17 @@
 <article class="doc doc--{{ page.source.rsplit('/', 1)[-1].rsplit('.', 1)[0] }}">
 {{ page.html|safe }}
 </article>
-{# The note is a colophon: it says where the bytes came from, not what the
-   page argues. It stays rail content (the closed list of 0hb §C), but it is
-   written AFTER the document rather than before it.
+{# The colophon, now at the FOOT of the document (Amendment 1, A4: "the
+   colophon moves to the footer").
 
-   Why the move. A doc page's <article> is one Markdown blob — h1 included —
-   so a rail item ahead of it is ahead of the page's own name. Measured before
-   this ticket: at 375 the note read first, y118-187, with the masthead at
-   y202, so every doc page opened on a phone with 84px of build metadata and a
-   screen reader announced "This page is rendered from doc/manifesto.md"
-   before "socaity.dev". Written last, the document names itself first in the
-   one order that is both the visual and the screen-reader order.
-
-   At >=60rem `.rail--colophon` is pinned to the first grid row, so the left
-   track looks exactly as it did: the note beside the masthead, W1a's measured
-   first screen unchanged. That is a placement, not an `order:` — it moves
-   nothing within a column, and below 60rem there is no grid at all. The cost,
-   stated rather than hidden: on a phone this one rail item reads below the
-   block it annotates instead of above it (0hb §C), which is where a colophon
-   has always gone, and it is the only rail item on the site whose annotated
-   block is the whole document. #}
-<aside class="rail rail--colophon"><p class="provenance">This page is rendered from <a href="{{ page.source_url }}"><code>{{ page.source }}</code></a> in the repository. The Markdown file is the only copy; the page you are reading is a build product of it.</p></aside>
+   It used to be rail content, pinned to the first grid row, which put build
+   metadata in the masthead position: measured at 1280 the first fixation on
+   the home page was six lines of 13.9px grey about the build system, and at
+   375 it read FIRST, at y118-187, ahead of the page's own name. A colophon
+   belongs at the back of the book. It says where the bytes came from, not
+   what the page argues, so it is now the last thing in <main> — still on
+   every doc page, still linked, still at the --t-micro floor. The rail on a
+   doc page is consequently empty, `.rail:empty` hides it, and the document
+   gets its whole column back. #}
+<p class="colophon">This page is rendered from <a href="{{ page.source_url }}"><code>{{ page.source }}</code></a> in the repository. The Markdown file is the only copy; the page you are reading is a build product of it.</p>
 {% endblock %}

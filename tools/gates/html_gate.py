@@ -1281,7 +1281,7 @@ def check_percent_size(pages, sheets, _site_root):
 POSITIONAL_STYLE_COUPLINGS = (
     ("index.html", "doc--manifesto", "p", 1,
      "The place where society self-develops",
-     "the kicker — --t-lede, italic, --ink-2"),
+     "the tagline — --t-body, italic, --ink-2 (A3)"),
     ("index.html", "doc--manifesto", "p", 2,
      "The system never assigns work. It prices it.",
      "the thesis — one of exactly two --t-display uses on the site"),
@@ -1291,6 +1291,13 @@ POSITIONAL_STYLE_COUPLINGS = (
     ("index.html", "doc--manifesto", "p", 4,
      "Status:",
      "the standing line — --font-ui at the --t-micro floor"),
+    # A3/A7: the evidence strip that replaced the 144px of nothing under the
+    # hairline. `ul:first-of-type` is the rule that styles it, and the next
+    # <ul> on the page is four headings down inside a section, so the ordinal
+    # is unambiguous — but only for as long as no list is inserted above it.
+    ("index.html", "doc--manifesto", "ul", 1,
+     "The record.",
+     "the evidence strip — the four artifacts, on the first screen"),
     ("faq/index.html", "doc--faq", "blockquote", 1,
      "A public record of contributions. No token. Nothing to trade.",
      "the register strip — the one shared .register object"),
@@ -1625,34 +1632,25 @@ def check_heading_ratio(pages, sheets, _site_root):
 
 
 # --------------------------------------------------------------------------
-# WRITTEN AND NOT REGISTERED — both of these are RED against the current
-# render, and §J says a check may not land in a commit where it is red ("a
-# gate that ships failing gets commented out within a week, and then we have
-# neither the check nor the honesty of not claiming one").  They are here,
-# finished and runnable, so that the tickets that fix the markup have a
-# machine-checkable target rather than a paragraph of prose:
+# W AND M, REGISTERED — socaity-0tc.
 #
-#   W  clipped <pre>  — lands with socaity-0tc (A7: /claim commands wrap
-#      rather than clip). Four of six commands on /claim overflow today.
-#      Run it: python3 tools/gates/html_gate.py --only W   (after adding
-#      ("W", "no <pre> exceeds its container", check_clipped_pre) to CHECKS)
+# Both of these were written red and left out of CHECKS, because §J forbids a
+# check landing in a commit where it fails.  socaity-0tc made both green and
+# registers them here, which is the whole shape A1 asks for: the assertion
+# ships with the gate that holds it.
 #
-#   M  identity object — lands with socaity-0tc (A3: the masthead component
-#      on all surfaces). A3 landed the masthead on every templated surface
-#      while this gate was being written, which took M from 19 red surfaces
-#      to 3: the blog OG cards, which are rendered from blog_card.html and
-#      do not inherit base.html. Those three are the surface where identity
-#      matters MOST — an unfurl is seen by people who have never been here —
-#      so M stays written and unregistered until the card carries it too
-#      (socaity-bdl owns card.html).
-#      Run it: python3 tools/gates/html_gate.py --only M   (same, with
-#      ("M", "every surface carries the identity object", check_identity))
+#   W  clipped <pre> (A7).  Four of six commands on /claim overflowed their
+#      container at desktop width and were clipped in silence.  `.claim pre`
+#      and `pre.ledger-cmd` now carry `white-space: pre-wrap`, which is a
+#      SOFT wrap: the line breaks on screen and the clipboard still gets one
+#      line, so a wrapped command is a command that runs when pasted.
 #
-# Turning either on is one line in CHECKS plus deleting the note above it.
-# Neither is reachable from CHECKS, so neither can fail the build today, and
-# neither is dead-lettered either: both are exercised by tools/gates/
-# test_gates.py against fixtures, so they cannot rot between now and the
-# ticket that lands them.
+#   M  identity object (A3).  The masthead landed on every templated surface;
+#      the last three red pages were the blog OG cards, which inherit nothing
+#      from base.html.  blog_card.html now carries the wordmark as an object
+#      of its own rather than as the first three words of a metadata line —
+#      the surface where identity matters most, because an unfurl is seen by
+#      people who have never been here.
 # --------------------------------------------------------------------------
 
 #: The advance width of one character, in ems, in a monospace face.  Every
@@ -1939,6 +1937,8 @@ CHECKS = (
     # written above and deliberately absent here — both are red today.
     ("T", "no :root token with zero var() references", check_dead_tokens),
     ("R", "no heading below 1.4x body size", check_heading_ratio),
+    ("W", "no <pre> exceeds its container", check_clipped_pre),
+    ("M", "every surface carries the identity object", check_identity),
 )
 
 

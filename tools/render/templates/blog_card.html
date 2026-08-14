@@ -22,6 +22,11 @@ body { margin: 0; background: #f2f2f0; color: #1a1a1a;
             display: flex; flex-direction: column; justify-content: space-between; }
 .card1200 .strip, .card1200 .foot { font-family: system-ui, sans-serif; font-size: 20px;
                                     color: #575757; }
+/* The identity object on the one surface that travels without the site around
+   it (Amendment 1, A3): an unfurl is seen by people who have never been here,
+   so the wordmark is a thing of its own here rather than the first three words
+   of a metadata line. Same palette, one weight and one ink darker. */
+.card1200 .strip .mark { color: #1a1a1a; font-weight: 600; }
 .card1200 h1 { font-size: 54px; line-height: 1.2; margin: 24px 0 0; font-weight: normal; }
 .card1200 .say { font-size: 30px; line-height: 1.45; margin: 28px 0 0; }
 .card1200 .foot { border-top: 1px solid #cfcfcf; padding-top: 20px; }
@@ -33,7 +38,7 @@ body { margin: 0; background: #f2f2f0; color: #1a1a1a;
 <body>
 <div class="card1200">
 <div>
-<p class="strip">socaity.dev · {{ post.kind_label }}{% if post.machine %} · written by a program{% endif %} · {{ post.date }}</p>
+<p class="strip"><span class="mark">socaity.dev</span> · {{ post.kind_label }}{% if post.machine %} · written by a program{% endif %} · {{ post.date }}</p>
 <h1>{{ post.title }}</h1>
 <p class="say">{{ post.card }}</p>
 </div>

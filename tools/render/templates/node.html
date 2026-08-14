@@ -44,8 +44,21 @@
    the statement about the work, not on the work. #}
 <aside class="rail">
 {% set p = node.prov %}
+{# A4 collapses this object to ONE LINE with its <dl> inside a <details>.
+   Measured before: 150px of rail at 1280 and, at 375 where the grid
+   collapses, a 330px stamp between the node's title and the claim itself —
+   parity with the agent object was achieved by levelling UP, and the
+   statement lost its own first screen (socaity-s0n, community-builder).
+
+   The symmetry §E requires is preserved in the channel that carries it: the
+   summary line is the same shape for both kinds — the kind, then the actor,
+   then the date — the disclosure holds the same five fields in the same
+   order for both, and the sole visual difference is still the fill of the
+   3px edge. A human write still reads `none` where an agent write names a
+   model and a run: absence of a mark may never be the human signal. #}
 <div class="prov{% if p.kind == 'agent' %} prov--agent{% endif %}">
-<p class="prov__kind">{% if p.kind == 'agent' %}written by a program{% else %}written by a person{% endif %}</p>
+<details class="prov__disclosure">
+<summary><span class="prov__kind">{% if p.kind == 'agent' %}written by a program{% else %}written by a person{% endif %}</span> <span class="prov__who">{{ p.actor_id }} · {{ p.asserted_at }}</span></summary>
 <dl class="prov__grid">
 <dt>asserted by</dt><dd>{{ p.actor_id }}{% if p.on_behalf_of %}, on behalf of {{ p.on_behalf_of }}{% endif %}</dd>
 <dt>model</dt><dd>{{ p.model or 'none' }}</dd>
@@ -54,6 +67,7 @@
 <dt>evidence</dt><dd>{% if p.evidence %}{% for digest in p.evidence %}<code>{{ digest[:19] }}…</code>{% if not loop.last %} {% endif %}{% endfor %}{% else %}none recorded{% endif %}</dd>
 </dl>
 <p class="prov__derivation"><a href="{{ root }}graph.json">derivation</a></p>
+</details>
 </div>
 </aside>
 
@@ -70,8 +84,17 @@
    to sit at the very bottom of the page, after "See also", which put the
    affordance for disagreeing several screens away from the sentence a reader
    disagrees with. #}
-<section aria-labelledby="contest"><h2 id="contest">Disagree with this?</h2>
-<p><a href="{{ node.issue_url }}">Contest this</a> · <a href="https://github.com/socaity/socaity.dev/edit/main/graph/nodes/{{ node.id }}.yaml">Propose a change</a> · <a href="#legend">what these marks mean</a></p>
+{# A6: what must be LOUD. The section already carried §D's weight — same
+   <section>, same <h2>, no box, never inside a <details> — and it still
+   read as a line of small links, because §D fixed what may never be louder
+   than it and never fixed what it must be. It now takes the page's ONE
+   emphasis surface (--accent-wash, one per page maximum, §B), and the act
+   itself renders at --t-lede. The section is still not a <details>, still
+   sits directly under the claim it contests, and still carries no chip. #}
+<section class="contest" aria-labelledby="contest"><h2 id="contest">Disagree with this?</h2>
+<p>Contesting a claim is the ordinary way to use this record, not an escalation. A contest is an event on the graph: it renders here, beside the claim, from the next build onward.</p>
+<p class="act act--lede"><a href="{{ node.issue_url }}">Contest this claim</a></p>
+<p class="act"><a href="https://github.com/socaity/socaity.dev/edit/main/graph/nodes/{{ node.id }}.yaml">Propose a change to the file itself</a> · <a href="#legend">what these marks mean</a></p>
 <p class="muted">Permanent address: <code>{{ node.id }}</code> (the name <code>{{ node.slug }}</code> may change).</p>
 </section>
 

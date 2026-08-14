@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{# Which nav entry is the current one (A3). See base.html. #}
+{% set surface = 'blog/' %}
 {% block title %}Blog{% endblock %}
 {% block main %}
 <h1>Blog</h1>
@@ -18,7 +20,7 @@ after publication shows the edit rather than hiding it.</p>
 <tbody>
 {% for post in posts %}
 <tr>
-<td>{{ post.date }}</td>
+<td><time datetime="{{ post.date }}">{{ post.date }}</time></td>
 <td>{{ post.kind_label }}{% if post.machine %}<br><span class="muted">written by a program</span>{% endif %}</td>
 <td><a href="{{ post.slug }}/">{{ post.title }}</a><br><span class="muted">{{ post.summary }}</span>
 {% if threads.get(post.slug) %}<br><a href="{{ threads.get(post.slug) }}">Discussion thread</a>{% endif %}

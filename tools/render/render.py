@@ -79,6 +79,14 @@ LEGEND = [
 ISSUE_URL = "https://github.com/socaity/socaity.dev/issues/new"
 REPO_BLOB = "https://github.com/socaity/socaity.dev/blob/main/"
 REPO_TREE = "https://github.com/socaity/socaity.dev/tree/main/"
+#: This site's own canonical origin.  A link in doc/*.md that names a PAGE of
+#: this site rather than a file in the repository is written absolutely, so it
+#: resolves for a reader on GitHub, and `doc_link_rewriter` turns it back into
+#: a relative path at render time, so the built page — and a fork's build, and
+#: a `file://` reading of it — never leaves its own tree.  `../ledger/` still
+#: means the ledger's SOURCE: the glass house is a list of artifacts and those
+#: links must stay repository links, so the two intents keep two spellings.
+SITE = "https://socaity.dev/"
 
 # Markdown documents published as site pages. The .md file in doc/ is the only
 # copy of the copy: this renders it, it never restates it. Changing the words
@@ -386,7 +394,12 @@ def what_matters_now(views, idx, tickets_by_node):
         if any(not r["done"] for r in view["requires"]):
             continue
         strip.append({"id": view["id"], "title": view["title"], "slug": view["slug"],
-                      "type": view["type"], "tier": ticket.get("tier"), "ticket": ticket["id"]})
+                      "type": view["type"], "tier": ticket.get("tier"), "ticket": ticket["id"],
+                      # The node's own status chip and its contest address, so
+                      # /roadmap can render a row that acts (A6) instead of a
+                      # bullet that names. Both are already on the view; this
+                      # carries them across, and decides nothing.
+                      "chip": view["chip"], "issue_url": view["issue_url"]})
     strip.sort(key=lambda s: s["id"])
     return strip
 
@@ -404,6 +417,10 @@ def doc_link_rewriter(source, depth):
     up = "../" * depth
 
     def rewrite(href):
+        # Our own origin, made relative. Routing, not presentation: the
+        # surface's address is read off the URL and nothing is decided here.
+        if href.startswith(SITE):
+            return (up + href[len(SITE):]) or "./"
         if href.startswith(("http://", "https://", "mailto:", "#", "/")):
             return href
         target, _, fragment = href.partition("#")
@@ -433,6 +450,10 @@ def doc_page(root, spec):
         "source": spec["source"],
         "source_url": REPO_BLOB + spec["source"],
         "depth": depth,
+        # The surface this document IS, in the same form the nav uses, so the
+        # masthead can mark it aria-current (A3). Routing, not presentation:
+        # it is the page's own address, restated once instead of guessed.
+        "href": (os.path.dirname(spec["path"]) + "/") if os.path.dirname(spec["path"]) else "",
     }
 
 
