@@ -55,6 +55,12 @@
 # import:
 #   path: issues.jsonl
 
+# Passive JSONL export enabled (socaity-1jp): cross-workspace readers
+# (computenet XDEP epic) consume .beads/issues.jsonl. Mirrors computenet's
+# arrangement (export.auto: true; issues.jsonl not tracked in git).
+export:
+    auto: true
+
 # Integration settings (access with 'bd config get/set')
 # Non-secret keys (stored in the database):
 # - jira.url, jira.project

@@ -60,6 +60,11 @@ dolt-pprof/
 # Backup data (auto-exported JSONL, local-only)
 backup/
 
+# Passive JSONL export — the Dolt DB (synced via DoltHub) is the source of
+# truth; this regenerates on every bd write and would only churn git history
+# (mirrors computenet's arrangement; enabled by socaity-1jp)
+issues.jsonl
+
 # Per-project environment file (Dolt connection config, GH#2520)
 .env
 
