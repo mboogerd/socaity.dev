@@ -11,7 +11,9 @@ become concurrent with the next; a dirty main checkout makes every concurrent
 session's premises false (stashes, half-staged files, wrong HEAD). Worktrees
 branch off `origin/main` and cannot interfere with each other or with the
 anchor. This is also what makes parallel subagents safe: one worktree each, no
-shared mutable checkout.
+shared mutable checkout. One git fact undermines this silently: the stash
+stack is repo-wide, shared by every linked worktree — never stash in a
+worktree; commit to the branch or use scratch files (computenet #546).
 
 **Land through PRs.** Main advances only by merges, so concurrent sessions
 never race a direct push; history stays reviewable per-change; a bad landing is
