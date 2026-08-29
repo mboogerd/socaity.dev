@@ -64,3 +64,14 @@ Each earned its place in a real incident — [references/why.md](references/why.
    and branch after merge.
 9. **Close** the bead with what changed and how it was verified; `bd dolt push`.
    Loop, or end with a one-paragraph session summary.
+
+## Friction
+
+If something this session cost real time or produced a wrong result — and the
+next session would predictably pay it again — file one friction bead (label
+`friction`, unparented): what happened, what it cost, root cause if found.
+Search existing friction beads first: a recurrence is a comment on the existing
+bead, never a duplicate — the recurrence count is the signal the resolver runs
+on. Judgment, not reflex: having to think is not friction; paying twice for the
+same discovery is. Never edit this skill mid-session — that is
+`resolve-friction`'s job, with evidence.
