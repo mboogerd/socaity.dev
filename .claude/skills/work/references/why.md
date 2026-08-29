@@ -1,36 +1,52 @@
-# Why the non-negotiables exist
+# Why the invariants exist
 
-Compressed from ~2 months of computenet's unattended-work history. Each rule paid
-for itself in a real incident; the rule is the cheap form of the lesson.
+Compressed from ~2 months of computenet's unattended-work history. Each rule is
+the cheap form of a lesson that was paid for once. The skill states intent
+rather than procedure on purpose: computenet's 13k-line original showed that
+spelling out the *how* breeds rules, which breed exception rules — while an
+agent given the *why* routes around novel situations correctly.
 
-**Pull before push.** The pull is what makes a claim a lock instead of a private
-note. Skipping it is how two machines both claim one item or mint the same id
-(computenet, 2026-08). A round-trip costs seconds; a clobber costs a session.
+**Main checkout clean, work in worktrees.** Sessions overrun their slot and
+become concurrent with the next; a dirty main checkout makes every concurrent
+session's premises false (stashes, half-staged files, wrong HEAD). Worktrees
+branch off `origin/main` and cannot interfere with each other or with the
+anchor. This is also what makes parallel subagents safe: one worktree each, no
+shared mutable checkout.
+
+**Land through PRs.** Main advances only by merges, so concurrent sessions
+never race a direct push; history stays reviewable per-change; a bad landing is
+one revert. Merge-your-own is fine exactly when gate-green + clean scope +
+easy-revert all hold — the same three-part confidence test computenet uses for
+`gh pr ready`. When one fails, the open PR with a named doubt *is* the
+deliverable.
+
+**Pull before push (beads).** The pull is what makes a claim a lock instead of
+a private note. Skipping it is how two machines both claim one item or mint the
+same id (computenet, 2026-08). A round-trip costs seconds; a clobber costs a
+session.
 
 **No `bd create --parent=` under shared epics.** Child ids come from a
-per-database counter reconciled only at sync. Two machines filing under the same
-parent between syncs read the same counter and mint the same id for different
-beads; conflict resolution then destroys one of each pair (measured on
-computenet, 2026-08-14). Unparented creates draw hash ids and cannot collide;
-re-parenting afterwards keeps the id.
+per-database counter reconciled only at sync. Two machines filing under one
+parent between syncs mint the same id for different beads; conflict resolution
+destroys one of each pair (measured on computenet, 2026-08-14). Unparented
+creates draw hash ids and cannot collide.
 
-**Premise verification before implementing.** A session that builds on a false
-premise produces a task tree whose every step is unsatisfiable — discovered only
-at review time, wasting the whole slot. A parked `QUESTION:` comment costs one
-paragraph and routes the decision to a human (computenet-egl, 2026-08-19: an
-epic was correctly parked rather than broken down on a machine that could not
-build its deliverable).
+**Premise verification.** A session that builds on a false premise produces
+work whose every step is unsatisfiable — discovered at review time, wasting the
+slot. A parked `QUESTION:` costs one paragraph and routes the decision to a
+human (computenet-egl, 2026-08-19: an epic correctly parked rather than broken
+down on a machine that could not build its deliverable).
 
-**The 24h stale-claim window.** Crash leftovers must be recoverable or the queue
-deadlocks under any scheduled use; fresh claims must be safe or two machines
-double-implement. 24h with a takeover comment is the compromise: slow enough to
-never race a live session, traceable for the crashed one.
+**The 24h stale-claim window.** Crash leftovers must be recoverable or the
+queue deadlocks; fresh claims must be safe or two machines double-implement.
+24h with a takeover comment is slow enough to never race a live session,
+traceable for the crashed one.
 
-**One claim per session.** Parallel claims in one context balloon it and drift
-the work. computenet's 13k-line skill solves this with dispatched subagents and
-an orchestrator; this skill deliberately does not — if items here outgrow
-single-session size, split them in `breakdown` instead of importing that
-machinery.
+**One claim, many subagents.** The claim is the unit of accountability and
+crash-recovery, so there is exactly one per session. Parallelism happens
+*under* it — subagents in their own worktrees — and the session reads every
+diff, because a subagent's work lands on the session's claim and the session's
+name.
 
 **Honest close comments.** An unattended session's summary is the only reviewer
 present. A "done" without a passed gate poisons the premises of every later
