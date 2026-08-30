@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "site-w2a",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-c",
+        "import functools,http.server,socketserver;socketserver.TCPServer.allow_reuse_address=True;h=functools.partial(http.server.SimpleHTTPRequestHandler,directory='/Users/merlijn/Documents/local-projects/socaity.dev/site');socketserver.TCPServer(('127.0.0.1',8749),h).serve_forever()"
+      ],
+      "port": 8749
+    }
+  ]
+}
