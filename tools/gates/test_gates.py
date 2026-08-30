@@ -37,7 +37,16 @@ import vocab_gate          # noqa: E402
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "render"))
-import render              # noqa: E402
+
+try:
+    import render          # noqa: E402
+except ImportError:
+    # render.py imports Jinja2 at module level, and this file is run on the
+    # cold checkout — vocab-check.yml runs it BEFORE installing anything, on
+    # purpose. The card checks it holds are arithmetic and need no template
+    # engine, but the module that carries them cannot be imported without one,
+    # so they skip here and run in ci.yml, which installs first.
+    render = None
 
 try:
     import yaml
@@ -1023,6 +1032,7 @@ class HtmlGateAssertions(unittest.TestCase):
                          [])
 
 
+@unittest.skipIf(render is None, "Jinja2 not installed")
 class CardOverflow(unittest.TestCase):
     """The §G build-failing check: a card whose disclosure would fall off.
 
