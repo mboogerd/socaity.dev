@@ -35,6 +35,19 @@ import miniyaml            # noqa: E402
 import html_gate           # noqa: E402
 import vocab_gate          # noqa: E402
 
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "render"))
+
+try:
+    import render          # noqa: E402
+except ImportError:
+    # render.py imports Jinja2 at module level, and this file is run on the
+    # cold checkout — vocab-check.yml runs it BEFORE installing anything, on
+    # purpose. The card checks it holds are arithmetic and need no template
+    # engine, but the module that carries them cannot be imported without one,
+    # so they skip here and run in ci.yml, which installs first.
+    render = None
+
 try:
     import yaml
 except ImportError:
@@ -1017,6 +1030,75 @@ class HtmlGateAssertions(unittest.TestCase):
         self.assertEqual(self.identity('<meta http-equiv="refresh" '
                                        'content="0; url=/n/x/"><p>Moved.</p>'),
                          [])
+
+
+@unittest.skipIf(render is None, "Jinja2 not installed")
+class CardOverflow(unittest.TestCase):
+    """The §G build-failing check: a card whose disclosure would fall off.
+
+    It lives in render.py rather than html_gate.py because it has to run
+    BEFORE the page exists — a gate over site/** can only read a card that has
+    already been written, and by then the overflow has shipped into the
+    artifact the gate is certifying.
+    """
+
+    def card(self, **kw):
+        base = {"kind_label": "node", "title": "A short headline",
+                "detail": "One short sentence.", "foot": "socaity.dev/"}
+        base.update(kw)
+        return base
+
+    def test_a_short_card_fits(self):
+        self.assertLessEqual(render.card_overflow(self.card()), 0)
+
+    def test_the_register_is_measured_even_when_it_is_still_the_default(self):
+        # The bug this keeps out: card_overflow ran before card_page filled in
+        # the register default, so the one object §G says must never be
+        # dropped was the one object the fit check did not measure. Every card
+        # passed, and then card_page failed on cards trim_detail had already
+        # declared fine.
+        explicit = self.card(detail="x " * 200, register=render.REGISTER_LINE)
+        implicit = self.card(detail="x " * 200)
+        self.assertEqual(render.card_overflow(implicit),
+                         render.card_overflow(explicit))
+
+    def test_a_long_detail_overflows(self):
+        self.assertGreater(render.card_overflow(self.card(detail="word " * 200)), 0)
+
+    def test_a_long_headline_overflows(self):
+        self.assertGreater(render.card_overflow(self.card(title="Headline " * 40)), 0)
+
+    def test_card_page_refuses_to_render_an_overflowing_card(self):
+        with self.assertRaises(SystemExit) as caught:
+            render.card_page(None, **self.card(detail="word " * 200,
+                                               url="https://socaity.dev/x/"))
+        self.assertIn("overflows", str(caught.exception))
+
+    def test_trim_detail_shortens_until_it_fits_and_says_so(self):
+        trimmed = render.trim_detail(self.card(detail="word " * 200))
+        self.assertLessEqual(render.card_overflow(trimmed), 0)
+        self.assertTrue(trimmed["detail"].endswith("…"))
+        self.assertTrue(trimmed["detail"].startswith("word word"))
+
+    def test_trim_detail_leaves_a_card_that_already_fits_alone(self):
+        fits = self.card()
+        self.assertEqual(render.trim_detail(fits)["detail"], fits["detail"])
+
+    def test_trim_detail_cannot_rescue_a_headline(self):
+        # Deliberate: the headline is the surface's own sentence, so an
+        # unfittable one is a copy decision, not something a renderer silently
+        # crops. trim_detail runs out of words and card_page then fails.
+        long_title = self.card(title="Headline " * 40)
+        self.assertGreater(render.card_overflow(render.trim_detail(long_title)), 0)
+
+    def test_first_sentence_takes_one_sentence_from_a_node_body(self):
+        self.assertEqual(
+            render.first_sentence("One thing. Then another. And a third."),
+            "One thing.")
+
+    def test_first_sentence_of_a_body_with_no_full_stop_is_the_whole_body(self):
+        self.assertEqual(render.first_sentence("no full stop here"),
+                         "no full stop here")
 
 
 if __name__ == "__main__":
