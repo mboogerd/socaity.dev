@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer commit supersedes a PR validation run. Do not cancel main runs: they
+# are the final proof that independently-green changes work together.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install rendering dependencies
+        run: python3 -m pip install --quiet -r tools/requirements.txt
+
+      # Keep this aggregate check broad. The existing workflows retain their
+      # narrower responsibilities (Pages deployment, forkability matrix,
+      # vocabulary gate, and drift alarms); this job gives every PR one
+      # conventional, complete repository-health signal.
+      - name: Validate, render, and check the published site
+        run: tools/check.sh
+
+      - name: Test the CI gate implementations
+        run: python3 tools/gates/test_gates.py
+
+      - name: Test the ledger and rule modules
+        run: |
+          python3 -m unittest discover ledger -v
+          python3 -m unittest discover rule -v
+
+      - name: Test the Markdown and claim tooling
+        run: |
+          python3 tools/test_markdown_subset.py
+          tools/claim/test_claim_flow.sh
