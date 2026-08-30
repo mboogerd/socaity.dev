@@ -202,9 +202,19 @@ def generate(ctx):
         "repo_blob": REPO_BLOB,
         "merge_comment_source": MERGE_COMMENT_SOURCE,
     }
+    # /claim is the only conversion surface on the site and it had no og tags
+    # at all (§G): a link to it unfurled as a bare URL. Its card headline is
+    # the sentence the page exists to make true, not its <h1>.
+    card = ctx["surface_card"](
+        "claim/index.html",
+        kind_label="how to claim",
+        title="Your entry is already written.",
+        detail="Your merged change is already on the record, priced at the "
+               "published rate. Three commands attach it to a key only you hold.")
     return [
         ("claim/index.html",
-         env.get_template("claim.html").render(depth=1, **common)),
+         env.get_template("claim.html").render(depth=1, og=card, **common)),
+        ("claim/card/index.html", ctx["card_page"](env, **card)),
         ("claim/reserved/index.html",
          env.get_template("claim_reserved.html").render(depth=2, **common)),
         ("claim/merge-comment/index.html",

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card · {{ card.title }} · socaity</title>
+<meta name="description" content="{{ card.detail }}">
+<meta property="og:type" content="{{ card.og_type }}">
+<meta property="og:site_name" content="socaity.dev">
+<meta property="og:title" content="{{ card.title }}">
+<meta property="og:description" content="{{ card.detail }}">
+<meta property="og:url" content="{{ card.url }}">
+<style>
+/* The card is a fixed 1200x630 object because that is the crop a link preview
+   takes (doc/standards/vocabulary-and-visual.md, V10). It is authored as the
+   disclosure: cut every link and every caption away and the remaining
+   rectangle still says what this is and what it is not. Same palette as the
+   site: flat paper, one ink, one rule colour, no gradient and no glow.
+
+   One template for every surface (council/socaity-0hb.md §G) — home, /ledger,
+   /claim, /faq, /roadmap, every node and every post. It was blog_card.html,
+   which is why the palette is still inline and still literal: a card is
+   captured by software that does not fetch our stylesheet, so it cannot use
+   the tokens. The literals stay under the drift check (socaity-0u9): every
+   colour here also appears in style.css's :root.
+
+   Light-only and fixed pixels on purpose. A card that honoured
+   prefers-color-scheme would render differently depending on the OS of
+   whoever captured it, and a 1200x630 box measured in rem would move under a
+   reader's font-size setting — the one place on this site where neither is a
+   courtesy. No webfont: the stack is the resolved fallback, and the sizes
+   below are chosen against its widest member rather than its first. */
+body { margin: 0; background: #f2f2f0; color: #1a1a1a;
+       font: 1rem/1.6 Georgia, "Times New Roman", serif; }
+.card1200 { box-sizing: border-box; width: 1200px; height: 630px; max-width: 100%;
+            background: #fdfdfc; border: 1px solid #cfcfcf; padding: 64px 72px;
+            display: flex; flex-direction: column; justify-content: space-between; }
+.card1200 .strip, .card1200 .foot { font-family: system-ui, sans-serif; font-size: 20px;
+                                    color: #575757; }
+/* The identity object on the one surface that travels without the site around
+   it (Amendment 1, A3): an unfurl is seen by people who have never been here,
+   so the wordmark is a thing of its own here rather than the first three words
+   of a metadata line. Same palette, one weight and one ink darker. */
+.card1200 .strip .mark { color: #1a1a1a; font-weight: 600; }
+.card1200 h1 { font-size: 54px; line-height: 1.2; margin: 24px 0 0; font-weight: normal; }
+/* §G's order is load-bearing, and this is the half that carries it. The
+   register sits IMMEDIATELY under the headline at 44px, above the per-surface
+   sentence, because a fixed box drops its tail: put the disclosure last and
+   the object that overflows is the one the card exists to carry. 32px was
+   rejected for this line — a 1200->300 thumbnail is a 4x downscale, which
+   makes 32px eight pixels and fails the spec's own 300x157 gate.
+
+   The split is A1's pairing rule applied to one sentence: the assertion (a
+   public record of contributions; this is a database) travels with the
+   refusal it protects (no token, nothing to trade), in one object, at one
+   size, so neither half can be cropped away from the other. It used to be the
+   footer strip at 20px, where it was both the smallest thing on the card and
+   the first thing a tight box would lose. */
+.card1200 .card__register { font-size: 44px; line-height: 1.3; margin: 28px 0 0; }
+.card1200 .card__detail { font-size: 32px; line-height: 1.45; margin: 24px 0 0; }
+.card1200 .foot { border-top: 1px solid #cfcfcf; padding-top: 20px; }
+.about { max-width: 44rem; margin: 2rem auto; padding: 0 1rem 3rem;
+         font-size: 0.95rem; color: #575757; }
+.about a { color: #14487a; }
+</style>
+</head>
+<body>
+<div class="card1200">
+<div>
+<p class="strip"><span class="mark">socaity.dev</span> · {{ card.kind_label }}{% if card.machine %} · written by a program{% endif %}{% if card.date %} · {{ card.date }}{% endif %}</p>
+<h1>{{ card.title }}</h1>
+<p class="card__register">{{ card.register }}</p>
+<p class="card__detail">{{ card.detail }}</p>
+</div>
+<p class="foot">{{ card.foot }}</p>
+</div>
+<div class="about">
+{# An em dash rather than a full stop: a headline is a sentence on several of
+   these surfaces, and "…contribution.." is what a full stop produced. #}
+<p>This page is the preview card for <a href="../">{{ card.title }}</a> — 1200&nbsp;&times;&nbsp;630
+pixels, the size a link preview crops to, with the words in it written to
+survive that crop with no caption and no link attached.</p>
+</div>
+</body>
+</html>
