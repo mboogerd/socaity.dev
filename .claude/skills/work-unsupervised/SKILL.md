@@ -4,8 +4,8 @@ description: Runs the `work` skill in autonomous mode — no human is available.
 disable-model-invocation: true
 ---
 
-You are running **unsupervised**. Read this file, then invoke the `work` skill with the
-Skill tool and follow it.
+You are running **unsupervised**. Read this file, then read and follow the `work`
+skill — with the Skill tool where the harness has one.
 
 This file adds only the conditions the run happens under. Everything about *what* the
 work is and *how* to do it — selection, claiming, worktrees, the gate, PRs, closing —
