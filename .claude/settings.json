@@ -11,5 +11,19 @@
         "matcher": ""
       }
     ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(bd show *)",
+      "Bash(bd list *)",
+      "Bash(bd ready)",
+      "Bash(bd ready *)",
+      "Bash(awk *)",
+      "Bash(bd search *)",
+      "Bash(bd comments *)",
+      "Bash(bd stats *)",
+      "Bash(bd blocked)",
+      "mcp__ccd_session_mgmt__search_session_transcripts"
+    ]
   }
 }

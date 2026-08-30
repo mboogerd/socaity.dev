@@ -16,7 +16,9 @@ cost — which is often writing nothing.
 Take beads labeled `friction`. Act when one has **recurred** (a second logged
 incident, as comments on the bead) or a single incident was **severe** (an
 hour lost, a wrong result shipped). One incident at moderate cost: leave it
-open and move on. The log is the experiment; recurrence is the data.
+open and move on. The log is the experiment; recurrence is the data. A
+recurrence on a bead already closed reopens it and counts cumulatively
+against that same threshold, never as a fresh first incident.
 
 ## The resolution ladder — stop at the first rung that holds
 
@@ -31,14 +33,17 @@ open and move on. The log is the experiment; recurrence is the data.
    meets. One sentence stating the fact or intent, never the procedure: facts
    prevent the behavior; prohibitions get argued with. The work SKILL.md has a
    hard budget of 90 lines — to add a line, name the line it displaces, or the
-   addition is refused.
+   addition is refused. If refused, drop to rung 3 and record in the closure
+   that prose was warranted but budget-blocked.
 5. **Won't-fix.** Recurrence × re-derivation cost is below the standing tax of
    every rung above. Close the bead saying so. This outcome is normal, not a
    failure.
 
 ## Discipline
 
-- Close every resolved bead naming the rung and the reasoning.
+- Close every resolved bead with a line starting `Resolved — rung N:`
+  naming the rung and the reasoning, so a later session can filter
+  closures by rung.
 - Land changes like any work item: worktree, branch, PR (the work skill's
   invariants apply here too).
 - If a resolution itself needs a rule to explain it, you picked the wrong rung.
