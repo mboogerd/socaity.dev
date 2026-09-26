@@ -54,6 +54,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 CHAIN = os.path.join(HERE, "chain.jsonl")
 ATTESTATION = os.path.join(HERE, "attestation.txt")
+COMMITMENT = os.path.join(ROOT, "doc", "pre-launch-external-contributor-criteria.md")
 
 #: The example keys.  Published, on purpose: a key whose secret is in the
 #: repository cannot be mistaken for a key that guards anything.
@@ -177,6 +178,7 @@ def build(path):
     founder("audit.completed", {"distribution_id": DISTRIBUTION_0,
                                 "scope_checkpoint_hash": CHECKPOINT_0,
                                 "report_hash": REPORT_0})
+    founder("commitment.precommitted", {"commitment_hash": file_digest(COMMITMENT)})
     add(CKPT_SECRET, "checkpoint.published",
         {"checkpoint_seq": 1, "head_event_id": log.head,
          "event_count": log.count, "prev_checkpoint_ref": "0" * 64})
