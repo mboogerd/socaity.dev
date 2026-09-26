@@ -240,6 +240,29 @@ def hypothetical_entry(category, hours_micro, epoch, lineage):
             "lineage": lineage}
 
 
+def card_view(closed_epochs, exhibit_founder_share):
+    """The 1200x630 card (0hb §G), as opposed to the og description above.
+
+    Same numbers, same run of the rule, shorter sentence: the og description
+    is read by a parser and the card is read at 32px inside a fixed box, so
+    the card carries the fact and drops the derivation the page already gives
+    under the figure. The founder share keeps its denominator in the same
+    clause, because §F's paramount does not stop at the edge of the site.
+    """
+    if closed_epochs:
+        epoch = closed_epochs[0]
+        detail = ("Epoch %d is closed and audited: %s of the %s vu in it are "
+                  "the founder's, because there is %d contributor."
+                  % (epoch["index"], epoch["founder_vu"], epoch["denominator"],
+                     epoch["contributors"]))
+    else:
+        detail = ("No epoch has closed and been audited, so there is no final "
+                  "share to state.")
+    return {"kind_label": "the record", "og_type": "article",
+            "title": "Every entry, with its evidence and its arithmetic.",
+            "detail": detail}
+
+
 def og_card(closed_epochs, exhibit_founder_share):
     """The share card, per socaity-xuz rail 7: authored as the disclosure.
 
@@ -511,6 +534,7 @@ def build(root, clock):
                     "founder_vu": micro(0),
                     "denominator": micro(exhibit["denominator"])},
         "og": og_card(closed, exhibit_founder),
+        "card": card_view(closed, exhibit_founder),
         "attestation": attestation,
         "attestation_hash": attestation_hash,
         "attestation_url": REPO_BLOB + ATTESTATION,
@@ -533,8 +557,10 @@ def build(root, clock):
 
 def generate(ctx):
     view = build(ctx["root"], ctx["clock"])
-    html = ctx["env"].get_template("ledger.html").render(view=view, depth=1)
-    return [("ledger/index.html", html)]
+    card = ctx["surface_card"]("ledger/index.html", **view["card"])
+    html = ctx["env"].get_template("ledger.html").render(view=view, og=card, depth=1)
+    return [("ledger/index.html", html),
+            ("ledger/card/index.html", ctx["card_page"](ctx["env"], **card))]
 
 
 # --------------------------------------------------------------------------

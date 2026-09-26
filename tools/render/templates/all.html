@@ -2,6 +2,20 @@
 {# Which nav entry is the current one (A3). See base.html. #}
 {% set surface = 'all/' %}
 {% block title %}All nodes{% endblock %}
+{# The og tags §G attaches to every M0 surface. Before this, /all had
+   none of any kind: a link to them unfurled as a bare URL, which is the one
+   presentation of this project nobody wrote. There is no og:image — the card
+   is an HTML page at each node’s own card, not a 1200x630 raster, and pointing og:image at
+   an HTML page is a claim that fails in the client rather than in our build.
+   A PNG needs a human to commit one. #}
+{% block head %}
+<meta name="description" content="{{ og.detail }}">
+<meta property="og:type" content="{{ og.og_type }}">
+<meta property="og:site_name" content="socaity.dev">
+<meta property="og:title" content="{{ og.title }}">
+<meta property="og:description" content="{{ og.detail }}">
+<meta property="og:url" content="{{ og.url }}">
+{% endblock %}
 {% block main %}
 {% set root = '../' * depth %}
 <h1>All nodes</h1>

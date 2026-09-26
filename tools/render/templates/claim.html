@@ -2,6 +2,17 @@
 {# Which nav entry is the current one (A3). See base.html. #}
 {% set surface = 'claim/' %}
 {% block title %}Claim your entry{% endblock %}
+{# The og tags §G attaches to every M0 surface. /claim had none of any kind:
+   the one conversion surface on the site unfurled as a bare URL. No og:image
+   — the card is an HTML page at /claim/card/, not a 1200x630 raster. #}
+{% block head %}
+<meta name="description" content="{{ og.detail }}">
+<meta property="og:type" content="{{ og.og_type }}">
+<meta property="og:site_name" content="socaity.dev">
+<meta property="og:title" content="{{ og.title }}">
+<meta property="og:description" content="{{ og.detail }}">
+<meta property="og:url" content="{{ og.url }}">
+{% endblock %}
 {% block main %}
 {% set root = '../' * depth %}
 <div class="claim">

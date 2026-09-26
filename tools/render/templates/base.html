@@ -76,6 +76,15 @@
 {% endfor %}
 </dl>
 </details>
+{# The card is a published page, so it is navigable from the page it is the
+   card FOR, rather than emitted and left unreachable (§J·e). One line in the
+   shared footer instead of a copy in every surface template: a surface gets
+   the link by being passed the same `og` object that writes its meta tags,
+   which is also what makes the link true. `card/` is relative to the page's
+   own directory, which is exactly where its card is emitted. #}
+{% if og is defined and og.get('card', True) %}
+<p class="muted">What a link preview of this page shows: <a href="card/">its card</a>, the same 1200&nbsp;&times;&nbsp;630 object the meta tags above point at.</p>
+{% endif %}
 <p class="muted">Freshness is measured against the graph clock ({{ clock }}), the newest assertion in the merged tree — not against the time of the build, so every build of the same tree is identical.</p>
 </footer>
 </body>

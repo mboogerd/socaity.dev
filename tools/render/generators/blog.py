@@ -48,15 +48,16 @@ import xml.etree.ElementTree as ET
 
 # The public origin. Feed items need absolute URLs; a relative guid is not one.
 SITE = "https://socaity.dev/"
+SITE_HOST = "socaity.dev"
 REPO_BLOB = "https://github.com/socaity/socaity.dev/blob/main/"
 REPO_COMMITS = "https://github.com/socaity/socaity.dev/commits/main/"
 
 POSTS_DIR = ("blog", "posts")
 DISCUSSIONS = ("blog", "discussions.json")
 
-# The register line every surface that presents the record opens with (1ux).
-REGISTER_LINE = ("A public record of contributions. No token. Nothing to "
-                 "trade. This is a database.")
+# The register line every surface that presents the record opens with (1ux)
+# now lives in render.py as REGISTER_LINE and reaches every card through
+# ctx["card_page"] (§G). A second copy here would be a second disclosure.
 
 # Which posts have to carry it, decided by the post's own words rather than by
 # an author remembering. Same trigger the standard's gate applies
@@ -275,7 +276,6 @@ def generate(ctx):
 
     index = env.get_template("blog_index.html")
     post_template = env.get_template("blog_post.html")
-    card_template = env.get_template("blog_card.html")
 
     kinds = [{"key": key, "label": label, "meaning": meaning}
              for key, (label, meaning) in sorted(KINDS.items())]
@@ -303,7 +303,15 @@ def generate(ctx):
         view["thread"] = threads.get(post["slug"])
         pages["blog/%s/index.html" % post["slug"]] = post_template.render(
             post=view, depth=2)
-        pages["blog/%s/card/index.html" % post["slug"]] = card_template.render(
-            post=view, register_line=REGISTER_LINE)
+        # The same card object as every other surface (§G). blog_card.html was
+        # its ancestor; it is now card.html and this generator is one caller of
+        # it, so a change to the card is a change in one file rather than two
+        # that agree by hand.
+        pages["blog/%s/card/index.html" % post["slug"]] = ctx["card_page"](
+            env,
+            kind_label=view["kind_label"], machine=view["machine"],
+            date=view["date"], title=view["title"], detail=view["card"],
+            url=view["url"], foot=SITE_HOST + "/blog/" + post["slug"] + "/",
+            og_type="article")
 
     return pages
