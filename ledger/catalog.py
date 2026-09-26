@@ -68,6 +68,7 @@ V1 = {
     "audit.review_opened": ("G", {"review_id": "hash", "target_event_id": "id"}, {}),
     "audit.review_closed": ("G", {"review_id": "hash",
                                   "outcome": "enum:review_outcome"}, {}),
+    "commitment.precommitted": ("G", {"commitment_hash": "hash"}, {}),
     "checkpoint.published": ("G", {"checkpoint_seq": "int", "head_event_id": "id",
                                    "event_count": "int",
                                    "prev_checkpoint_ref": "id"}, {}),
