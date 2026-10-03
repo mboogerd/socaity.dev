@@ -3,7 +3,17 @@
 
 """The personal planner's small, replayable allocator primitives."""
 
+from .allocation import AllocationError, load_allocation, validate_allocation
 from .spend_log import SpendLog, ValidationError, validate_record
 from .session import Session, run_session
 
-__all__ = ["Session", "SpendLog", "ValidationError", "run_session", "validate_record"]
+__all__ = [
+    "AllocationError",
+    "Session",
+    "SpendLog",
+    "ValidationError",
+    "load_allocation",
+    "run_session",
+    "validate_allocation",
+    "validate_record",
+]

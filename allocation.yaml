@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 MacBoo
+#
+# Allocator allocation schema v1.
+#
+# `weights` contains one non-negative ratio per project and must sum exactly
+# to 1. `monthly_cap.hours` is the hard ceiling for session-hours in the
+# rolling `window`; weights are a soft target within that ceiling. The shape
+# is intentionally flat so a future slider can write it and each revision can
+# be emitted as an `allocation.declared` ledger event.
+schema: 1
+window: monthly
+monthly_cap:
+  hours: 40
+weights:
+  socaity.dev: 0.5
+  glass-factory: 0.3
+  computenet: 0.2
