@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 MacBoo
+#
+# Allocator project registry schema v1.
+#
+# Each project has a stable name, a reachable code repository, and a beads
+# task_source. A worker clones or checks out task_source.repo, runs sync, then
+# runs ready to ask that project's task system for its most important item.
+# runner is the command that starts one work session in the code repository.
+# Adding a project is editing this file; do not put credentials in it.
+schema: 1
+projects:
+  - name: socaity.dev
+    code_repo: https://github.com/mboogerd/socaity.dev.git
+    task_source:
+      type: beads
+      repo: https://github.com/mboogerd/socaity.dev.git
+      sync: bd dolt pull
+      ready: bd ready --json
+    runner: /work
+  - name: glass-factory
+    code_repo: https://github.com/mboogerd/glass-factory.git
+    task_source:
+      type: beads
+      repo: https://github.com/mboogerd/glass-factory.git
+      sync: bd dolt pull
+      ready: bd ready --json
+    runner: /work
+  - name: computenet
+    code_repo: https://github.com/mboogerd/computenet.git
+    task_source:
+      type: beads
+      repo: https://github.com/mboogerd/computenet.git
+      sync: bd dolt pull
+      ready: bd ready --json
+    runner: /work
