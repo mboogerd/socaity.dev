@@ -15,6 +15,12 @@ PY="${PYTHON:-python3}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+if ! "$PY" -c 'import yaml, jinja2' >/dev/null 2>&1; then
+  echo "FAIL: tools/check.sh requires PyYAML and Jinja2." >&2
+  echo "Install them with: $PY -m pip install -r $ROOT/tools/requirements.txt" >&2
+  exit 1
+fi
+
 echo "== 1/5 validate the example graph"
 "$PY" "$ROOT/tools/validate/validate.py" --root "$ROOT"
 
