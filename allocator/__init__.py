@@ -7,6 +7,7 @@ from .allocation import AllocationError, load_allocation, validate_allocation
 from .draw import DrawDecision, DrawError, draw_project
 from .spend_log import SpendLog, ValidationError, validate_record
 from .session import Session, run_session
+from .report import ReportError, load_allocation_history, replay, render_report
 
 __all__ = [
     "AllocationError",
@@ -18,6 +19,10 @@ __all__ = [
     "load_allocation",
     "draw_project",
     "run_session",
+    "ReportError",
+    "load_allocation_history",
+    "replay",
+    "render_report",
     "validate_allocation",
     "validate_record",
 ]
