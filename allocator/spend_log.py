@@ -18,6 +18,7 @@ from typing import Any, Iterator, Mapping
 
 SCHEMA_VERSION = 1
 RECORD_FIELDS = frozenset(("v", "project", "machine", "work_item", "started", "ended"))
+OPTIONAL_FIELDS = frozenset(("starved", "reason"))
 
 
 class ValidationError(ValueError):
@@ -52,8 +53,9 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
 
     if not isinstance(record, Mapping):
         raise ValidationError("record must be an object")
-    if set(record) != RECORD_FIELDS:
-        raise ValidationError("record fields must be exactly: " + ", ".join(sorted(RECORD_FIELDS)))
+    fields = set(record)
+    if not RECORD_FIELDS <= fields or fields - RECORD_FIELDS - OPTIONAL_FIELDS:
+        raise ValidationError("record fields must be the session fields plus optional observation fields")
     if record["v"] != SCHEMA_VERSION or isinstance(record["v"], bool):
         raise ValidationError("v must be the integer schema version 1")
     for field in ("project", "machine", "work_item"):
@@ -63,6 +65,14 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
     ended = _parse_timestamp(record["ended"], "ended")
     if ended < started:
         raise ValidationError("ended must not precede started")
+    if "starved" in record:
+        starved = record["starved"]
+        if (not isinstance(starved, list) or
+                any(not isinstance(project, str) or not project.strip() for project in starved)):
+            raise ValidationError("starved must be a list of non-empty project names")
+    if "reason" in record:
+        if record["reason"] not in {"drawn", "cap-hit", "no-ready-work"}:
+            raise ValidationError("reason must be a known draw outcome")
     return dict(record)
 
 
