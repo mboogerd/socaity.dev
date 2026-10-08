@@ -88,6 +88,113 @@ REPO_TREE = "https://github.com/socaity/socaity.dev/tree/main/"
 #: links must stay repository links, so the two intents keep two spellings.
 SITE = "https://socaity.dev/"
 
+# --- the card (council/socaity-0hb.md §G) ---------------------------------
+#
+# One 1200x630 object per surface, one template, one register sentence. The
+# sentence lives here rather than in a generator because §G puts the same card
+# on home, /ledger, /claim, /faq, /roadmap, every node and every post: two
+# copies of a disclosure are two disclosures.
+REGISTER_LINE = ("A public record of contributions. No token. Nothing to "
+                 "trade. This is a database.")
+
+# The card box and the type scale card.html declares, restated once so the fit
+# check below measures the thing that actually renders. Keep the two in step:
+# a size changed in the stylesheet and not here is a card that overflows
+# silently, which is the failure §G names.
+CARD_BOX = (1200, 630)
+CARD_PAD = (72, 64)                       # x, y
+#            key           px  line-height  margin-top  em-per-char
+CARD_BLOCKS = (("strip",   20, 1.6,  0, 0.55),
+               ("title",   54, 1.2, 24, 0.55),
+               ("register", 44, 1.3, 28, 0.55),
+               ("detail",  32, 1.45, 24, 0.55),
+               ("foot",    20, 1.6, 21, 0.55))   # 20px padding + 1px rule
+
+
+def card_overflow(card):
+    """Estimated laid-out height minus the content box, in pixels.
+
+    Deliberately an estimate and deliberately pessimistic. There is no
+    renderer in this toolchain, so the alternative to arithmetic is a headless
+    browser in CI, and §J refuses screenshot-class checks as required gates.
+    `em-per-char` is set above Georgia's own average because §A tunes the
+    design against the LAST resolvable entry in the font stack, not the first:
+    a card that fits only in Georgia is a card that overflows on a machine
+    that has none of the stack.
+
+    The number this returns is what fails the build. It cannot prove a card
+    fits; it can prove one does not, which is the direction that matters when
+    what falls off the bottom is the disclosure.
+    """
+    width = CARD_BOX[0] - 2 * CARD_PAD[0]
+    height = CARD_BOX[1] - 2 * CARD_PAD[1]
+    # The register is measured whether or not the caller has passed it: it is
+    # the object §G says must never be the one that falls off, so a check that
+    # skipped it when it was still a default would be measuring the card that
+    # cannot overflow instead of the card that ships.
+    card = dict(card)
+    card.setdefault("register", REGISTER_LINE)
+    # The strip is one line on every card by construction (wordmark, kind,
+    # optional "written by a program", optional date), and the template builds
+    # it rather than the caller, so it is measured as its own line here.
+    card.setdefault("strip", "socaity.dev")
+    used = 0
+    for key, size, lh, margin, per_char in CARD_BLOCKS:
+        text = str(card.get(key) or "")
+        if not text:
+            continue
+        lines = max(1, -(-int(len(text) * size * per_char) // width))
+        used += margin + int(round(lines * size * lh))
+    return used - height
+
+
+def first_sentence(text):
+    """The first sentence of a node statement, for its card and its og tags.
+
+    A node body is prose written for the node page, not a summary written for
+    a crop. Taking its first sentence is the honest reduction: it is the
+    author’s own words, and it is short enough that the card fit check
+    below does not have to truncate anything mid-clause.
+    """
+    flat = " ".join((text or "").split())
+    cut = flat.find(". ")
+    return flat[:cut + 1] if cut != -1 else flat
+
+
+def trim_detail(card):
+    """Shorten a card’s detail line until the card fits, at a word boundary.
+
+    Only for details taken from prose this renderer does not own — a node
+    statement is written for the node page, and failing the build because an
+    author wrote a long first sentence would make the card a constraint on the
+    graph. Authored card copy (home, /faq, /roadmap, /claim, /ledger, posts)
+    gets the hard failure instead, because there the fix is to write a shorter
+    sentence and the build is the only thing that will ever say so.
+
+    The register is untouched and stays above the detail, so what an ellipsis
+    takes is the tail §G says a fixed box takes anyway.
+    """
+    words = str(card.get("detail") or "").split()
+    while words and card_overflow(card) > 0:
+        words.pop()
+        card = dict(card, detail=" ".join(words) + "…")
+    return card
+
+
+def card_page(env, **card):
+    """Render one card, or fail the build if its disclosure would not fit."""
+    card.setdefault("register", REGISTER_LINE)
+    card.setdefault("og_type", "website")
+    over = card_overflow(card)
+    if over > 0:
+        raise SystemExit(
+            "card for %s overflows its 1200x630 box by ~%dpx: shorten the "
+            "headline or the detail sentence. §G: overflow fails the build "
+            "rather than shipping a card whose disclosure fell off the bottom."
+            % (card.get("url", card.get("title", "?")), over))
+    return env.get_template("card.html").render(card=card)
+
+
 # Markdown documents published as site pages. The .md file in doc/ is the only
 # copy of the copy: this renders it, it never restates it. Changing the words
 # is a change to the Markdown, in its own PR, under the wordlist gate.
@@ -95,6 +202,60 @@ DOC_PAGES = [
     {"source": "doc/manifesto.md", "path": "index.html", "nav": "Home"},
     {"source": "doc/faq.md", "path": "faq/index.html", "nav": "FAQ"},
 ]
+
+# The card and og copy for the surfaces core renders (§G). Keyed by the page's
+# own path, which is the same key `emit` uses, so a surface cannot acquire a
+# card without acquiring a page.
+#
+# `title` is the card HEADLINE, and it is not the page's <h1>: a headline that
+# survives a 1200x630 crop with no site around it is a different sentence from
+# one read under a masthead. /faq is the case that makes the rule visible — its
+# headline is the consent sentence rather than "FAQ", because the asset a
+# maintainer meets first should be the commitment, not the furniture
+# (socaity-0hb round 2, objection 9).
+#
+# `card: False` means og tags without a 1200x630 page. /all is a table of every
+# node; there is no sentence it could put at 44px that a node's own card would
+# not say better, and §G does not list it.
+CARD_SURFACES = {
+    "index.html": {
+        "kind_label": "manifesto",
+        "title": "The system never assigns work. It prices it.",
+        "detail": "A needs graph anyone can contest, a published rule that "
+                  "prices the work, and a record you can replay yourself.",
+    },
+    "faq/index.html": {
+        "kind_label": "questions",
+        "title": "Consent precedes contribution.",
+        "detail": "A maintainer’s “no” is not a low weight; it is a "
+                  "wall. Four predictable objections, answered before they "
+                  "are raised.",
+    },
+    "roadmap/index.html": {
+        "kind_label": "roadmap",
+        "title": "Our own roadmap, in the platform’s own conventions.",
+        "detail": "Every open problem in the needs graph, with what it "
+                  "requires and what it competes with.",
+    },
+    "all/index.html": {
+        "card": False,
+        "kind_label": "index",
+        "title": "All nodes",
+        "detail": "Every node in the merged tree, including withdrawn and "
+                  "merged ones. Sorted by permanent ID.",
+    },
+}
+
+
+def surface_card(path, **extra):
+    """The card/og view for one page path. One dict feeds both."""
+    spec = dict(CARD_SURFACES.get(path) or {})
+    spec.update(extra)
+    href = path[:-len("index.html")]
+    spec.setdefault("url", SITE + href)
+    spec.setdefault("foot", "socaity.dev/" + href)
+    return spec
+
 
 # Every M0 surface, in nav order. `published: False` means the surface is a
 # stub today: it gets a page saying so, because a nav entry that 404s is a
@@ -541,23 +702,45 @@ def main(argv=None):
                              % (path, pages[path][1], who))
         pages[path] = (html, who)
 
+    # Every surface §G names gets a card, and every surface that gets a card
+    # gets the og tags that point at it, from the same dict. The card page and
+    # the <head> that advertises it cannot drift apart because there is only
+    # one of them.
     for view in views:
+        card = surface_card("n/%s/index.html" % view["id"],
+                            kind_label="node",
+                            title=view["title"],
+                            detail=first_sentence(view["body"]) or view["title"],
+                            machine=view["prov"]["kind"] == "agent",
+                            og_type="article")
+        card = trim_detail(card)
         emit("n/%s/index.html" % view["id"],
-             env.get_template("node.html").render(node=view, depth=2), "core")
+             env.get_template("node.html").render(node=view, og=card, depth=2), "core")
+        emit("n/%s/card/index.html" % view["id"], card_page(env, **card), "core")
         emit("s/%s/index.html" % view["slug"],
              env.get_template("redirect.html").render(target="../../n/%s/" % view["id"]), "core")
+    roadmap_card = surface_card("roadmap/index.html")
     emit("roadmap/index.html", env.get_template("roadmap.html").render(
-        roots=roots, strip=what_matters_now(views, idx, tickets_by_node), depth=1), "core")
+        roots=roots, strip=what_matters_now(views, idx, tickets_by_node),
+        og=roadmap_card, depth=1), "core")
+    emit("roadmap/card/index.html", card_page(env, **roadmap_card), "core")
     emit("all/index.html",
-         env.get_template("all.html").render(nodes=views, tickets=tickets_by_node, depth=1), "core")
+         env.get_template("all.html").render(nodes=views, tickets=tickets_by_node,
+                                             og=surface_card("all/index.html"), depth=1), "core")
     for spec in DOC_PAGES:
         page = doc_page(root, spec)
-        emit(spec["path"], env.get_template("doc.html").render(page=page, depth=page["depth"]),
+        card = surface_card(spec["path"])
+        emit(spec["path"],
+             env.get_template("doc.html").render(page=page, og=card, depth=page["depth"]),
              spec["source"])
+        if card.get("card", True):
+            emit(spec["path"].replace("index.html", "card/index.html"),
+                 card_page(env, **card), spec["source"])
 
     ctx = {
         "root": root, "out": out, "env": env, "nav": nav, "nodes": views,
         "tickets_by_node": tickets_by_node, "clock": clock,
+        "card_page": card_page, "surface_card": surface_card,
         "render_markdown": lambda text, source, depth=None: md.render_markdown(
             text, doc_link_rewriter(source, source.count("/") if depth is None else depth)),
     }
