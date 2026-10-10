@@ -1,6 +1,15 @@
+# The scheduled worker needs Git metadata writes and remote sync/publishing.
+default_permissions = "socaity-work"
+
 [features]
 hooks = true
 
-# Unattended work syncs Beads and publishes PRs; keep filesystem isolation.
-[sandbox_workspace_write]
-network_access = true
+[permissions.socaity-work]
+description = "Socaity worker: workspace and Git writes, remote sync and PRs."
+extends = ":workspace"
+
+[permissions.socaity-work.filesystem.":workspace_roots"]
+".git" = "write"
+
+[permissions.socaity-work.network]
+enabled = true

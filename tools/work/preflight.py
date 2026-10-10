@@ -61,8 +61,8 @@ def main() -> int:
         print(f"PIPELINE PREFLIGHT FAILED: {exc}", file=sys.stderr)
         print("If DNS/network failed inside the sandbox, retry this exact preflight once "
               "through the runner's approved network escalation. A denial, auth error, "
-              "or second failure ends the slot before claiming. Project config requires "
-              "sandbox_workspace_write.network_access = true for unattended runs.",
+              "or second failure ends the slot before claiming. Unattended runs need "
+              "the project's socaity-work permission profile (network and Git writes).",
               file=sys.stderr)
         return 1
     return 0
