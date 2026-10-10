@@ -38,6 +38,9 @@ jobs:
       - name: Test the CI gate implementations
         run: python3 tools/gates/test_gates.py
 
+      - name: Test unattended pipeline preflight
+        run: python3 -m unittest discover -s tools/work -v
+
       - name: Test the ledger and rule modules
         run: |
           python3 -m unittest discover ledger -v

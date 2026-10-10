@@ -16,8 +16,8 @@ publish. Repeat within budget; stop cleanly when it runs out.
 
 Each earned its place in a real incident — [references/why.md](references/why.md).
 
-- **The main checkout is shared infrastructure**: clean and synchronized with
-  origin at all times, never a work area. All work happens in git worktrees on
+- **The main checkout is shared infrastructure**: preserve unrelated changes;
+  a dirty checkout does not block isolated work. All work happens in worktrees on
   branches off `origin/main`, one per item, removed when the item lands or its
   claim is released. Sessions overrun and become concurrent; worktrees are
   what keeps them from interfering.
@@ -35,8 +35,9 @@ Each earned its place in a real incident — [references/why.md](references/why.
 
 ## The loop
 
-1. **Sync.** `bd dolt pull` from the repo root; on failure, stop and report the
-   error verbatim. Budget: the slot's stated time, else 45 minutes.
+1. **Preflight.** Run `python3 tools/work/preflight.py --root <shared-repo>`;
+   recover network failures per its diagnostic, then stop if it still fails.
+   Budget: the slot's stated time, else 45 minutes.
 2. **Select** from `bd ready`: the highest-priority leaf completable this slot.
    Skip claims fresher than 24h, council/decision items (those go through
    /council), and anything naming an open human decision. A claim staler than

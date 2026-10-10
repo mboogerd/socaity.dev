@@ -1,2 +1,6 @@
 [features]
 hooks = true
+
+# Unattended work syncs Beads and publishes PRs; keep filesystem isolation.
+[sandbox_workspace_write]
+network_access = true
