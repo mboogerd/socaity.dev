@@ -1526,14 +1526,6 @@ RESERVED_TOKENS = {
     # eighth rung exists so the ladder stays geometric; the stylesheet says
     # "Unused at M0" at the point of declaration.
     "--t-h0": "0hb §A — the eighth rung of an eight-step scale, unused at M0",
-    # The one entry here that is a DEBT rather than a decision. --accent-wash
-    # was measured for "one emphasis surface per page, maximum" and no page
-    # has an emphasis surface, which is the same zero-use state the critique
-    # round named as evidence the design was never applied. It is waived only
-    # because the redesign owns every stylesheet in tools/render/templates/
-    # right now. socaity-3vh either gives it its surface or deletes it, and
-    # this entry goes with it.
-    "--accent-wash": "socaity-3vh — give it its emphasis surface, or delete it",
 }
 
 
