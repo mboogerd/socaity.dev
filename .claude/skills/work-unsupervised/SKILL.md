@@ -4,8 +4,8 @@ description: Runs the `work` skill in autonomous mode — no human is available.
 disable-model-invocation: true
 ---
 
-You are running **unsupervised**. Read this file, then invoke the `work` skill with the
-Skill tool and follow it.
+You are running **unsupervised**. Read the `work` skill and follow it (use the Skill
+tool when available; otherwise read its SKILL.md directly).
 
 This file adds only the conditions the run happens under. Everything about *what* the
 work is and *how* to do it — selection, claiming, worktrees, the gate, PRs, closing —
@@ -27,9 +27,9 @@ output while it runs, and nobody will answer a question you ask.
   Unsupervised, it is also the only way the skill ever improves — nobody was watching
   to notice. Use it, including for your own misreadings.
 
-The one thing that still ends the run early is `work` step 1: if `bd dolt pull` fails,
-stop and report the error verbatim. Working an unsynced backlog is how two machines end
-up on the same bead — a dead run is far cheaper than that.
+`work` step 1 must pass before claiming. A sandbox network failure gets one retry
+through the approved network route when available; a denial or failed retry ends the
+slot. Never claim or push an unsynced backlog.
 
 ## Where the bar sits when nobody is listening
 
