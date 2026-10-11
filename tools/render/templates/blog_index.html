@@ -12,6 +12,7 @@ after publication shows the edit rather than hiding it.</p>
 
 <h2>The register</h2>
 {% if posts %}
+<div class="table-scroll">
 <table>
 <caption class="muted">Newest first. One row per published post.</caption>
 <thead>
@@ -30,6 +31,7 @@ after publication shows the edit rather than hiding it.</p>
 {% endfor %}
 </tbody>
 </table>
+</div>
 {% else %}
 <p>No posts are published yet. This register is empty, and it says so rather
 than showing an example row.</p>

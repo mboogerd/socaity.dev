@@ -216,6 +216,8 @@
   .doc hr { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0; }
   .doc li { margin-bottom: 0.5rem; }
   .doc table { margin: 1.6rem 0; }
+  .table-scroll { max-width: 100%; overflow-x: auto; }
+  .table-scroll > table { min-width: 40rem; }
   .muted { color: var(--muted); }
   .provenance { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
   .crumbs { list-style: none; padding: 0; margin: 0 0 1rem; font-family: system-ui, sans-serif;

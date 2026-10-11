@@ -20,6 +20,7 @@
 {% set root = '../' * depth %}
 <h1>All nodes</h1>
 <p class="muted">Every node in the merged tree, including withdrawn and merged ones. Sorted by permanent ID.</p>
+<div class="table-scroll">
 <table>
 <thead><tr><th scope="col">ID</th><th scope="col">Title</th><th scope="col">Type</th><th scope="col">Status</th><th scope="col">Ticket</th></tr></thead>
 <tbody>
@@ -34,4 +35,5 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 {% endblock %}
