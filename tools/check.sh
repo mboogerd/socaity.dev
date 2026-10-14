@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The one command: validate the graph, render the site, prove the build is
-# byte-identical across two runs, and prove the validator actually fails.
+# byte-identical across two runs, run the publication gates, and prove the
+# validator actually fails.
 #
 #   tools/check.sh            (uses python3; PYTHON=... to override)
 #
@@ -21,14 +22,14 @@ if ! "$PY" -c 'import yaml, jinja2' >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "== 1/5 validate the example graph"
+echo "== 1/6 validate the example graph"
 "$PY" "$ROOT/tools/validate/validate.py" --root "$ROOT"
 
-echo "== 2/5 render twice"
+echo "== 2/6 render twice"
 "$PY" "$ROOT/tools/render/render.py" --root "$ROOT" --out "$ROOT/site"
 "$PY" "$ROOT/tools/render/render.py" --root "$ROOT" --out "$TMP/site-again"
 
-echo "== 3/5 assert the two renders are byte-identical"
+echo "== 3/6 assert the two renders are byte-identical"
 diff -r "$ROOT/site" "$TMP/site-again"
 A="$(cd "$ROOT/site" && find . -type f | sort | xargs shasum -a 256 | shasum -a 256)"
 B="$(cd "$TMP/site-again" && find . -type f | sort | xargs shasum -a 256 | shasum -a 256)"
@@ -38,10 +39,13 @@ if [ "$A" != "$B" ]; then
 fi
 echo "identical, tree digest: $A"
 
-echo "== 4/5 run the HTML gate over the render"
+echo "== 4/6 run the HTML gate over the render"
 "$PY" "$ROOT/tools/gates/html_gate.py" --root "$ROOT" --site site
 
-echo "== 5/5 assert the validator rejects a broken graph"
+echo "== 5/6 run the vocabulary gate over the render"
+"$PY" "$ROOT/tools/gates/vocab_gate.py" --root "$ROOT" --site site --require-site --audit
+
+echo "== 6/6 assert the validator rejects a broken graph"
 mkdir -p "$TMP/broken/graph"
 cp -R "$ROOT/graph/nodes" "$TMP/broken/graph/nodes"
 cp -R "$ROOT/graph/tickets" "$TMP/broken/graph/tickets"
