@@ -917,6 +917,23 @@ class HtmlGateAssertions(unittest.TestCase):
         self.assertEqual(set(rules), {"STALE-TOKEN-WAIVER"})
         self.assertEqual(len(rules), len(html_gate.RESERVED_TOKENS))
 
+    # -- I ---------------------------------------------------------------
+    def card_palette(self, card_css, root_css):
+        body = "<html><head><style>%s</style></head><body>x</body></html>" % card_css
+        pages, sheets, root = self.build(body, root_css)
+        pages["card/index.html"] = pages.pop("index.html")
+        return html_gate.check_card_palette(pages, sheets, root)
+
+    def test_card_palette_must_be_declared_on_root(self):
+        failures = self.card_palette("body { color: #abc }",
+                                     ":root { --ink: #000 }")
+        self.assertEqual([failure[2] for failure in failures],
+                         ["CARD-PALETTE-DRIFT"])
+
+    def test_card_palette_accepts_root_literal(self):
+        self.assertEqual(self.card_palette("body { color: #abc }",
+                                           ":root { --ink: #abc }"), [])
+
     # -- R ---------------------------------------------------------------
     SCALE = ("html { font-size: 17px } "
              ":root { --t-body: 1rem; --t-h2: 1.73rem } "
