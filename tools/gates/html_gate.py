@@ -256,6 +256,11 @@ CSS_FONT_SHORTHAND = re.compile(r"(?<![-\w])font\s*:\s*([^;}]*)", re.IGNORECASE)
 # An @font-face block's `font-family` names the face being defined; it is not
 # a stack and has no generic end by construction.
 CSS_FONT_FACE = re.compile(r"@font-face\s*\{[^}]*\}", re.IGNORECASE | re.DOTALL)
+# Fixed-pixel cards cannot consume the site's custom properties, so their
+# inline palette is deliberately literal. Keep it tied to the canonical root
+# palette instead of letting the two copies drift silently.
+CSS_COLOUR_LITERAL = re.compile(
+    r"#[0-9a-f]{3}(?:[0-9a-f](?:[0-9a-f]{2})?)?\b", re.IGNORECASE)
 CSS_IMPORTANT = re.compile(r"!\s*important\s*$", re.IGNORECASE)
 # `font: menu` and friends take the whole shorthand from the platform.
 SYSTEM_FONT_KEYWORDS = {"caption", "icon", "menu", "message-box",
@@ -1908,6 +1913,42 @@ def check_identity(pages, _sheets, _site_root):
     return failures
 
 
+def check_card_palette(pages, sheets, _site_root):
+    """I — every rendered card colour is declared in the site's `:root`.
+
+    Cards are captured without loading ``style.css``, so their inline hex
+    literals are intentional. They must nevertheless be members of the
+    canonical root palette. Check the rendered card pages because that is the
+    public artefact, and read only root declarations from the rendered
+    stylesheet so comments and component-local colours cannot satisfy it.
+    """
+    root_colours = set()
+    for css_text in sheets.values():
+        clean = blank_comments(css_text)
+        for selector, body, _start in css_blocks(clean):
+            if ROOT_SELECTOR.search(selector):
+                root_colours.update(CSS_COLOUR_LITERAL.findall(body.lower()))
+
+    failures = []
+    card_pages = ((rel, doc) for rel, doc in pages.items()
+                  if rel.lower() == "card/index.html"
+                  or rel.lower().endswith("/card/index.html"))
+    for rel, doc in sorted(card_pages):
+        for line, chunk in doc.css:
+            clean = blank_comments(chunk)
+            for literal in CSS_COLOUR_LITERAL.finditer(clean):
+                colour = literal.group(0).lower()
+                if colour in root_colours:
+                    continue
+                line_no = line + clean[:literal.start()].count("\n")
+                failures.append((rel, line_no, "CARD-PALETTE-DRIFT",
+                                 "%s is used by the fixed-pixel card but is "
+                                 "absent from style.css :root — card colours "
+                                 "and the canonical palette must stay in sync "
+                                 "(0hb §G)" % colour))
+    return failures
+
+
 # The registry the deferred checks slot into: one entry per §J check, in the
 # order the resolution lists them.  Adding (b)–(f), the percent inventory and
 # the palette drift check is a new line here plus its function — no rework.
@@ -1931,6 +1972,7 @@ CHECKS = (
     ("R", "no heading below 1.4x body size", check_heading_ratio),
     ("W", "no <pre> exceeds its container", check_clipped_pre),
     ("M", "every surface carries the identity object", check_identity),
+    ("I", "card colours are in the canonical root palette", check_card_palette),
 )
 
 
