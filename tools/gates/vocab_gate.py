@@ -419,6 +419,30 @@ def collect_surfaces(root, site_dir, with_templates=True):
     return found
 
 
+def authored_source_for_render(rel, site_dir="site"):
+    """Return the authored source that produced a rendered page, if known.
+
+    The renderer has a small set of 1:1 Markdown pages plus blog post pages.
+    Other pages are assembled from graph data or generator code, so a waiver
+    in an unrelated authored source must never grant them a fallback.
+    """
+    prefix = site_dir.rstrip("/") + "/"
+    if not rel.startswith(prefix):
+        return None
+    page = rel[len(prefix):]
+    direct = {
+        "index.html": "doc/manifesto.md",
+        "faq/index.html": "doc/faq.md",
+    }
+    if page in direct:
+        return direct[page]
+    if page.startswith("blog/") and page.endswith("/index.html"):
+        slug = page[len("blog/"):-len("/index.html")]
+        if slug and "/" not in slug and slug != "index":
+            return "blog/posts/%s.md" % slug
+    return None
+
+
 def exempt_paths(root):
     """Every tracked-looking file the §0 boundary keeps out of the gate."""
     out = []
@@ -543,7 +567,8 @@ def main(argv=None):
                 failures.append((rel, lineno, "BANNED", pattern, matched, None))
             elif is_waived:
                 allowed.append((rel, lineno, pattern, matched, is_waived))
-                granted.setdefault((pattern, matched.lower()), (rel, lineno, is_waived))
+                granted.setdefault((rel, pattern, matched.lower()),
+                                   (rel, lineno, is_waived))
             else:
                 failures.append((rel, lineno, "REVIEW-REQUIRED", pattern, matched, None))
         missing.extend(required_string_failures(rel, text))
@@ -551,14 +576,16 @@ def main(argv=None):
     # Pass 2: the render, which is what the public actually reads.
     for rel in site_pages:
         hits, text = scan_file(root, rel, patterns)
+        source = authored_source_for_render(rel, args.site)
         for tier, lineno, pattern, matched, is_waived in hits:
             if tier == FAIL:
                 failures.append((rel, lineno, "BANNED", pattern, matched, None))
-            elif is_waived or (pattern, matched.lower()) in granted:
+            elif is_waived or (source, pattern, matched.lower()) in granted:
                 if is_waived:
                     allowed.append((rel, lineno, pattern, matched, is_waived))
                 else:
-                    src_rel, src_line, reason = granted[(pattern, matched.lower())]
+                    src_rel, src_line, reason = granted[(source, pattern,
+                                                         matched.lower())]
                     allowed.append((rel, lineno, pattern, matched,
                                     "via %s:%d — %s" % (src_rel, src_line, reason)))
             else:

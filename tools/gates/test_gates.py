@@ -293,6 +293,38 @@ class VocabWaiver(unittest.TestCase):
             self.waived("site/graph.json",
                         '{"a":"the token","b":"vocab-ok: nice try indeed"}\n'), set())
 
+    def test_render_fallback_is_scoped_to_its_authored_source(self):
+        root = tempfile.mkdtemp()
+        os.makedirs(os.path.join(root, "doc"))
+        os.makedirs(os.path.join(root, "site", "faq"))
+        with open(os.path.join(root, "doc", "manifesto.md"), "w",
+                  encoding="utf-8") as handle:
+            handle.write("the token <!-- vocab-ok: quoted objection -->\n")
+        with open(os.path.join(root, "doc", "faq.md"), "w",
+                  encoding="utf-8") as handle:
+            handle.write("the token\n")
+        with open(os.path.join(root, "site", "index.html"), "w",
+                  encoding="utf-8") as handle:
+            handle.write("<p>the token</p>\n")
+        with open(os.path.join(root, "site", "faq", "index.html"), "w",
+                  encoding="utf-8") as handle:
+            handle.write("<p>the token</p>\n")
+        wordlist = os.path.join(root, "banned-words.txt")
+        with open(wordlist, "w", encoding="utf-8") as handle:
+            handle.write("~the token\n")
+
+        from contextlib import redirect_stdout
+        from io import StringIO
+        output = StringIO()
+        with redirect_stdout(output):
+            result = vocab_gate.main([
+                "--root", root, "--site", "site", "--wordlist", wordlist,
+            ])
+
+        self.assertEqual(result, 1)
+        self.assertIn("FAIL site/faq/index.html", output.getvalue())
+        self.assertNotIn("FAIL site/index.html", output.getvalue())
+
 
 # ---------------------------------------------------------------------------
 # html gate
