@@ -67,7 +67,7 @@ body { margin: 0; background: #f1efe9; color: #171512;
 <body>
 <div class="card1200">
 <div>
-<p class="strip"><span class="mark">socaity.dev</span> · {{ card.kind_label }}{% if card.machine %} · written by a program{% endif %}{% if card.date %} · {{ card.date }}{% endif %}</p>
+<p class="strip"><span class="mark">socaity.dev</span> · {{ card.kind_label }}{% if card.machine %} · written by a program{% endif %}{% if card.date %} · <time datetime="{{ card.date }}">{{ card.date }}</time>{% endif %}</p>
 <h1>{{ card.title }}</h1>
 <p class="card__register">{{ card.register }}</p>
 <p class="card__detail">{{ card.detail }}</p>

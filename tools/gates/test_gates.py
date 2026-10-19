@@ -455,6 +455,31 @@ class HtmlGateSubresources(unittest.TestCase):
                 self.assertFlagged(markup)
 
 
+class HtmlGateFreshness(unittest.TestCase):
+    """Check D: rendered dates carry machine-readable time metadata."""
+
+    def dates(self, body):
+        root = tempfile.mkdtemp()
+        os.makedirs(os.path.join(root, "site"))
+        with open(os.path.join(root, "site", "index.html"), "w",
+                  encoding="utf-8") as handle:
+            handle.write(body)
+        pages, sheets = html_gate.load(os.path.join(root, "site"))
+        return html_gate.check_freshness_time(pages, sheets, root)
+
+    def test_bare_date_is_rejected(self):
+        self.assertTrue(self.dates("<p>fresh as of 2026-10-19</p>"))
+
+    def test_time_date_is_accepted(self):
+        self.assertEqual(
+            self.dates('<time datetime="2026-10-19">2026-10-19</time>'), [])
+
+    def test_nested_time_date_is_accepted(self):
+        self.assertEqual(
+            self.dates('<time datetime="2026-10-19"><span>2026-10-19</span></time>'),
+            [])
+
+
 class HtmlGateOrphans(unittest.TestCase):
     """Check E: the check that makes deleting a nav item decidable (§I)."""
 

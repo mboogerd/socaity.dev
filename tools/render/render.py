@@ -366,7 +366,7 @@ def provenance_line(prov):
         kind = "written by a program"
     else:
         kind = "written by a person"
-    return "Asserted by %s · %s · %s" % (who, kind, day(prov.get("asserted_at")))
+    return "Asserted by %s · %s" % (who, kind)
 
 
 def provenance_fields(prov):

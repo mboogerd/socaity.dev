@@ -57,6 +57,12 @@ Checks that run:
       class and is written self-closing can never have text and is reported
       at its start tag.
 
+  D   **Every freshness date is a `<time>`.**  ISO dates in rendered copy are
+      machine-readable only when the semantic element carries the same value
+      in `datetime`; this keeps freshness, provenance and publication dates
+      usable to syndication and assistive technology without adding a second
+      clock or changing the visible copy.
+
   B   **No `figure` without a `figure__derivation`** (§F, §J·b).  The
       component is three lines — fraction, percentage, derivation — and the
       third is the only one a reader can check.  A figure with it removed is
@@ -294,6 +300,11 @@ class _Doc(html.parser.HTMLParser):
         self.chips = []          # (line, text) — one per element carrying .chip
         self._style = None
         self._quiet = 0          # inside <script>: text is not page text
+        self._time_depth = 0     # ISO dates inside <time> are machine-readable
+        self._doc_depth = 0      # authored document prose may cite historical dates
+        self._doc_tags = []
+        self._code_depth = 0     # code/path examples are not freshness stamps
+        self.date_stamps = []    # (line, value) dates rendered outside <time>
         self._open = []          # (tag, chip_frame or None) — open elements
         self._chips = []         # the frames of the chips currently open
         # The element tree checks B and G need (W2c). It grows out of the
@@ -330,6 +341,13 @@ class _Doc(html.parser.HTMLParser):
             self._style = (line, [])
         if tag == "script":
             self._quiet += 1
+        if tag == "time":
+            self._time_depth += 1
+        if tag in ("code", "pre"):
+            self._code_depth += 1
+        if "doc" in attr.get("class", "").split():
+            self._doc_depth += 1
+            self._doc_tags.append(tag)
         if tag in STRUCTURE_TAGS:
             self.structure += 1
         if tag == "meta" and attr.get("http-equiv", "").strip().lower() == "refresh":
@@ -422,12 +440,22 @@ class _Doc(html.parser.HTMLParser):
             line, chunks = self._style
             self.css.append((line, "".join(chunks)))
             self._style = None
+        if tag == "time":
+            self._time_depth = max(0, self._time_depth - 1)
+        if tag in ("code", "pre"):
+            self._code_depth = max(0, self._code_depth - 1)
+        if tag in self._doc_tags:
+            self._doc_depth = max(0, self._doc_depth - 1)
+            self._doc_tags.remove(tag)
 
     def handle_data(self, data):
         if self._style is not None:
             self._style[1].append(data)
         elif not self._quiet:
             self.text_len += len(data.strip())
+            if self._time_depth == 0 and self._doc_depth == 0 and self._code_depth == 0:
+                for match in re.finditer(r"(?<![0-9/])\d{4}-\d{2}-\d{2}(?![0-9/])", data):
+                    self.date_stamps.append((self.getpos()[0], match.group(0)))
             for chip in self._chips:
                 chip[1].append(data)
             (self._nodes[-1] if self._nodes else self.root)["text"].append(data)
@@ -1435,6 +1463,18 @@ VAR_REF = re.compile(r"var\(\s*(--[A-Za-z0-9_-]+)", re.IGNORECASE)
 ROOT_SELECTOR = re.compile(r"(?<![-\w]):root(?![-\w])", re.IGNORECASE)
 
 
+def check_freshness_time(pages, _sheets, _site_root):
+    """Require every rendered ISO date to be wrapped in semantic time markup."""
+    failures = []
+    for rel, doc in sorted(pages.items()):
+        for line, value in doc.date_stamps:
+            failures.append((rel, line, "FRESHNESS-TIME",
+                             "%s is visible outside <time> — freshness, "
+                             "provenance and publication dates must expose "
+                             "datetime metadata (0hb §D)" % value))
+    return failures
+
+
 def blank_comments(css_text):
     """Comments blanked out, line numbers preserved.
 
@@ -1957,6 +1997,7 @@ def check_card_palette(pages, sheets, _site_root):
 # is a property of the RENDER, which is what this gate is over.
 CHECKS = (
     ("A", "no off-origin subresource", check_off_origin),
+    ("D", "every ISO date is wrapped in <time>", check_freshness_time),
     ("B", "no figure without a derivation", check_figure_derivation),
     ("C", "no .chip without a text node", check_chip_text),
     ("E", "no orphan page", check_orphans),

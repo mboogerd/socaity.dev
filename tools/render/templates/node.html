@@ -72,12 +72,12 @@
    model and a run: absence of a mark may never be the human signal. #}
 <div class="prov{% if p.kind == 'agent' %} prov--agent{% endif %}">
 <details class="prov__disclosure">
-<summary><span class="prov__kind">{% if p.kind == 'agent' %}written by a program{% else %}written by a person{% endif %}</span> <span class="prov__who">{{ p.actor_id }} · {{ p.asserted_at }}</span></summary>
+<summary><span class="prov__kind">{% if p.kind == 'agent' %}written by a program{% else %}written by a person{% endif %}</span> <span class="prov__who">{{ p.actor_id }} · <time datetime="{{ p.asserted_at }}">{{ p.asserted_at }}</time></span></summary>
 <dl class="prov__grid">
 <dt>asserted by</dt><dd>{{ p.actor_id }}{% if p.on_behalf_of %}, on behalf of {{ p.on_behalf_of }}{% endif %}</dd>
 <dt>model</dt><dd>{{ p.model or 'none' }}</dd>
 <dt>run</dt><dd>{{ p.run_id or 'none' }}</dd>
-<dt>asserted</dt><dd>{{ p.asserted_at }}</dd>
+<dt>asserted</dt><dd><time datetime="{{ p.asserted_at }}">{{ p.asserted_at }}</time></dd>
 <dt>evidence</dt><dd>{% if p.evidence %}{% for digest in p.evidence %}<code>{{ digest[:19] }}…</code>{% if not loop.last %} {% endif %}{% endfor %}{% else %}none recorded{% endif %}</dd>
 </dl>
 <p class="prov__derivation"><a href="{{ root }}graph.json">derivation</a></p>
@@ -131,7 +131,7 @@
   <a href="{{ root }}n/{{ row.id }}/">{{ row.title }}</a>
   {% if row.chip %} <span class="chip chip-{{ row.chip[1] }}">{{ row.chip[0] }}</span> {% endif %}
   {% if row.edge_chip %} <span class="chip chip-{{ row.edge_chip[1] }}">{{ row.edge_chip[0] }}</span> {% if row.dispute_url %} <a href="{{ row.dispute_url }}">read the contest</a>{% endif %}{% endif %}
-  {% if row.estimate %} <span class="estimate">{{ row.estimate.text }}<span class="muted"> · estimated {{ row.estimate.asserted_at }}{% if row.estimate.stale %} · stale{% endif %}</span></span> {% endif %}
+  {% if row.estimate %} <span class="estimate">{{ row.estimate.text }}<span class="muted"> · estimated <time datetime="{{ row.estimate.asserted_at }}">{{ row.estimate.asserted_at }}</time>{% if row.estimate.stale %} · stale{% endif %}</span></span> {% endif %}
 </li>
 {% endfor %}
 </ul>
@@ -148,7 +148,7 @@
   {% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">read the contest</a>{% endif %}{% endif %}
   {% if card.weight_label %} <span class="chip chip-weight">{{ card.weight_label }}</span> {% endif %}
   </p>
-  {% if card.weight_label %}<p class="provenance">{{ card.weight_provenance }} · estimated {{ card.weight_stamp }}</p>{% endif %}
+  {% if card.weight_label %}<p class="provenance">{{ card.weight_provenance }} · estimated <time datetime="{{ card.weight_stamp }}">{{ card.weight_stamp }}</time></p>{% endif %}
   <p>{{ card.body }}</p>
   {% if card.rationale %}<p class="muted">Why this edge: {{ card.rationale }}</p>{% endif %}
 </article>
@@ -171,12 +171,12 @@
 {% for est in node.estimates %}
 <div class="estimate-block">
   <p><strong>{{ est.kind }}</strong>: {{ est.text }}
-  <span class="muted">estimated {{ est.asserted_at }}, {{ est.revisions }} revision(s){% if est.stale %} · stale, kept for the record{% endif %}</span></p>
-  <p class="provenance">{{ est.provenance }}</p>
+  <span class="muted">estimated <time datetime="{{ est.asserted_at }}">{{ est.asserted_at }}</time>, {{ est.revisions }} revision(s){% if est.stale %} · stale, kept for the record{% endif %}</span></p>
+  <p class="provenance">{{ est.provenance }} · asserted <time datetime="{{ est.asserted_at }}">{{ est.asserted_at }}</time></p>
   <details><summary>See all {{ est.revisions }} revision(s)</summary>
   <ul>
   {% for old in est.history %}
-  <li>{{ old.text }} <span class="muted">· {{ old.asserted_at }} · {{ old.provenance }}</span></li>
+  <li>{{ old.text }} <span class="muted">· <time datetime="{{ old.asserted_at }}">{{ old.asserted_at }}</time> · {{ old.provenance }} · asserted <time datetime="{{ old.asserted_at }}">{{ old.asserted_at }}</time></span></li>
   {% endfor %}
   </ul>
   </details>
