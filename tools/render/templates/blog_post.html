@@ -18,7 +18,7 @@
 {% block main %}
 <nav aria-label="Breadcrumb"><ul class="crumbs"><li><a href="../">Blog</a></li></ul></nav>
 <h1>{{ post.title }}</h1>
-<p class="provenance">{{ post.kind_label }} · published {{ post.date }} ·
+<p class="provenance">{{ post.kind_label }} · published <time datetime="{{ post.date }}">{{ post.date }}</time> ·
 {% if post.machine %}written by a program{% else %}written by a person{% endif %}</p>
 {% if post.machine %}
 <div class="card">
