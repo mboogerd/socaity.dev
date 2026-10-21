@@ -75,6 +75,9 @@ path = [
   "CLAUDE.md",
   "README.md",
   "CONTRIBUTING.md",
+  "CODE_OF_CONDUCT.md",
+  "GOVERNANCE.md",
+  "MODERATION.log",
   "blog/**",
 ]
 precedence = "aggregate"
