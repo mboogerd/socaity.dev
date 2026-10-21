@@ -1,0 +1,18 @@
+# Public moderation log
+
+Append one entry for every moderation action. Do not edit or delete prior
+entries. Redact private contact details, personal data, and safety-sensitive
+information; link to the public issue or decision record instead.
+
+## Entry format
+
+- **Date (UTC):** `YYYY-MM-DD`
+- **Action:** correction | warning | temporary-ban | permanent-ban | other
+- **Public reference:** issue, pull request, or decision URL
+- **Rule or concern:** short description
+- **Decision and rationale:** what changed and why
+- **Review or expiry:** date or `not applicable`
+
+## Entries
+
+_(No moderation actions recorded.)_
