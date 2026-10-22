@@ -22,14 +22,14 @@ if ! "$PY" -c 'import yaml, jinja2' >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "== 1/6 validate the example graph"
+echo "== 1/7 validate the example graph"
 "$PY" "$ROOT/tools/validate/validate.py" --root "$ROOT"
 
-echo "== 2/6 render twice"
+echo "== 2/7 render twice"
 "$PY" "$ROOT/tools/render/render.py" --root "$ROOT" --out "$ROOT/site"
 "$PY" "$ROOT/tools/render/render.py" --root "$ROOT" --out "$TMP/site-again"
 
-echo "== 3/6 assert the two renders are byte-identical"
+echo "== 3/7 assert the two renders are byte-identical"
 diff -r "$ROOT/site" "$TMP/site-again"
 A="$(cd "$ROOT/site" && find . -type f | sort | xargs shasum -a 256 | shasum -a 256)"
 B="$(cd "$TMP/site-again" && find . -type f | sort | xargs shasum -a 256 | shasum -a 256)"
@@ -39,13 +39,18 @@ if [ "$A" != "$B" ]; then
 fi
 echo "identical, tree digest: $A"
 
-echo "== 4/6 run the HTML gate over the render"
+echo "== 4/7 run the HTML gate over the render"
 "$PY" "$ROOT/tools/gates/html_gate.py" --root "$ROOT" --site site
 
-echo "== 5/6 run the vocabulary gate over the render"
+echo "== 5/7 run the vocabulary gate over the render"
 "$PY" "$ROOT/tools/gates/vocab_gate.py" --root "$ROOT" --site site --require-site --audit
 
-echo "== 6/6 assert the validator rejects a broken graph"
+echo "== 6/7 check ledger checkpoint cadence"
+if [ -f "$ROOT/ledger/example/chain.jsonl" ]; then
+  "$PY" "$ROOT/tools/gates/checkpoint_cadence.py" "$ROOT/ledger/example/chain.jsonl"
+fi
+
+echo "== 7/7 assert the validator rejects a broken graph"
 mkdir -p "$TMP/broken/graph"
 cp -R "$ROOT/graph/nodes" "$TMP/broken/graph/nodes"
 cp -R "$ROOT/graph/tickets" "$TMP/broken/graph/tickets"
