@@ -140,6 +140,17 @@ def build(path):
     def founder(etype, payload):
         return add(FOUNDER_SECRET, etype, payload)
 
+    checkpoint_seq = 0
+
+    def checkpoint():
+        nonlocal checkpoint_seq
+        checkpoint_seq += 1
+        return add(CKPT_SECRET, "checkpoint.published",
+                   {"checkpoint_seq": checkpoint_seq, "head_event_id": log.head,
+                    "event_count": log.count,
+                    "prev_checkpoint_ref": (log.ledger.last_checkpoint_id
+                                              if checkpoint_seq > 1 else "0" * 64)})
+
     # --- the genesis prologue (socaity-x8o §7, socaity-zyt) ----------------
     founder("genesis", {"rule_version_hash": rule["rule_version"],
                         "meta_rule_hash": rule["meta_rule_hash"],
@@ -158,10 +169,13 @@ def build(path):
         ids[label] = founder(etype, payload)
 
     founder("epoch.opened", {"epoch": 0, "rule_version_hash": rule["rule_version"]})
+    checkpoint()
     founder("epoch.closed", {"epoch": 0, "checkpoint_hash": CHECKPOINT_0})
+    checkpoint()
     founder("rule.attested", {"rule_version_hash": rule["rule_version"], "epoch": 1,
                               "statement_hash": file_digest(ATTESTATION)})
     founder("epoch.opened", {"epoch": 1, "rule_version_hash": rule["rule_version"]})
+    checkpoint()
 
     # --- after the prologue: confirmations, epoch 1, the epoch-0 audit -----
     for _c, _h, label in EPOCH0:
@@ -178,10 +192,8 @@ def build(path):
     founder("audit.completed", {"distribution_id": DISTRIBUTION_0,
                                 "scope_checkpoint_hash": CHECKPOINT_0,
                                 "report_hash": REPORT_0})
+    checkpoint()
     founder("commitment.precommitted", {"commitment_hash": file_digest(COMMITMENT)})
-    add(CKPT_SECRET, "checkpoint.published",
-        {"checkpoint_seq": 1, "head_event_id": log.head,
-         "event_count": log.count, "prev_checkpoint_ref": "0" * 64})
     return log
 
 
