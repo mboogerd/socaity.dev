@@ -13,6 +13,7 @@ on:
     paths: ['graph/**', 'tools/**', '.github/workflows/graph-check.yml']
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
