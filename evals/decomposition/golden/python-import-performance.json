@@ -1,0 +1,18 @@
+{
+  "name": "python-import-performance",
+  "source": {"project": "cpython", "reference": "https://github.com/python/cpython/issues/109653", "basis": "public issue, benchmark discussion, and accepted optimization"},
+  "nodes": [
+    {"id": "startup", "kind": "problem", "label": "reduce interpreter startup cost"},
+    {"id": "lazy-imports", "kind": "solution", "label": "lazily initialize imports"},
+    {"id": "frozen-modules", "kind": "solution", "label": "freeze more standard-library modules"},
+    {"id": "benchmark", "kind": "requirement", "label": "benchmark cold and warm startup"},
+    {"id": "compatibility", "kind": "requirement", "label": "preserve import semantics"}
+  ],
+  "alternatives": [["lazy-imports", "frozen-modules"]],
+  "dependencies": [
+    {"from": "lazy-imports", "to": "benchmark"},
+    {"from": "frozen-modules", "to": "benchmark"},
+    {"from": "lazy-imports", "to": "compatibility"},
+    {"from": "frozen-modules", "to": "compatibility"}
+  ]
+}

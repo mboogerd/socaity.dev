@@ -66,6 +66,14 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 socaity.dev contributors"
 SPDX-License-Identifier = "CC0-1.0"
 
+[[annotations]]
+path = [
+  "evals/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 socaity.dev contributors"
+SPDX-License-Identifier = "CC0-1.0"
+
 # --- documents ---------------------------------------------------------------
 [[annotations]]
 path = [

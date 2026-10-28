@@ -1,0 +1,12 @@
+{
+  "name": "postgresql-logical-replication",
+  "source": {"project": "postgres", "reference": "https://wiki.postgresql.org/wiki/Logical_replication", "basis": "public feature history and design documentation"},
+  "nodes": [
+    {"id": "failover", "kind": "problem", "label": "make logical replication survive failover"},
+    {"id": "slot-sync", "kind": "solution", "label": "synchronize logical slots"},
+    {"id": "shared-storage", "kind": "solution", "label": "persist slot state in shared storage"},
+    {"id": "wal-position", "kind": "requirement", "label": "durable WAL position"}
+  ],
+  "alternatives": [["slot-sync", "shared-storage"]],
+  "dependencies": [{"from": "slot-sync", "to": "wal-position"}, {"from": "shared-storage", "to": "wal-position"}]
+}

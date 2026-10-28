@@ -1,0 +1,12 @@
+{
+  "name": "curl-http3",
+  "source": {"project": "curl", "reference": "https://github.com/curl/curl/issues/9843", "basis": "public issue and accepted implementation discussion"},
+  "nodes": [
+    {"id": "http3", "kind": "problem", "label": "support HTTP/3"},
+    {"id": "quiche", "kind": "solution", "label": "integrate quiche"},
+    {"id": "ngtcp2", "kind": "solution", "label": "integrate ngtcp2"},
+    {"id": "tls", "kind": "requirement", "label": "provide compatible TLS/QUIC crypto"}
+  ],
+  "alternatives": [["quiche", "ngtcp2"]],
+  "dependencies": [{"from": "quiche", "to": "tls"}, {"from": "ngtcp2", "to": "tls"}]
+}
