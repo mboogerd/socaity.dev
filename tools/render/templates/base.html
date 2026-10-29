@@ -69,7 +69,11 @@
    footer. What is collapsed here is the vocabulary, never the contest. #}
 <details id="legend" class="legend-marks">
 <summary>what these marks mean</summary>
+{% if surface is defined and surface == 'ledger/' %}
+<p>Every chip is derived from the example ledger event log. Nothing here is hand-maintained.</p>
+{% else %}
 <p>Every chip is derived from the files in <code>graph/</code>. Nothing here is hand-maintained.</p>
+{% endif %}
 <dl class="legend">
 {% for label, meaning in legend %}
 <dt>{{ label }}</dt><dd>{{ meaning }}</dd>
