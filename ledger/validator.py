@@ -611,8 +611,8 @@ class Ledger:
             # epoch open at this chain position -- never a declared timestamp,
             # so an entry appended after epoch.closed(e) cannot land in e.
             # Before the first open: epoch 0.  In a gap: the epoch that opens
-            # next.  Recorded here so replay and the rule agree by
-            # construction rather than by two implementations of one rule.
+            # next.  Replay computes the same assignment independently; the
+            # ledger integration test compares both complete mappings.
             if self.epoch_open is not None:
                 self.entry_epoch[eid] = self.epoch_open
             elif self.last_epoch_closed is None:
