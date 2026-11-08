@@ -1,0 +1,12 @@
+schema: 1
+id: t-eeeeeeeeeeeeeeeeeeeeeeeeee
+node: n-jajustitpylddo5dahk2zk3opm
+label: good-first-dispute
+tier: 1
+status: open
+provenance:
+  asserted_by:
+    actor_id: founder
+    actor_kind: human
+  asserted_at: '2026-11-08T09:04:00Z'
+  evidence: []

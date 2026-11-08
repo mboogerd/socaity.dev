@@ -1,0 +1,13 @@
+schema: 1
+id: t-bbbbbbbbbbbbbbbbbbbbbbbbbb
+node: n-7oxaigycyqpnb7mkj35qhg6hqa
+edge: e-z337ye5dqgajg372ey2ureeio4
+label: good-first-dispute
+tier: 1
+status: open
+provenance:
+  asserted_by:
+    actor_id: founder
+    actor_kind: human
+  asserted_at: '2026-11-08T09:01:00Z'
+  evidence: []
