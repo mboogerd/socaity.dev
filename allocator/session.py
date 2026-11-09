@@ -21,12 +21,16 @@ class Session:
     """
 
     def __init__(self, log: SpendLog, project: str, machine: str, work_item: str,
-                 clock: Callable[[], _datetime.datetime] | None = None):
+                 clock: Callable[[], _datetime.datetime] | None = None,
+                 starved: list[str] | None = None,
+                 reason: str = "drawn"):
         self.log = log
         self.project = project
         self.machine = machine
         self.work_item = work_item
         self.clock = clock or (lambda: _datetime.datetime.now(_datetime.timezone.utc))
+        self.starved = list(starved or [])
+        self.reason = reason
         self.started: str | None = None
         self.record: dict[str, Any] | None = None
 
@@ -45,14 +49,19 @@ class Session:
             "work_item": self.work_item,
             "started": self.started,
             "ended": utc_timestamp(self.clock()),
+            "starved": self.starved,
+            "reason": self.reason,
         })
         return False
 
 
 def run_session(log: SpendLog, project: str, machine: str, work_item: str,
                 worker: Callable[[], Any],
-                clock: Callable[[], _datetime.datetime] | None = None) -> Any:
+                clock: Callable[[], _datetime.datetime] | None = None,
+                starved: list[str] | None = None,
+                reason: str = "drawn") -> Any:
     """Run ``worker`` and append exactly one session record afterward."""
 
-    with Session(log, project, machine, work_item, clock=clock):
+    with Session(log, project, machine, work_item, clock=clock,
+                 starved=starved, reason=reason):
         return worker()
