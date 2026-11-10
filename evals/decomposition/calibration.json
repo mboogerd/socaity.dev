@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "provenance": {
+    "fixture": "decomposition-calibration-v1",
+    "basis": "public issue references already used by the M1 golden corpus, with hand-reviewed pair labels",
+    "created": "2026-11-10",
+    "label_policy": "duplicate means the second ingestion is the same need; non_duplicate means it must remain a separate node",
+    "similarity_policy": "fixed candidate similarity scores are fixture inputs so threshold reports are reproducible; production runners must record the scorer and version"
+  },
+  "pairs": [
+    {"id": "curl-repeat-external", "left": "curl-9843-run-1", "right": "curl-9843-run-2", "label": "duplicate", "match_type": "external_ref", "source": "https://github.com/curl/curl/issues/9843"},
+    {"id": "curl-repeat-semantic", "left": "curl-http3-run-1", "right": "curl-http3-run-2", "label": "duplicate", "match_type": "semantic", "similarity": 0.99, "source": "https://github.com/curl/curl/issues/9843"},
+    {"id": "postgres-repeat-semantic", "left": "postgres-failover-run-1", "right": "postgres-failover-run-2", "label": "duplicate", "match_type": "semantic", "similarity": 0.96, "source": "https://wiki.postgresql.org/wiki/Logical_replication"},
+    {"id": "python-repeat-semantic", "left": "python-startup-run-1", "right": "python-startup-run-2", "label": "duplicate", "match_type": "semantic", "similarity": 0.92, "source": "https://github.com/python/cpython/issues/109653"},
+    {"id": "python-paraphrase-semantic", "left": "python-startup-run-3", "right": "python-startup-run-4", "label": "duplicate", "match_type": "semantic", "similarity": 0.86, "source": "https://github.com/python/cpython/issues/109653"},
+    {"id": "curl-alternative", "left": "curl-quiche", "right": "curl-ngtcp2", "label": "non_duplicate", "match_type": "semantic", "similarity": 0.91, "source": "https://github.com/curl/curl/issues/9843"},
+    {"id": "postgres-alternative", "left": "postgres-slot-sync", "right": "postgres-shared-storage", "label": "non_duplicate", "match_type": "semantic", "similarity": 0.77, "source": "https://wiki.postgresql.org/wiki/Logical_replication"},
+    {"id": "python-requirement", "left": "python-startup", "right": "python-compatibility", "label": "non_duplicate", "match_type": "semantic", "similarity": 0.61, "source": "https://github.com/python/cpython/issues/109653"}
+  ]
+}
