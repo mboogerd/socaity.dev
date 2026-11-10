@@ -1,6 +1,6 @@
 import unittest
 
-from decomposition import score_case, variance
+from decomposition import calibration_report, score_case, variance
 
 
 class DecompositionHarnessTest(unittest.TestCase):
@@ -24,6 +24,25 @@ class DecompositionHarnessTest(unittest.TestCase):
     def test_variance_is_zero_for_identical_runs(self):
         prediction = {"nodes": [{"id": "a"}], "alternatives": [], "dependencies": []}
         self.assertEqual(variance([prediction, prediction])["pairwise_disagreement"], 0.0)
+
+    def test_calibration_matches_external_refs_before_semantic_proposals(self):
+        report = calibration_report({
+            "schema": 1,
+            "provenance": {"fixture": "test", "basis": "hand-labelled"},
+            "pairs": [
+                {"id": "exact", "left": "a", "right": "b", "label": "duplicate",
+                 "match_type": "external_ref", "source": "test"},
+                {"id": "near-duplicate", "left": "c", "right": "d", "label": "duplicate",
+                 "match_type": "semantic", "similarity": 0.90, "source": "test"},
+                {"id": "false-merge", "left": "e", "right": "f", "label": "non_duplicate",
+                 "match_type": "semantic", "similarity": 0.90, "source": "test"},
+            ],
+        }, thresholds=(0.90,))
+        band = report["bands"][0]
+        self.assertEqual(band["proposals"], 3)
+        self.assertEqual(band["duplicate_rate"], 1.0)
+        self.assertEqual(band["false_merge_rate"], 1.0)
+        self.assertIsNone(report["selection"]["selected_threshold"])
 
 
 if __name__ == "__main__":
