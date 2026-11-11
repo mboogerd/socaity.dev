@@ -130,7 +130,7 @@
 <li{% if row.done %} class="done"{% endif %}>
   <a href="{{ root }}n/{{ row.id }}/">{{ row.title }}</a>
   {% if row.chip %} <span class="chip chip-{{ row.chip[1] }}">{{ row.chip[0] }}</span> {% endif %}
-  {% if row.edge_chip %} <span class="chip chip-{{ row.edge_chip[1] }}">{{ row.edge_chip[0] }}</span> {% if row.dispute_url %} <a href="{{ row.dispute_url }}">read the contest</a>{% endif %}{% endif %}
+  {% if row.edge_chip %} <span class="chip chip-{{ row.edge_chip[1] }}">{{ row.edge_chip[0] }}</span> {% if row.dispute_url %} <a href="{{ row.dispute_url }}">{{ row.edge_link_label }}</a>{% endif %}{% endif %}
   {% if row.estimate %} <span class="estimate">{{ row.estimate.text }}<span class="muted"> · estimated <time datetime="{{ row.estimate.asserted_at }}">{{ row.estimate.asserted_at }}</time>{% if row.estimate.stale %} · stale{% endif %}</span></span> {% endif %}
 </li>
 {% endfor %}
@@ -145,7 +145,7 @@
   <h3><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a></h3>
   <p class="chips">
   {% if card.chip %} <span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span> {% endif %}
-  {% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">read the contest</a>{% endif %}{% endif %}
+  {% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">{{ card.edge_link_label }}</a>{% endif %}{% endif %}
   {% if card.weight_label %} <span class="chip chip-weight">{{ card.weight_label }}</span> {% endif %}
   </p>
   {% if card.weight_label %}<p class="provenance">{{ card.weight_provenance }} · estimated <time datetime="{{ card.weight_stamp }}">{{ card.weight_stamp }}</time></p>{% endif %}
@@ -160,7 +160,7 @@
 <section aria-labelledby="refined"><h2 id="refined">Narrower problems</h2>
 <ul>
 {% for card in node.refined_by %}
-<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a>{% if card.chip %} <span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span> {% endif %}{% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">read the contest</a>{% endif %}{% endif %}</li>
+<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a>{% if card.chip %} <span class="chip chip-{{ card.chip[1] }}">{{ card.chip[0] }}</span> {% endif %}{% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">{{ card.edge_link_label }}</a>{% endif %}{% endif %}</li>
 {% endfor %}
 </ul>
 </section>
@@ -189,11 +189,27 @@
 <section aria-labelledby="seealso"><h2 id="seealso">See also</h2>
 <ul>
 {% for card in node.see_also %}
-<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a> <span class="muted">equivalent</span> {% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">read the contest</a>{% endif %}{% endif %}</li>
+<li><a href="{{ root }}n/{{ card.id }}/">{{ card.title }}</a> <span class="muted">equivalent</span> {% if card.edge_chip %} <span class="chip chip-{{ card.edge_chip[1] }}">{{ card.edge_chip[0] }}</span> {% if card.dispute_url %} <a href="{{ card.dispute_url }}">{{ card.edge_link_label }}</a>{% endif %}{% endif %}</li>
 {% endfor %}
 </ul>
 </section>
 {% endif %}
 
 </article>
+{% if roadmap_strip is defined %}
+<section aria-labelledby="now"><h2 id="now">What matters now</h2>
+<p class="muted">Open nodes whose requirements are all met and whose ticket is unclaimed — computed from the ticket files, never curated. When this list is empty it says so; it is never padded.</p>
+{% if roadmap_strip %}
+<ol class="worklist">
+{% for item in roadmap_strip %}
+<li class="work">
+<p class="work__title"><a href="{{ root }}n/{{ item.id }}/">{{ item.title }}</a></p>
+<p class="work__meta"><span class="chip chip-{{ item.chip[1] }}">{{ item.chip[0] }}</span> <span class="chip chip-weight">{{ item.type }}</span> <span class="chip chip-weight">tier {{ item.tier }}</span> <span class="chip chip-ticket">ticket unclaimed</span> <code class="work__ticket">{{ item.ticket }}</code></p>
+<p class="act"><a href="{{ root }}n/{{ item.id }}/">Read the record</a> · <a href="{{ root }}claim/">Take this ticket</a> · <a href="{{ item.issue_url }}">Say this is the wrong thing to work on</a></p>
+</li>
+{% endfor %}
+</ol>
+{% else %}<p>Nothing is both unblocked and unclaimed right now.</p>{% endif %}
+</section>
+{% endif %}
 {% endblock %}

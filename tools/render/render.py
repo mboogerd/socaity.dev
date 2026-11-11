@@ -46,6 +46,7 @@ EDGE_CHIPS = {
     "disputed": ("Contested", "contested"),
     "settled": ("Settled", "settled"),
 }
+NODE_STATUS_ORDER = {"open": 0, "resolved": 1, "withdrawn": 2, "merged": 3}
 LEGEND = [
     # The two provenance kinds, named symmetrically (council/socaity-0hb.md
     # §E). The pair is a closed set of exactly two strings and the html gate
@@ -242,7 +243,7 @@ CARD_SURFACES = {
         "kind_label": "index",
         "title": "All nodes",
         "detail": "Every node in the merged tree, including withdrawn and "
-                  "merged ones. Sorted by permanent ID.",
+                  "merged ones. Sorted by status, then permanent ID.",
     },
 }
 
@@ -421,6 +422,10 @@ def dispute_link(edge):
     return ref.get("url")
 
 
+def edge_link_label(edge):
+    return "read the resolution" if edge.get("status") == "settled" else "read the contest"
+
+
 def node_view(node, idx, tickets_by_node, clock):
     """Focus + context: the node, its parents, its children, its claims."""
     by_id, out, inc = idx["by_id"], idx["out"], idx["inc"]
@@ -443,7 +448,8 @@ def node_view(node, idx, tickets_by_node, clock):
     for edge in out.get(nid, []):
         if edge.get("type") != "requires" or edge.get("to") not in by_id:
             continue
-        target = by_id[edge["to"]]
+        target_id, _redirects = g.resolve(edge["to"], by_id)
+        target = by_id[target_id]
         current, _hist = g.current_estimates(g.estimates_of(target))
         effort = current.get("effort")
         requires.append({
@@ -452,6 +458,7 @@ def node_view(node, idx, tickets_by_node, clock):
             "done": target.get("status") == "resolved",
             "edge_chip": EDGE_CHIPS.get(edge.get("status")),
             "dispute_url": dispute_link(edge),
+            "edge_link_label": edge_link_label(edge),
             "estimate": estimate_view(effort, clock) if effort else None,
         })
 
@@ -460,6 +467,7 @@ def node_view(node, idx, tickets_by_node, clock):
         other_id = edge["from"] if edge["to"] == nid else edge.get("to")
         if other_id not in by_id or other_id == nid:
             continue
+        other_id, _redirects = g.resolve(other_id, by_id)
         other = by_id[other_id]
         weights, _h = g.current_estimates(g.estimates_of(edge))
         prob = weights.get("branch_probability")
@@ -469,6 +477,7 @@ def node_view(node, idx, tickets_by_node, clock):
             "chip": NODE_CHIPS.get(other.get("status")),
             "edge_chip": EDGE_CHIPS.get(edge.get("status")),
             "dispute_url": dispute_link(edge),
+            "edge_link_label": edge_link_label(edge),
             "rationale": edge.get("rationale"),
             "weight": prob.get("value") if prob else None,
             "weight_provenance": provenance_line(prob.get("provenance")) if prob else None,
@@ -720,12 +729,19 @@ def main(argv=None):
         emit("s/%s/index.html" % view["slug"],
              env.get_template("redirect.html").render(target="../../n/%s/" % view["id"]), "core")
     roadmap_card = surface_card("roadmap/index.html")
-    emit("roadmap/index.html", env.get_template("roadmap.html").render(
-        roots=roots, strip=what_matters_now(views, idx, tickets_by_node),
-        og=roadmap_card, depth=1), "core")
+    roadmap_strip = what_matters_now(views, idx, tickets_by_node)
+    if len(roots) == 1:
+        emit("roadmap/index.html", env.get_template("node.html").render(
+            node=roots[0], roadmap_strip=roadmap_strip, og=roadmap_card, depth=1,
+            nav=nav, clock=clock[:10]), "core")
+    else:
+        emit("roadmap/index.html", env.get_template("roadmap.html").render(
+            roots=roots, strip=roadmap_strip, og=roadmap_card, depth=1), "core")
     emit("roadmap/card/index.html", card_page(env, **roadmap_card), "core")
+    all_views = sorted(views, key=lambda view: (NODE_STATUS_ORDER.get(view["status"], 99),
+                                                view["id"]))
     emit("all/index.html",
-         env.get_template("all.html").render(nodes=views, tickets=tickets_by_node,
+         env.get_template("all.html").render(nodes=all_views, tickets=tickets_by_node,
                                              og=surface_card("all/index.html"), depth=1), "core")
     for spec in DOC_PAGES:
         page = doc_page(root, spec)
