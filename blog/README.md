@@ -31,4 +31,4 @@ summary: A short description for the blog index and RSS feed.
 
 Without metadata, the title comes from the Markdown heading or HTML `<title>` (falling back to the folder name). Dated posts appear newest first, followed by undated posts.
 
-Push to `main` to publish through the existing **Publish site** GitHub Action. Pull requests build a preview artifact. No separate content repository or new Action is required. Keep drafts on a branch until ready to publish.
+Push to `main` or open a pull request from this repository to publish a live preview through the existing **Publish site** GitHub Action. The run links to the commit-specific preview. Production at `socaity.dev` updates only after approval in **Review deployments → github-pages**. Fork pull requests get downloadable preview artifacts. See [publishing.md](../doc/publishing.md) for promotion and agent review. Keep drafts on a branch until ready for review.
