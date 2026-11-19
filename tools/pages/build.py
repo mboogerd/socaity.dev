@@ -195,7 +195,6 @@ def assemble(archive, output, articles_root, base_url):
         shutil.copytree(archive, stage)
         blog = stage / "blog"
         (stage / "index.html").rename(stage / "research.html")
-        (blog / "index.html").rename(blog / "archive.html")
         for filename in ("index.html", "styles.css", "app.js"):
             shutil.copyfile(DESIGN / filename, stage / filename)
         shutil.copyfile(Path(__file__).with_name("blog.css"), blog / "blog.css")

@@ -1,6 +1,6 @@
 # Publishing Socaity.dev
 
-The site repository owns the collective-intelligence homepage, its styles and interactions, the blog layout, and the Pages workflow. A second repository owns the articles. GitHub Actions builds one static site from the two sources. The homepage links to the research archive, and the blog index and RSS feed include both the new articles and the existing posts and weekly digests.
+The site repository owns the collective-intelligence homepage, its styles and interactions, the blog layout, and the Pages workflow. A second repository can supply articles. GitHub Actions builds one static site from the two sources. The homepage links to the research archive. The old blog posts and weekly digests have been removed; the blog index and RSS feed start empty until new articles are added.
 
 ## Article folders
 
@@ -54,7 +54,7 @@ jobs:
         run: gh workflow run pages.yml --ref main
 ```
 
-Each update to the website's `main` branch or an article push with the rebuild workflow enabled triggers a build. `pages.yml` is the only active workflow; the older graph checks, drift alarms, and scheduled weekly digest workflows have been retired. Existing posts and weekly digests remain available in the archive.
+Each update to the website's `main` branch or an article push with the rebuild workflow enabled triggers a build. `pages.yml` is the only active workflow; the older graph checks, drift alarms, and scheduled weekly digest workflows have been retired. Removed blog posts remain in Git history and are not published.
 
 ## Local preview
 
