@@ -161,3 +161,49 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  cleanup:
+    name: Remove the promoted preview
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    # Share the preview publisher's lock so cleanup cannot overwrite another
+    # candidate's publication. Failed/rejected deployments never reach here.
+    concurrency:
+      group: publish-preview
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check out the current preview host
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.PREVIEW_REPOSITORY }}
+          ref: main
+          ssh-key: ${{ secrets.PREVIEW_DEPLOY_KEY }}
+          path: .preview-host
+      - name: Remove the promoted revision and refresh the index
+        run: |
+          python3 tools/pages/preview.py --remove --host .preview-host --revision "$SOURCE_SHA"
+          git -C .preview-host config user.name 'github-actions[bot]'
+          git -C .preview-host config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C .preview-host add -A
+          if ! git -C .preview-host diff --cached --quiet; then
+            git -C .preview-host commit -m "Remove promoted preview $SOURCE_SHA"
+            git -C .preview-host push origin main
+          fi
+      - name: Delete this run's temporary build artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          gh api "repos/$GH_REPO/actions/runs/$RUN_ID/artifacts" --paginate \
+            --jq '.artifacts[] | select(.name == "site-preview" or .name == "github-pages") | .id' |
+          while read -r artifact; do
+            gh api --method DELETE "repos/$GH_REPO/actions/artifacts/$artifact"
+          done

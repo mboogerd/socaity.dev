@@ -2,7 +2,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from preview import prepare_preview
+from preview import prepare_preview, remove_preview
 
 
 class PreviewTest(unittest.TestCase):
@@ -37,6 +37,34 @@ class PreviewTest(unittest.TestCase):
         (self.site / "index.html").write_text("Changed", encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "different bytes"):
             prepare_preview(self.site, self.host, self.revision)
+
+    def test_cleanup_removes_only_the_promoted_preview(self):
+        prepare_preview(self.site, self.host, self.revision)
+        pending = "b" * 40
+        prepare_preview(self.site, self.host, pending)
+        remove_preview(self.host, self.revision)
+        self.assertFalse((self.host / "revisions" / self.revision).exists())
+        self.assertEqual((self.host / "revisions" / pending / "index.html").read_bytes(), b"Candidate")
+        index = (self.host / "index.html").read_text()
+        self.assertNotIn(self.revision, index)
+        self.assertIn(pending, index)
+
+    def test_cleanup_is_idempotent_and_leaves_a_clean_index(self):
+        prepare_preview(self.site, self.host, self.revision)
+        remove_preview(self.host, self.revision)
+        remove_preview(self.host, self.revision)
+        self.assertIn("No pending previews.", (self.host / "index.html").read_text())
+        self.assertNotIn("revisions/", (self.host / "index.html").read_text())
+        self.assertTrue((self.host / ".nojekyll").exists())
+
+    def test_cleanup_rejects_unsafe_targets(self):
+        with self.assertRaises(ValueError):
+            remove_preview(self.host, "../../outside")
+        (self.host / "revisions").mkdir()
+        (self.host / "revisions" / self.revision).symlink_to(self.site)
+        with self.assertRaises(ValueError):
+            remove_preview(self.host, self.revision)
+        self.assertTrue((self.site / "index.html").exists())
 
     def test_invalid_revision_and_symlink_cannot_escape_tree(self):
         with self.assertRaises(ValueError):
