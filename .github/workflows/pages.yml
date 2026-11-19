@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 # Build and deploy in sequence. An older queued production event checks out the
-# current main and article branch when it starts, so it cannot roll them back.
+# current main when it starts, so it cannot roll the site back.
 concurrency:
   group: ${{ github.ref == 'refs/heads/main' && 'pages' || format('pages-preview-{0}', github.run_id) }}
   cancel-in-progress: false
@@ -34,6 +34,8 @@ jobs:
           python-version: '3.12'
       - name: Install the site dependencies
         run: python -m pip install --quiet -r tools/pages/requirements.txt
+      - name: Test folder-based blog publishing
+        run: python -m unittest discover -s tools/pages -p 'test_*.py' -v
       - name: Validate the graph (append-only against the base branch)
         run: |
           BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
@@ -49,26 +51,12 @@ jobs:
         id: pages
         uses: actions/configure-pages@v6
 
-      - name: Check out articles
-        if: github.ref == 'refs/heads/main' && !github.event.repository.fork && vars.ARTICLES_REPOSITORY != ''
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ vars.ARTICLES_REPOSITORY }}
-          token: ${{ secrets.ARTICLES_READ_TOKEN || github.token }}
-          path: .article-source
-          persist-credentials: false
-
       - name: Assemble the homepage, archive and blog
         env:
           BASE_URL: ${{ steps.pages.outputs.base_url }}
-          HAS_ARTICLES: ${{ github.ref == 'refs/heads/main' && !github.event.repository.fork && vars.ARTICLES_REPOSITORY != '' }}
         run: |
-          args=()
-          if [[ "$HAS_ARTICLES" == true ]]; then
-            args+=(--articles .article-source/articles)
-          fi
           python tools/pages/build.py --archive site --out _pages \
-            --base-url "${BASE_URL:-https://socaity.dev/}" "${args[@]}"
+            --base-url "${BASE_URL:-https://socaity.dev/}"
 
       - name: Verify the production homepage and archive
         run: |

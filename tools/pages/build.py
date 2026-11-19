@@ -1,8 +1,8 @@
-"""Assemble the umbrella, legacy archive, and optional article checkout."""
+"""Build the homepage, research archive, and folder-based blog."""
 import argparse
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
-from email.utils import format_datetime, parsedate_to_datetime
+from email.utils import format_datetime
 from functools import cache
 from html.parser import HTMLParser
 from pathlib import Path
@@ -18,7 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 DESIGN = ROOT / "doc/design/collective-intelligence"
-LEGACY_URL = "https://socaity.dev/"
+SITE_URL = "https://socaity.dev/"
 ATOM = "http://www.w3.org/2005/Atom"
 SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
@@ -140,25 +140,21 @@ def publish_article(source, target, template):
     return article
 
 
-def update_feed(path, articles, base_url):
+def write_feed(path, articles, base_url):
     ET.register_namespace("atom", ATOM)
-    feed = ET.parse(path)
-    channel = feed.getroot().find("channel")
-    channel.find("link").text = base_url + "blog/"
-    channel.find("description").text = "Articles and project updates from Socaity."
-    channel.find(f"{{{ATOM}}}link").set("href", base_url + "blog/feed.xml")
-    latest = channel.find("pubDate")
-    if latest is not None:
-        channel.remove(latest)
-    archive = []
-    for item in channel.findall("item"):
-        link = item.find("link")
-        slug = link.text.removeprefix(LEGACY_URL + "blog/").rstrip("/")
-        link.text = base_url + "blog/" + slug + "/"
-        guid = item.find("guid")
-        if guid.text != link.text:
-            guid.set("isPermaLink", "false")
-        archive.append(Article(slug, item.findtext("title"), item_date(item), item.findtext("description", "")))
+    feed = ET.Element("rss", version="2.0")
+    channel = ET.SubElement(feed, "channel")
+    ET.SubElement(channel, "title").text = "socaity.dev"
+    ET.SubElement(channel, "link").text = base_url + "blog/"
+    ET.SubElement(channel, "description").text = "Articles and project updates from Socaity."
+    ET.SubElement(channel, "language").text = "en"
+    ET.SubElement(channel, f"{{{ATOM}}}link", {
+        "href": base_url + "blog/feed.xml", "rel": "self",
+        "type": "application/rss+xml",
+    })
+    if articles and articles[0].date:
+        stamp = datetime.fromisoformat(articles[0].date).replace(tzinfo=timezone.utc)
+        ET.SubElement(channel, "pubDate").text = format_datetime(stamp, usegmt=True)
     for article in articles:
         item = ET.SubElement(channel, "item")
         url = base_url + "blog/" + article.href
@@ -171,20 +167,7 @@ def update_feed(path, articles, base_url):
             stamp = datetime.fromisoformat(article.date).replace(tzinfo=timezone.utc)
             ET.SubElement(item, "pubDate").text = format_datetime(stamp, usegmt=True)
 
-    items = channel.findall("item")
-    for item in items:
-        channel.remove(item)
-    items.sort(key=lambda item: (item_date(item), item.findtext("link")), reverse=True)
-    if items and (published := items[0].findtext("pubDate")):
-        ET.SubElement(channel, "pubDate").text = published
-    channel.extend(items)
-    feed.write(path, encoding="utf-8", xml_declaration=True)
-    return archive
-
-
-def item_date(item):
-    published = item.findtext("pubDate")
-    return parsedate_to_datetime(published).date().isoformat() if published else ""
+    ET.ElementTree(feed).write(path, encoding="utf-8", xml_declaration=True)
 
 
 def assemble(archive, output, articles_root, base_url):
@@ -194,6 +177,9 @@ def assemble(archive, output, articles_root, base_url):
         stage = Path(temporary) / "site"
         shutil.copytree(archive, stage)
         blog = stage / "blog"
+        if blog.exists():
+            shutil.rmtree(blog)
+        blog.mkdir()
         (stage / "index.html").rename(stage / "research.html")
         for filename in ("index.html", "styles.css", "app.js"):
             shutil.copyfile(DESIGN / filename, stage / filename)
@@ -208,11 +194,10 @@ def assemble(archive, output, articles_root, base_url):
                     if folder.name.casefold() in reserved:
                         raise ValueError(f"{folder}: URL already exists in the archive")
                     articles.append(publish_article(folder, blog / folder.name, template))
-        archive_articles = update_feed(blog / "feed.xml", articles, base_url)
-        all_articles = sorted(articles + archive_articles,
-                              key=lambda article: (article.date, article.slug), reverse=True)
+        articles.sort(key=lambda article: (article.date, article.slug), reverse=True)
+        write_feed(blog / "feed.xml", articles, base_url)
         (blog / "index.html").write_text(
-            templates.get_template("index.html").render(articles=all_articles), encoding="utf-8")
+            templates.get_template("index.html").render(articles=articles), encoding="utf-8")
         stage.rename(output)
 
 
@@ -220,8 +205,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", required=True, type=Path, help="existing legacy render")
     parser.add_argument("--out", required=True, type=Path, help="new output directory")
-    parser.add_argument("--articles", type=Path, help="articles/ from the content repository")
-    parser.add_argument("--base-url", default=LEGACY_URL, help="absolute Pages URL for RSS")
+    parser.add_argument("--articles", type=Path, default=ROOT / "blog",
+                        help="post folders (default: this repository's blog/)")
+    parser.add_argument("--base-url", default=SITE_URL, help="absolute Pages URL for RSS")
     args = parser.parse_args()
     base_url = args.base_url.rstrip("/") + "/"
     url = urlsplit(base_url)

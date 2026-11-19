@@ -7,8 +7,8 @@ This repository publishes the Socaity collective-intelligence website to GitHub 
 - Edit the homepage in `doc/design/collective-intelligence/index.html`, `styles.css`, and `app.js`.
 - `tools/pages/build.py` combines that homepage with the generated research archive and blog. Never edit the generated `site/` or `_pages/` trees.
 - `.github/workflows/pages.yml` validates and builds pull requests, and publishes pushes to `main`. It is the only active GitHub Actions workflow.
-- See `doc/publishing.md` for article sources, local preview, and deployment setup.
-- Run `tools/check.sh`, then `python tools/pages/build.py --archive site --out _pages` using the dependencies in `tools/pages/requirements.txt`. The output directory must not already exist.
+- Each blog post lives in `blog/<slug>/` with exactly one `index.md` or `index.html` and its accompanying assets. Markdown is statically rendered; HTML is published unchanged. See `blog/README.md` and `doc/publishing.md` for authoring and deployment.
+- Run `python -m unittest discover -s tools/pages -p 'test_*.py' -v`, `tools/check.sh`, then `python tools/pages/build.py --archive site --out _pages` using the dependencies in `tools/pages/requirements.txt`. The output directory must not already exist.
 
 ## Working conventions
 
