@@ -1,0 +1,107 @@
+name: Publish site
+
+# Publish the collective-intelligence homepage, blog and research archive.
+# Repository Pages source: GitHub Actions; custom domain: socaity.dev.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Build and deploy in sequence. An older queued production event checks out the
+# current main and article branch when it starts, so it cannot roll them back.
+concurrency:
+  group: ${{ github.ref == 'refs/heads/main' && 'pages' || format('pages-preview-{0}', github.run_id) }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    permissions:
+      contents: read
+      pages: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref == 'refs/heads/main' && 'refs/heads/main' || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the site dependencies
+        run: python -m pip install --quiet -r tools/pages/requirements.txt
+      - name: Validate the graph (append-only against the base branch)
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            python3 tools/validate/validate.py --root . --base "$BASE"
+          else
+            python3 tools/validate/validate.py --root .
+          fi
+      - name: Render twice and prove the build is byte-identical
+        run: tools/check.sh
+      - name: Read the Pages configuration
+        if: github.ref == 'refs/heads/main' && !github.event.repository.fork
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Check out articles
+        if: github.ref == 'refs/heads/main' && !github.event.repository.fork && vars.ARTICLES_REPOSITORY != ''
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.ARTICLES_REPOSITORY }}
+          token: ${{ secrets.ARTICLES_READ_TOKEN || github.token }}
+          path: .article-source
+          persist-credentials: false
+
+      - name: Assemble the homepage, archive and blog
+        env:
+          BASE_URL: ${{ steps.pages.outputs.base_url }}
+          HAS_ARTICLES: ${{ github.ref == 'refs/heads/main' && !github.event.repository.fork && vars.ARTICLES_REPOSITORY != '' }}
+        run: |
+          args=()
+          if [[ "$HAS_ARTICLES" == true ]]; then
+            args+=(--articles .article-source/articles)
+          fi
+          python tools/pages/build.py --archive site --out _pages \
+            --base-url "${BASE_URL:-https://socaity.dev/}" "${args[@]}"
+
+      - name: Verify the production homepage and archive
+        run: |
+          for file in index.html styles.css app.js; do
+            cmp "doc/design/collective-intelligence/$file" "_pages/$file"
+          done
+          test -s _pages/research.html
+          test -s _pages/blog/index.html
+          test -s _pages/blog/feed.xml
+
+      - name: Upload the preview site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-preview
+          path: _pages/
+
+      - name: Package the site as the Pages artifact
+        if: github.ref == 'refs/heads/main' && !github.event.repository.fork
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _pages/
+
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main' && !github.event.repository.fork
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

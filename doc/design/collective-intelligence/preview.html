@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Socaity explores how independent people can build, understand, and act together. Starting with Watane, growing toward collective intelligence.">
+  <meta name="theme-color" content="#eeede5">
+  <title>socaity.dev — More than the sum of us</title>
+  <style>
+:root{--paper:#eeede5;--ink:#272c26;--muted:#62665d;--line:#c8cbc0;--accent:#b9422b;--soft:#e2e3d8;--white:#f7f6f0;color-scheme:light;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--paper)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:32px}body{margin:0}a{color:inherit;text-decoration:none}button,summary,a{-webkit-tap-highlight-color:transparent}a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:7px}::selection{background:var(--accent);color:var(--white)}.wrap{width:min(1280px,calc(100% - 112px));margin-inline:auto}.skip{position:absolute;left:16px;top:-100px;background:var(--ink);color:var(--paper);padding:16px;z-index:5}.skip:focus{top:16px}.header{display:flex;justify-content:space-between;align-items:center;min-height:110px;border-bottom:1px solid var(--line);gap:24px}.brand{font-weight:700;font-size:24px;letter-spacing:-1px;display:flex;align-items:center}.brand>span:last-child{font-weight:400}.brand-mark{display:grid;grid-template-columns:repeat(2,7px);gap:3px;margin-right:13px;transform:rotate(-10deg)}.brand-mark i{width:7px;height:7px;background:var(--ink)}.brand-mark i:last-child{background:var(--accent);transform:translate(3px,3px)}nav{display:flex;gap:36px;font-size:14px}nav a{padding-block:12px}nav a:hover,.text-link:hover{color:var(--accent)}.nav-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin:0 0 3px 4px}.eyebrow,.section-label{font-size:12px;text-transform:uppercase;letter-spacing:1.6px;font-weight:600;line-height:1.6}.eyebrow{margin:0 0 26px}.small-cross{font-size:20px;color:var(--accent);vertical-align:-2px;margin-right:9px}.hero{padding-top:65px}.hero h1{font-size:clamp(72px,9.3vw,138px);line-height:.99;letter-spacing:-7px;font-weight:500;margin:0 0 43px}em{font-family:Georgia,'Times New Roman',serif;font-weight:400;color:var(--accent);letter-spacing:-.055em}.hero-bottom{display:flex;align-items:center;justify-content:space-between;gap:48px;margin-bottom:56px}.hero-intro{font-size:19px;line-height:1.6;max-width:540px;margin:0}.round-link{display:flex;gap:38px;align-items:center;font-size:14px;line-height:1.5}.round-link strong{font-weight:500;font-size:21px}.arrow-circle{width:67px;height:67px;border:1px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:32px}.round-link:hover .arrow-circle{color:var(--paper);background:var(--ink)}.commons-figure{margin:0}.commons{display:block;width:100%;height:auto;border-block:1px solid var(--line)}.graph-paths{color:#a0a697}.graph-shapes{fill:var(--paper);color:var(--ink)}.graph-shapes .accent-node{fill:var(--accent);stroke:var(--accent)}.solid-node{fill:var(--ink)}.graph-labels{font-family:Arial,Helvetica,sans-serif;fill:var(--muted);font-size:13px}figcaption{display:flex;justify-content:space-between;gap:24px;font-size:11px;letter-spacing:.2px;color:var(--muted);margin-top:15px}.section{padding-block:108px}h2{font-size:clamp(36px,4.2vw,58px);line-height:1.12;letter-spacing:-2.3px;font-weight:400;margin:0 0 36px}h3{font-weight:500}p{line-height:1.65}.vision,.horizon{display:grid;grid-template-columns:1fr 3fr;gap:56px}.section-label{padding-top:8px}.prose-columns{display:grid;grid-template-columns:1fr 1fr;gap:40px}.prose-columns p{margin:0;font-size:17px;color:var(--muted)}.vision-statement{font-size:23px;line-height:1.5;margin:36px 0 0;padding-left:23px;border-left:2px solid var(--accent)}.path-section{background:var(--ink);color:var(--paper);padding-block:88px}.path-section em{color:#e39175}.path-section .eyebrow{color:#b7bdad}.path-heading{margin-bottom:54px}.path-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:46px}.path-grid article{border-top:1px solid #646b5e;padding-top:25px}.path-icon{display:block;color:#e39175;letter-spacing:-8px;font-size:32px;min-height:48px}.path-grid h3{font-size:23px;line-height:1.3;margin:16px 0}.path-grid p{color:#c3c8bb;font-size:16px;margin:0;max-width:36ch}.path-note{border-top:1px solid #646b5e;margin:47px 0 0;padding-top:22px;font-size:13px;color:#c3c8bb}.section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:48px;margin-bottom:50px}.section-heading h2{margin-bottom:0}.section-heading>p{font-size:15px;color:var(--muted);max-width:38ch;margin-bottom:4px}.project{display:grid;grid-template-columns:1fr 1.1fr;background:var(--white);border:1px solid var(--line);margin-bottom:28px}.project-art{background:var(--soft);display:flex;flex-direction:column;justify-content:space-between;padding:34px;color:var(--accent);min-height:540px;overflow:hidden}.project-art svg{width:100%;max-height:365px;display:block}.art-caption{font-size:11px;text-transform:uppercase;letter-spacing:1.8px;color:var(--ink)}.art-foot{font-size:12px;color:var(--muted)}.project-copy{padding:43px 48px}.project-copy .eyebrow{margin-bottom:22px;color:var(--muted)}.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 6px 2px 0}.project-copy h3{font-size:64px;letter-spacing:-3px;margin:0 0 19px;line-height:1}.project-copy .project-lead{font-size:24px;line-height:1.35;letter-spacing:-.5px;color:var(--ink);margin:0 0 23px}.project-copy>p:not(.eyebrow):not(.project-lead){color:var(--muted);font-size:16px;margin:0 0 17px}.project-details{border-top:1px solid var(--line);margin-top:29px;padding-top:21px}.project-details summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:20px;font-size:15px}.project-details summary::-webkit-details-marker{display:none}.project-details summary span{font-size:22px;line-height:18px;color:var(--accent)}.project-details[open] summary span{transform:rotate(45deg)}.project-details div{font-size:15px;color:var(--muted)}.project-details div p:last-child{font-size:13px}.open-ended{display:flex;gap:20px;align-items:center;border-bottom:1px solid var(--line);padding:0 0 23px}.open-ended>span{font-size:28px;color:var(--accent)}.open-ended p{font-size:14px;color:var(--muted);flex:1}.open-ended a{font-size:13px}.open-ended a:hover{text-decoration:underline}.open-ended a span{margin-left:14px}.horizon{padding-top:0}.section-label>span{display:block;font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:8px}.horizon-rows article{border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1.3fr;gap:30px;padding-block:24px}.horizon-rows h3{font-size:20px;line-height:1.4;margin:0}.horizon-rows p{font-size:16px;color:var(--muted);margin:0}.horizon-note{font-size:12px;color:var(--muted);margin-top:14px}.principles{border-top:1px solid var(--line);padding-top:90px}.principles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:33px}.principles-grid article>span{display:block;color:var(--accent);font-size:28px;margin-bottom:21px}.principles-grid h3{font-size:20px;line-height:1.35;max-width:19ch;margin:0 0 17px}.principles-grid p{font-size:15px;color:var(--muted);margin:0;line-height:1.7}.closing{background:var(--accent);color:var(--paper);padding-block:74px}.closing .eyebrow{font-size:11px}.closing-title{font-size:clamp(44px,5.6vw,80px);line-height:1.08;letter-spacing:-3px;margin:0 0 35px}.closing-title em{color:inherit}.text-link{display:inline-flex;gap:52px;align-items:center;border-bottom:1px solid currentColor;padding-bottom:12px;font-size:15px}.closing .text-link:hover{color:var(--paper);border-bottom-width:3px}.footer{min-height:140px;display:flex;align-items:center;justify-content:space-between;gap:25px}.footer .brand{font-size:22px}.footer p,.footer>a:last-child{font-size:12px;color:var(--muted)}.design-note{border-top:1px solid var(--line);padding:14px 24px;text-align:center;font-size:11px;line-height:1.6;color:var(--muted)}
+.path-intro{max-width:650px;color:#c3c8bb;font-size:18px;margin:24px 0 0}
+.journey{border:1px solid #646b5e}
+.journey-steps{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #646b5e}
+.journey-steps[hidden]{display:none}
+.journey-steps button{appearance:none;background:transparent;border:0;border-right:1px solid #646b5e;color:#c3c8bb;cursor:pointer;text-align:left;padding:22px 24px;font:inherit;font-size:15px;line-height:1.4}
+.journey-steps button:last-child{border-right:0}
+.journey-steps button span{display:inline-block;color:#e39175;font-size:11px;letter-spacing:1px;margin-right:16px}
+.journey-steps button:hover{background:#333a31}
+.journey-steps button[aria-pressed="true"]{background:var(--paper);color:var(--ink)}
+.journey-steps button[aria-pressed="true"] span{color:var(--accent)}
+.journey-steps button:focus-visible{outline:3px solid #e39175;outline-offset:-5px}
+.journey-body{display:grid;grid-template-columns:1.45fr 1fr;align-items:center;min-height:385px}
+.journey-map{padding:22px 14px 18px;color:#949f8c;min-width:0}
+.journey-map svg{width:100%;display:block}
+.journey-node rect,.journey-node circle{fill:var(--ink);stroke:#a8b59e;stroke-width:1.5}
+.journey-node text{fill:var(--paper);font-size:16px;font-family:Arial,Helvetica,sans-serif}
+.journey-node .node-kind{fill:#a8b59e;font-size:9px;letter-spacing:.7px}
+.journey-node .wish-symbol{font-family:Georgia,serif;font-size:28px;fill:#e39175}
+.journey-node.answer rect{fill:#e39175;stroke:#e39175}
+.journey-node.answer text{fill:var(--ink)}
+.journey-link,.journey-node{transition:opacity .25s ease}
+.journey-ready[data-step="0"] .reuse,.journey-ready[data-step="0"] .extend,.journey-ready[data-step="0"] .answer{opacity:.2}
+.journey-ready[data-step="1"] .extend{opacity:.2}
+.journey-ready[data-step="2"] .journey-link{stroke:#e39175}
+.journey-caption{text-align:center;font-size:12px;color:#c3c8bb;margin:6px 0 0}
+.journey-copy{padding:35px 38px 35px 28px}
+.journey-copy .eyebrow{font-size:10px;margin-bottom:18px}
+.journey-copy h3{font-size:29px;line-height:1.2;letter-spacing:-.7px;margin:0 0 19px;max-width:20ch}
+.journey-description{font-size:16px;color:#c3c8bb;margin:0;min-height:133px}
+.journey-takeaway{font-size:13px;color:#e39175;margin:23px 0 0;padding-top:17px;border-top:1px solid #646b5e}
+.journey-fallback{padding:0 28px 24px;color:#c3c8bb}
+@media(max-width:800px){.journey-body{grid-template-columns:1fr}.journey-copy{padding:15px 28px 30px}.journey-copy h3{max-width:30ch}.journey-description{min-height:0}.journey-steps button{padding:17px 12px;font-size:13px}.journey-steps button span{display:block;margin:0 0 7px}.journey-map{max-width:620px;width:100%;margin:auto}.path-intro{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.journey-link,.journey-node{transition:none}}
+@media(min-width:1600px){.hero h1{font-size:146px}}
+@media(max-width:1000px){.wrap{width:calc(100% - 64px)}.hero h1{letter-spacing:-4px}.vision,.horizon{grid-template-columns:1fr;gap:28px}.section{padding-block:78px}.horizon{padding-top:0}.project-copy{padding:32px}.project-art{min-height:0;padding:26px}.project-copy h3{font-size:54px}.path-grid{gap:26px}.principles-grid{grid-template-columns:repeat(2,1fr);gap:38px}.path-grid h3{font-size:21px}.section-heading{gap:30px}.footer p{max-width:25ch}}
+@media(max-width:650px){.wrap{width:calc(100% - 40px)}.header{min-height:88px;align-items:flex-start;flex-direction:column;padding-block:22px;gap:19px}.brand{font-size:22px}nav{gap:27px;font-size:12px}nav a{padding-block:3px}.hero{padding-top:39px}.hero .eyebrow{font-size:10px;letter-spacing:1.1px;margin-bottom:23px}.hero h1{font-size:clamp(55px,12.6vw,82px);letter-spacing:-3.5px;line-height:1.04;margin-bottom:29px}.hero-bottom{display:block;margin-bottom:36px}.hero-intro{font-size:16px}.round-link{justify-content:space-between;margin-top:26px;font-size:12px}.round-link strong{font-size:18px}.arrow-circle{width:49px;height:49px;font-size:25px}.commons{min-height:160px;object-fit:contain}.graph-labels{font-size:18px}figcaption{font-size:10px;display:block;line-height:1.6}figcaption span{display:block}figcaption span+span{margin-top:5px}.section{padding-block:62px}.horizon{padding-top:0}h2{font-size:36px;letter-spacing:-1.5px;margin-bottom:25px}.section-label{font-size:10px}.prose-columns{grid-template-columns:1fr;gap:18px}.prose-columns p{font-size:16px}.vision-statement{font-size:19px;margin-top:28px;padding-left:16px}.vision-statement br{display:none}.path-section{padding-block:57px}.path-heading{margin-bottom:34px}.eyebrow{font-size:10px;letter-spacing:1.3px;margin-bottom:20px}.path-grid{grid-template-columns:1fr;gap:29px}.path-grid article{display:grid;grid-template-columns:40px 1fr;column-gap:14px;padding-top:20px}.path-icon{grid-row:1/3;font-size:25px}.path-grid h3{font-size:21px;margin:0 0 12px}.path-grid p{grid-column:2;max-width:none}.path-note{margin-top:34px}.section-heading{display:block;margin-bottom:30px}.section-heading>p{margin-top:22px;font-size:14px}.project{grid-template-columns:1fr}.project-art{padding:25px;min-height:300px}.project-art svg{height:235px}.art-foot{font-size:10px}.project-copy{padding:30px 25px}.project-copy h3{font-size:54px}.project-copy .project-lead{font-size:22px}.project-copy>p:not(.eyebrow):not(.project-lead){font-size:16px}.open-ended{display:grid;grid-template-columns:25px 1fr;gap:3px 12px;padding-bottom:24px}.open-ended p{font-size:13px;margin-block:4px}.open-ended a{grid-column:2;margin-top:12px}.horizon-rows article{grid-template-columns:1fr;gap:12px}.horizon-rows h3{font-size:20px}.horizon-rows p{font-size:16px}.principles-grid{grid-template-columns:1fr;gap:29px}.principles-grid article{display:grid;grid-template-columns:32px 1fr;gap:0 14px;border-top:1px solid var(--line);padding-top:22px}.principles-grid article>span{grid-row:1/3;font-size:24px}.principles-grid h3{max-width:none;margin-bottom:10px}.principles-grid p{grid-column:2;font-size:16px}.closing{padding-block:55px}.closing-title{font-size:43px;letter-spacing:-1.6px}.text-link{font-size:14px}.footer{padding-block:31px;display:grid;grid-template-columns:1fr auto;gap:14px}.footer p{max-width:none;grid-column:1/3;grid-row:2;margin:0}.footer>a:last-child{font-size:10px}.design-note{font-size:10px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{.wrap{width:100%}.header nav,.round-link,.open-ended a,.closing,.design-note{display:none}.section{padding-block:35px}.path-section{background:transparent;color:var(--ink);padding-block:30px}.path-section p,.path-section .eyebrow{color:var(--muted)}.project{break-inside:avoid}h2{font-size:32px}.hero h1{font-size:80px}.project-details>div{display:block}.footer{min-height:70px}}
+.closing .text-link:focus-visible {
+  outline-color: var(--paper);
+}
+
+.journey-steps button:focus-visible {
+  outline-color: var(--paper);
+}
+
+.journey-steps button[aria-pressed="true"] {
+  font-weight: 700;
+  box-shadow: inset 0 -4px var(--accent);
+}
+
+.journey-steps button[aria-pressed="true"]:focus-visible {
+  outline-color: var(--ink);
+}
+
+nav {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+nav a,
+.project-details summary,
+.open-ended a,
+.footer a:last-child {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+}
+
+.project-details summary {
+  display: flex;
+}
+
+.graph-paths {
+  color: var(--muted);
+}
+
+.commons-figure figcaption {
+  max-inline-size: 70ch;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.journey-caption {
+  font-size: 0.875rem;
+}
+
+@media (max-width: 800px) {
+  .commons .graph-labels,
+  .journey-map svg text {
+    display: none;
+  }
+}
+
+@media (max-width: 650px) {
+  .journey-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-steps button {
+    min-block-size: 44px;
+    border-right: 0;
+    border-bottom: 1px solid #646b5e;
+    font-size: 1rem;
+  }
+
+  .journey-steps button:last-child {
+    border-bottom: 0;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 12.5vw, 5.125rem);
+    overflow-wrap: break-word;
+  }
+
+  .project-copy, .journey-copy, .closing {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (forced-colors: active) {
+  .journey-steps button[aria-pressed="true"] {
+    border-inline-start: 4px solid Highlight;
+  }
+
+  a:focus-visible,
+  summary:focus-visible,
+  .journey-steps button:focus-visible,
+  .journey-steps button[aria-pressed="true"]:focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="header wrap" id="top" tabindex="-1">
+    <a class="brand" href="#top" aria-label="socaity.dev home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>socaity<span>.dev</span></a>
+    <nav aria-label="Main navigation"><a href="#vision">The vision</a><a href="#projects">Projects <span class="nav-dot" aria-hidden="true"></span></a><a href="#principles">Principles</a><a href="blog/">Blog</a></nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <p class="eyebrow"><span class="small-cross" aria-hidden="true">✳</span> An initiative for collective intelligence</p>
+      <h1 id="hero-title">More than<br>the sum of <em>us.</em></h1>
+      <div class="hero-bottom">
+        <p class="hero-intro">Tools for a society that can understand what matters, learn from one another, and act together. Built from the things each of us has a reason to make.</p>
+        <a class="round-link" href="#projects"><span>It starts with<br><strong>Watane</strong></span><span class="arrow-circle" aria-hidden="true">↘</span></a>
+      </div>
+      <figure class="commons-figure">
+        <svg class="commons" viewBox="0 0 1200 300" aria-hidden="true" focusable="false">
+          <defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".8" fill="currentColor" opacity=".13"/></pattern></defs>
+          <rect width="1200" height="300" fill="url(#dots)"/>
+          <g class="graph-paths" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M100 150H252 M300 150C355 150 350 62 430 62H505 M300 150H505 M300 150C355 150 350 238 430 238H505"/>
+            <path d="M553 62C625 62 620 105 688 105 M553 150C625 150 620 105 688 105 M553 150C625 150 620 220 688 220 M553 238C625 238 620 220 688 220"/>
+            <path d="M736 105C815 105 810 62 872 62H930 M736 105C815 105 810 150 872 150H930 M736 220C815 220 810 150 872 150H930 M736 220H1005 M978 62H1100 M978 150H1100 M1053 220H1148"/>
+          </g>
+          <g class="graph-shapes" stroke="currentColor" stroke-width="1.5">
+            <circle cx="100" cy="150" r="9" class="solid-node"/>
+            <rect x="252" y="126" width="48" height="48" rx="4" class="accent-node"/>
+            <circle cx="529" cy="62" r="24"/><rect x="505" y="126" width="48" height="48" rx="4"/><path d="M529 214L553 238L529 262L505 238Z"/>
+            <rect x="688" y="81" width="48" height="48" rx="4" class="accent-node"/><circle cx="712" cy="220" r="24"/>
+            <circle cx="954" cy="62" r="24"/><rect x="930" y="126" width="48" height="48" rx="4"/><circle cx="1029" cy="220" r="24" class="accent-node"/>
+            <circle cx="1100" cy="62" r="4" class="solid-node"/><circle cx="1100" cy="150" r="4" class="solid-node"/><circle cx="1148" cy="220" r="4" class="solid-node"/>
+          </g>
+          <g class="graph-labels"><text x="100" y="188" text-anchor="middle">a need</text><text x="276" y="206" text-anchor="middle">a useful tool</text><text x="529" y="110" text-anchor="middle">an adaptation</text><text x="712" y="64" text-anchor="middle">a new connection</text><text x="954" y="199" text-anchor="middle">a shared question</text></g>
+        </svg>
+        <figcaption>A personal need leads to a useful tool. Others adapt it, combine it with their own work, and discover new possibilities and shared questions.</figcaption>
+      </figure>
+    </section>
+
+    <section class="vision wrap section" id="vision" tabindex="-1" aria-labelledby="vision-title">
+      <div class="section-label">The larger possibility</div>
+      <div class="vision-body">
+        <h2 id="vision-title">Our knowledge is scattered.<br>Our futures are <em>connected.</em></h2>
+        <div class="prose-columns"><p>Each of us holds a piece of the picture: something we know, something we need, something we could make. Too often, those pieces stay apart.</p><p>Socaity is an exploration of what becomes possible when they connect. Tools that help us learn from one another, understand our differences, and turn shared intentions into action.</p></div>
+        <p class="vision-statement">Collective intelligence begins with people<br>who remain free to think for themselves.</p>
+      </div>
+    </section>
+
+    <section class="path-section" aria-labelledby="path-title">
+      <div class="wrap">
+        <div class="path-heading"><p class="eyebrow">Small beginnings. Larger possibilities.</p><h2 id="path-title">One person’s wish.<br>A starting point for <em>many.</em></h2><p class="path-intro">Cooperation can begin before we ever meet: through the things we leave for others to use. Imagine a book club choosing what to read next.</p></div>
+        <div class="journey">
+          <div class="journey-steps" role="group" aria-label="Explore the example" hidden>
+            <button type="button" data-step="0" aria-pressed="true" aria-controls="journey-copy">A real need</button>
+            <button type="button" data-step="1" aria-pressed="false" aria-controls="journey-copy">Shared work</button>
+            <button type="button" data-step="2" aria-pressed="false" aria-controls="journey-copy">New possibilities</button>
+          </div>
+          <div class="journey-body">
+            <div class="journey-map" aria-hidden="true">
+              <svg viewBox="0 0 620 350" focusable="false">
+                <g fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path class="journey-link reuse" d="M135 123V169Q135 185 151 185H230 M135 268H195Q211 268 211 252V201Q211 185 230 185"/>
+                  <path class="journey-link need" d="M320 85V148"/>
+                  <path class="journey-link extend" d="M410 185H460Q476 185 476 169V118H500 M410 185H460Q476 185 476 201V267H500"/>
+                </g>
+                <g class="journey-node reuse"><rect x="40" y="65" width="190" height="58" rx="6"/><text x="61" y="88" class="node-kind">SOMEONE’S CONTRIBUTION</text><text x="61" y="109">A reading list</text></g>
+                <g class="journey-node reuse"><rect x="40" y="239" width="155" height="58" rx="6"/><text x="61" y="262" class="node-kind">ANOTHER’S</text><text x="61" y="283">A voting tool</text></g>
+                <g class="journey-node need"><circle cx="320" cy="57" r="28"/><text x="320" y="64" text-anchor="middle" class="wish-symbol">?</text><text x="361" y="60">What shall we read?</text></g>
+                <g class="journey-node answer"><rect x="230" y="148" width="180" height="74" rx="6"/><text x="253" y="178" class="node-kind">MADE FROM BOTH</text><text x="253" y="203">Our club’s picks</text></g>
+                <g class="journey-node extend"><circle cx="512" cy="118" r="12"/><text x="468" y="86">A film club</text><circle cx="512" cy="267" r="12"/><text x="456" y="310">Something new…</text></g>
+              </svg>
+              <p class="journey-caption">A need connects to work already done.</p>
+            </div>
+            <div class="journey-copy" id="journey-copy" aria-live="polite" aria-atomic="true">
+              <p class="eyebrow">An imagined journey</p>
+              <h3>Start with something<br>that matters to you.</h3>
+              <p class="journey-description">“Help our book club choose its next book.” A small, real need is enough to begin. You shouldn’t have to start by understanding an entire platform.</p>
+              <p class="journey-takeaway">Your need is the starting point.</p>
+            </div>
+          </div>
+          <noscript><p class="journey-fallback">Someone’s reading list and another person’s voting tool could become a book-club tool. Another group could adapt it for films. Each contribution gives the next person a place to start.</p></noscript>
+        </div>
+        <p class="path-note">An illustrative concept, not a running Watane application. The larger ambition: make needs, reasoning, and possibilities for action easier to see together.</p>
+      </div>
+    </section>
+
+    <section class="projects wrap section" id="projects" tabindex="-1" aria-labelledby="projects-title">
+      <div class="section-heading"><div><p class="eyebrow">The projects</p><h2 id="projects-title">A beginning.<br>Room to <em>grow.</em></h2></div><p>Each project is a step toward the larger vision.<br>Our starting point is Watane.</p></div>
+      <div class="project-list">
+        <!-- Each project is a self-contained article. Add future projects as sibling articles. -->
+        <article class="project" aria-labelledby="watane-title">
+          <div class="project-art" aria-hidden="true">
+            <span class="art-caption">The first building block</span>
+            <svg viewBox="0 0 400 340" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M66 270V70H266 M106 310V110H306 M146 270V150H346"/><path d="M66 270H146 M266 70V150 M106 310H346V150"/><rect x="146" y="150" width="80" height="80"/><path d="M226 150V230H306V310"/></g><rect x="146" y="150" width="80" height="80" fill="currentColor"/><path d="M166 190H206 M186 170V210" stroke="var(--paper)" stroke-width="1.5"/></svg>
+            <span class="art-foot">An open foundation for what comes next.</span>
+          </div>
+          <div class="project-copy"><p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> The foundation · In development</p><h3 id="watane-title">Watane</h3><p class="project-lead">Make what you need.<br>Leave a beginning for others.</p><p>Watane is being built as a home for small, personal tools called mods. Make one with a coding agent, use it alongside other people’s work, and share something the next person can build on.</p><p>That is where this ecosystem begins: with useful tools that can find each other. Applications for shared needs, beliefs, and plans can grow on that foundation.</p>
+            <details class="project-details"><summary>Why start here? <span aria-hidden="true">+</span></summary><div><p>A tool can express an intention through what it makes possible. When someone adapts it, or connects it to another tool, cooperation happens through the work itself.</p><p>Watane’s design keeps the foundation small. Making needs and reasoning explicit belongs in the applications people build on it. Those applications are the next direction for exploration.</p></div></details>
+          </div>
+        </article>
+      </div>
+      <div class="open-ended"><span aria-hidden="true">＋</span><p>What comes next can build on what comes before.</p><a href="#horizon">Explore the direction <span aria-hidden="true">↗</span></a></div>
+    </section>
+
+    <section class="horizon wrap section" id="horizon" tabindex="-1" aria-labelledby="horizon-title">
+      <div class="section-label">The horizon<br><span>Directions for exploration</span></div>
+      <div><h2 id="horizon-title">What might we<br>get better at, <em>together?</em></h2>
+        <div class="horizon-rows"><article><h3>Seeing what matters.</h3><p>Connect individual needs into a richer picture of what people care about, and where those needs meet.</p></article><article><h3>Understanding why we disagree.</h3><p>Bring beliefs, arguments, and evidence into view. Preserve differences while making the reasoning easier to examine.</p></article><article><h3>Turning intention into action.</h3><p>Connect plans, contributions, and dependencies so people can choose where to help and build on one another’s work.</p></article></div>
+        <p class="horizon-note">These are possibilities for future applications, not announced projects.</p>
+      </div>
+    </section>
+
+    <section class="principles wrap section" id="principles" tabindex="-1" aria-labelledby="principles-title">
+      <div class="section-heading"><div><p class="eyebrow">What we build around</p><h2 id="principles-title">More capable together.<br>Still <em>ourselves.</em></h2></div></div>
+      <div class="principles-grid"><article><span aria-hidden="true">↗</span><h3>Agency stays with people.</h3><p>Choose what to use, who to trust, and where to contribute. Participation should expand your ability to act.</p></article><article><span aria-hidden="true">↔</span><h3>Work should build on work.</h3><p>Make room to inspect, adapt, and extend what exists. A useful contribution can travel further than its maker imagined.</p></article><article><span aria-hidden="true">≠</span><h3>Differences belong here.</h3><p>Shared understanding can include different conclusions. Make assumptions and disagreements visible enough to learn from.</p></article><article><span aria-hidden="true">⌘</span><h3>Keep the foundations open.</h3><p>Build toward systems people can shape and carry forward, without depending on a single owner of their collective life.</p></article></div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title"><div class="wrap"><p class="eyebrow">The future is something we practise.</p><h2 class="closing-title" id="closing-title">Start with a tool.<br>Make room for <em>a society.</em></h2><a class="text-link" href="#projects">Meet the first project <span aria-hidden="true">↗</span></a></div></section>
+  </main>
+  <footer class="footer wrap"><a class="brand" href="#top" aria-label="socaity.dev home">socaity<span>.dev</span></a><p>Independent minds. Shared possibilities.</p><a href="research.html">Research archive</a></footer>
+<script>
+/* Native fragment links work with or without JavaScript. */
+const journey = document.querySelector('.journey');
+if (journey) {
+  const steps = [
+    {
+      title: 'Start with something that matters to you.',
+      description: '“Help our book club choose its next book.” A small, real need is enough to begin. You shouldn’t have to start by understanding an entire platform.',
+      takeaway: 'Your need is the starting point.',
+      caption: 'A need connects to work already done.',
+    },
+    {
+      title: 'Someone has already made a beginning.',
+      description: 'One person made a reading list. Another made a voting tool. Imagine bringing those pieces together into something that fits your club, with a coding agent helping you make the connection.',
+      takeaway: 'Cooperation through the things we make.',
+      caption: 'Independent contributions become useful together.',
+    },
+    {
+      title: 'Your answer can become someone else’s beginning.',
+      description: 'Share the result. A film club could adapt it; another group could take it somewhere unexpected. The ambition is to make shared needs and the work that answers them visible, so people can choose where to help.',
+      takeaway: 'Work builds on work. Possibilities multiply.',
+      caption: 'An answer leaves room for the next possibility.',
+    },
+  ];
+  const controls = journey.querySelector('.journey-steps');
+  const buttons = [...controls.querySelectorAll('button')];
+  const copy = journey.querySelector('.journey-copy');
+
+  const selectStep = (index) => {
+    if (journey.dataset.step === String(index)) return;
+    const step = steps[index];
+    journey.dataset.step = String(index);
+    buttons.forEach((button, position) => {
+      button.setAttribute('aria-pressed', String(position === index));
+    });
+    copy.querySelector('h3').textContent = step.title;
+    copy.querySelector('.journey-description').textContent = step.description;
+    copy.querySelector('.journey-takeaway').textContent = step.takeaway;
+    journey.querySelector('.journey-caption').textContent = step.caption;
+  };
+
+  buttons.forEach((button, index) => {
+    button.addEventListener('click', () => selectStep(index));
+  });
+  journey.classList.add('journey-ready');
+  journey.dataset.step = '0';
+  controls.hidden = false;
+}
+
+</script>
+</body>
+</html>

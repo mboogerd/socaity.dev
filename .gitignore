@@ -8,3 +8,10 @@
 # Generated site + Python bytecode (tools/check.sh renders into site/)
 site/
 __pycache__/
+
+# Assembled Pages output
+/_pages/
+
+# Retired Beads runtime stays local; only its explicit snapshot is versioned.
+/.beads/
+/archive/beads/local-state/

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eeede5">
+  <title>{% block title %}{% endblock %} · socaity.dev</title>
+  <link rel="stylesheet" href="{{ home }}styles.css">
+  <link rel="stylesheet" href="{{ blog }}blog.css">
+  <link rel="alternate" type="application/rss+xml" title="Socaity blog" href="{{ blog }}feed.xml">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="header wrap">
+    <a class="brand" href="{{ home }}" aria-label="socaity.dev home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>socaity<span>.dev</span></a>
+    <nav aria-label="Main navigation">
+      <a href="{{ home }}#vision">The vision</a>
+      <a href="{{ home }}#projects">Projects</a>
+      <a href="{{ blog }}"{% if blog == './' %} aria-current="page"{% endif %}>Blog</a>
+    </nav>
+  </header>
+  <main class="blog-content wrap" id="main" tabindex="-1">
+    {% block main %}{% endblock %}
+  </main>
+</body>
+</html>

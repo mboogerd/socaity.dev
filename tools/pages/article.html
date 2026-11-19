@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% set home = "../../" %}
+{% set blog = "../" %}
+{% block title %}{{ article.title }}{% endblock %}
+{% block main %}
+  <article class="article">
+    <header>
+      {% if article.date %}<time datetime="{{ article.date }}">{{ article.date }}</time>{% endif %}
+      <h1>{{ article.title }}</h1>
+    </header>
+    {{ body }}
+  </article>
+  <p class="blog-links"><a href="../">All articles</a></p>
+{% endblock %}

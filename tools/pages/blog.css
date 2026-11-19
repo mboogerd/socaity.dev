@@ -1,0 +1,85 @@
+.blog-content {
+  max-width: 46rem;
+  padding-block: clamp(2.5rem, 8vw, 6rem);
+  overflow-wrap: anywhere;
+}
+
+.blog-content h1 {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 500;
+  letter-spacing: -.045em;
+  line-height: 1.08;
+  margin: .25em 0 .65em;
+}
+
+.blog-content h2 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  letter-spacing: -.025em;
+  margin-block: 1.5em .5em;
+}
+
+.blog-content time {
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.blog-content a {
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.blog-content a:hover {
+  color: var(--accent);
+}
+
+.article-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.article-list li {
+  border-block-start: 1px solid var(--line);
+  padding-block: 1.25rem;
+}
+
+.article-list h2,
+.article-list p {
+  margin-block: .35em;
+}
+
+.article {
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+
+.article img {
+  max-width: 100%;
+  height: auto;
+}
+
+.article pre {
+  background: var(--soft);
+  padding: 1rem;
+  white-space: pre-wrap;
+}
+
+.article table {
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
+.article th,
+.article td {
+  border: 1px solid var(--line);
+  padding: .35em .6em;
+  text-align: start;
+}
+
+.blog-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1.5rem;
+  border-block-start: 1px solid var(--line);
+  padding-block-start: 1.25rem;
+}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% set home = "../" %}
+{% set blog = "./" %}
+{% block title %}Blog{% endblock %}
+{% block main %}
+  <h1>Blog</h1>
+  {% if articles %}
+  <ul class="article-list">
+  {% for article in articles %}
+    <li>
+      {% if article.date %}<time datetime="{{ article.date }}">{{ article.date }}</time>{% endif %}
+      <h2><a href="{{ article.href }}">{{ article.title }}</a></h2>
+      {% if article.summary %}<p>{{ article.summary }}</p>{% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+  <p class="blog-links"><a href="archive.html">Earlier posts and weekly digests</a> <a href="feed.xml">RSS feed</a></p>
+{% endblock %}
